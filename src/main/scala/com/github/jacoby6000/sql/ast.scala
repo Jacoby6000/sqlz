@@ -2,50 +2,113 @@ package com.github.jacoby6000.sql
 
 import com.github.jacoby6000.shapeless.proofs._
 import shapeless.HList
+import shapeless.ops.hlist.ToTraversable
+import shapeless.ops.tuple.ToList
 
 /**
   * Created by jacob.barber on 2/2/16.
   */
 object ast {
 
-  case class Using(table: String, run: SqlAction)
+  case class DatabaseAction(table: String, run: SqlAction)
   object Using {
-    def apply(table: String): SqlAction => Using = q => Using(table, q)
+    def apply(table: String): SqlAction => DatabaseAction = q => DatabaseAction(table, q)
   }
 
-  sealed trait SqlJoin[A]
-  case class InnerJoin[A <: HList](table: String, on: A)(implicit whereClausesOnlyContainFilters: A ContainsOnlyKind SqlFilter) extends SqlJoin[A]
-  case class FullOuterJoin[A <: HList](table: String, on: A)(implicit whereClausesOnlyContainFilters: A ContainsOnlyKind SqlFilter) extends SqlJoin[A]
-  case class LeftOuterJoin[A <: HList](table: String, on: A)(implicit whereClausesOnlyContainFilters: A ContainsOnlyKind SqlFilter) extends SqlJoin[A]
-  case class RightOuterJoin[A <: HList](table: String, on: A)(implicit whereClausesOnlyContainFilters: A ContainsOnlyKind SqlFilter) extends SqlJoin[A]
-  case class CrossJoin[A <: HList](table: String, on: A)(implicit whereClausesOnlyContainFilters: A ContainsOnlyKind SqlFilter) extends SqlJoin[A]
+  sealed trait SqlValue {
+    def fold[B](string: String => B,
+                bool: Boolean => B,
+                int: Int => B,
+                double: Double => B,
+                prepared: => B): B = SqlValue.fold(this)(string, bool, int, double, prepared)
+  }
+  sealed trait SqlNumber extends SqlValue
+  case object SqlPrepared extends SqlValue with SqlNumber
 
-  sealed trait SqlFilter[A]
-  case class In[A](column: String, values: List[A]) extends SqlFilter[A]
-  case class Equal[A](column: String, value: A) extends SqlFilter[A]
-  case class NotEqual[A](column: String, value: A) extends SqlFilter[A]
-  case class LessThan[A](column: String, value: A) extends SqlFilter[A]
-  case class GreaterThan[A](column: String, value: A) extends SqlFilter[A]
-  case class LessThanOrEqual[A](column: String, value: A) extends SqlFilter[A]
-  case class GreaterThanOrEqual[A](column: String, value: A) extends SqlFilter[A]
-  case class Like[A](column: String, value: A) extends SqlFilter[A]
-  case class Between[A](column: String, min: A, max: A) extends SqlFilter[A]
+  case class SqlString(value: String) extends SqlValue
+  case class SqlBoolean(value: Boolean) extends SqlValue
 
-  case class UpdateValue[A](column: String, value: A)
+  case class SqlInt(value: Int) extends SqlNumber
+  case class SqlDouble(value: Double) extends SqlNumber
+
+  object SqlValue {
+    def fold[B](sqlValue: SqlValue)
+               (string: String => B,
+                bool: Boolean => B,
+                int: Int => B,
+                double: Double => B,
+                prepared: => B): B = sqlValue match {
+      case SqlString(s) => string(s)
+      case SqlBoolean(b) => bool(b)
+      case SqlInt(i) => int(i)
+      case SqlDouble(d) => double(d)
+      case SqlPrepared => prepared
+    }
+  }
+
+  sealed trait SqlJoin
+  case class InnerJoin(table: String, on: List[SqlFilter]) extends SqlJoin
+  case class FullOuterJoin(table: String, on: List[SqlFilter]) extends SqlJoin
+  case class LeftOuterJoin(table: String, on: List[SqlFilter]) extends SqlJoin
+  case class RightOuterJoin(table: String, on: List[SqlFilter]) extends SqlJoin
+  case class CrossJoin(table: String, on: List[SqlFilter]) extends SqlJoin
+
+
+  sealed trait SqlFilter
+  case class In(column: String, values: List[SqlValue]) extends SqlFilter
+  case class Like(column: String, value: SqlValue) extends SqlFilter
+  case class Equal(column: String, value: SqlValue) extends SqlFilter
+  case class NotEqual(column: String, value: SqlValue) extends SqlFilter
+  case class LessThan(column: String, value: SqlValue) extends SqlFilter
+  case class GreaterThan(column: String, value: SqlValue) extends SqlFilter
+  case class LessThanOrEqual(column: String, value: SqlValue) extends SqlFilter
+  case class GreaterThanOrEqual(column: String, value: SqlValue) extends SqlFilter
+  case class Between(column: String, min: SqlValue, max: SqlValue) extends SqlFilter
+
+  case class UpdateValue(column: String, value: SqlValue)
 
   sealed trait SqlAction
 
-  case class BulkInsert[A <: HList, B <: HList](columns: A, values: List[B])(implicit columnsValuesSameLength: A SameLengthAs B,
-                                                                             columnsOnlyStrings: A ContainsOnly String) extends SqlAction
+  case class BulkInsert[A <: HList, B <: HList](private val hColumns: A, private val hValues: List[B])
+                                               (implicit columnsValuesSameLength: A SameLengthAs B,
+                                                         columnsOnlyStrings: A ContainsOnly String,
+                                                         hValuesOnlySqlValue: B ContainsOnly SqlValue,
+                                                         hValuesContainsSqlValues: A,
+                                                         hValuesToList: ToTraversable.Aux[B, List, SqlValue],
+                                                         hColumnsToList: ToTraversable.Aux[A, List, String]) extends SqlAction {
 
-  case class Insert[A <: HList, B <: HList](columns: A, values: B)(implicit columnsValuesSameLength: A SameLengthAs B) extends SqlAction
+    lazy val values: List[List[SqlValue]] = hValues.map(hlist => hlist.toList[SqlValue])
+    lazy val columns: List[String] = hColumns.toList[String]
+  }
 
-  case class Update[A <: HList, B <: HList, C <: HList](update: A, where: B)(implicit setsContainOnlyUpdateValues: A ContainsOnlyKind UpdateValue,
-                                                                             whereClausesOnlyContainFilters: B ContainsOnlyKind SqlFilter) extends SqlAction
+  class Insert[A <: HList, B <: HList](hColumns: A, hValues: B)
+                                           (implicit columnsValuesSameLength: A SameLengthAs B,
+                                                     columnsOnlyStrings: A ContainsOnly String,
+                                                     hValuesOnlySqlValue: B ContainsOnly SqlValue,
+                                                     hValuesContainsSqlValues: A,
+                                                     hValuesToList: ToTraversable.Aux[B, List, SqlValue],
+                                                     hColumnsToList: ToTraversable.Aux[A, List, String]) extends SqlAction {
 
-  case class Select[A <: HList, B <: HList](columns: List[String], where: A, joins: B)(implicit whereClausesOnlyContainFilters: A ContainsOnlyKind SqlFilter,
-                                                                                       joinsContainOnlyJoins: B ContainsOnlyKind SqlJoin) extends SqlAction
+    lazy val values: List[SqlValue] = hValues.toList[SqlValue]
+    lazy val columns: List[String] = hColumns.toList[String]
+  }
 
-  case class Delete[A <: HList](where: A)(implicit whereClausesOnlyContainFilters: A ContainsOnlyKind SqlFilter)
+  object Insert {
+    def unapply(insert: Insert[_, _]): Option[(List[String], List[SqlValue])] = Some((insert.columns,insert.values))
+    def apply[A <: HList, B <: HList](hColumns: A, hValues: B)
+                                     (implicit columnsValuesSameLength: A SameLengthAs B,
+                                      columnsOnlyStrings: A ContainsOnly String,
+                                      hValuesOnlySqlValue: B ContainsOnly SqlValue,
+                                      hValuesContainsSqlValues: A,
+                                      hValuesToList: ToTraversable.Aux[B, List, SqlValue],
+                                      hColumnsToList: ToTraversable.Aux[A, List, String]): Insert[A, B] = new Insert(hColumns, hValues)
+  }
 
+  case class Update[A <: HList, B <: HList, C <: HList](update: A, where: B)(implicit setsContainOnlyUpdateValues: A ContainsOnly UpdateValue,
+                                                                             whereClausesOnlyContainFilters: B ContainsOnly SqlFilter) extends SqlAction
+
+  case class Select[A <: HList, B <: HList](columns: List[String], joins: B, where: A, groupBy: List[String], offset: Int, limit: Int)(implicit whereClausesOnlyContainFilters: A ContainsOnly SqlFilter,
+                                                                                       joinsContainOnlyJoins: B ContainsOnly SqlJoin) extends SqlAction
+
+  case class Delete[A <: HList](where: A)(implicit whereClausesOnlyContainFilters: A ContainsOnly SqlFilter)
 }
