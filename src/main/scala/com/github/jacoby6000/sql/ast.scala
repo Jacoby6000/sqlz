@@ -67,7 +67,13 @@ object ast {
 
   case class UpdateValue(column: String, value: SqlValue)
 
-  sealed trait SqlAction
+  sealed trait SqlAction {
+    def fold[B](select: (List[String], List[SqlJoin], List[SqlFilter], List[String], Int, Int) => B,
+                update: (List[UpdateValue], List[SqlFilter]) => B,
+                insert: (List[String], List[SqlValue]) => B,
+                bulkInsert: (List[String], List[List[SqlValue]]) => B,
+                delete: List[SqlFilter] => B): B = SqlAction.fold(this)(select, update, insert, bulkInsert, delete)
+  }
 
   case class BulkInsert private (columns: List[String], values: List[List[SqlValue]]) extends SqlAction
 
@@ -122,5 +128,21 @@ object ast {
   object Delete {
     def apply[A <: HList](hWhere: A)(implicit hWhereContainsOnlySqlFilter: A ContainsOnly SqlFilter,
                                               hWhereToList: ToTraversable.Aux[A, List, SqlFilter]) = Delete(hWhere.toList)
+  }
+
+  object SqlAction {
+    def fold[B](action: SqlAction)
+               (select: (List[String], List[SqlJoin], List[SqlFilter], List[String], Int, Int) => B,
+                update: (List[UpdateValue], List[SqlFilter]) => B,
+                insert: (List[String], List[SqlValue]) => B,
+                bulkInsert: (List[String], List[List[SqlValue]]) => B,
+                delete: List[SqlFilter] => B): B = action match {
+      case Select(columns, joins, where, groupBy, offset, limit) => select(columns, joins, where, groupBy, offset, limit)
+      case Update(values, where) => update(values, where)
+      case Insert(columns, values) => insert(columns, values)
+      case BulkInsert(columns, values) => bulkInsert(columns, values)
+      case Delete(where) => delete(where)
+    }
+
   }
 }
