@@ -105,5 +105,22 @@ object ast {
   }
 
   case class Select(columns: List[String], joins: List[SqlJoin], where: List[SqlFilter], groupBy: List[String], offset: Int, limit: Int) extends SqlAction
-  case class Delete[A <: HList](where: List[SqlFilter]) extends SqlAction
+  object Select {
+    def apply[A <: HList, B <: HList, C <: HList, D <: HList](hColumns: A, hJoins: B, hWhere: C, hGroupBy: D, offset: Int, limit: Int)
+                                                             (implicit hColumnsContainsOnlyStrings: A ContainsOnly String,
+                                                                       hJoinsContainsOnlySqlJoin: B ContainsOnly SqlJoin,
+                                                                       hWhereContainsOnlySqlFilter: C ContainsOnly SqlFilter,
+                                                                       hGroupByContainsOnlyString: D ContainsOnly String,
+                                                                       hColumnsToLost: ToTraversable.Aux[A, List, String],
+                                                                       hJoinToList: ToTraversable.Aux[B, List, SqlJoin],
+                                                                       hWheretoList: ToTraversable.Aux[C, List, SqlFilter],
+                                                                       hGroupByToList: ToTraversable.Aux[D, List, String]): Select = Select(hColumns.toList, hJoins.toList, hWhere.toList, hGroupBy.toList, offset, limit)
+  }
+
+  case class Delete(where: List[SqlFilter]) extends SqlAction
+
+  object Delete {
+    def apply[A <: HList](hWhere: A)(implicit hWhereContainsOnlySqlFilter: A ContainsOnly SqlFilter,
+                                              hWhereToList: ToTraversable.Aux[A, List, SqlFilter]) = Delete(hWhere.toList)
+  }
 }
