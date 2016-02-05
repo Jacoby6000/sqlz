@@ -82,12 +82,12 @@ object ast {
   }
 
   class Insert[A <: HList, B <: HList](hColumns: A, hValues: B)
-                                           (implicit columnsValuesSameLength: A SameLengthAs B,
-                                                     columnsOnlyStrings: A ContainsOnly String,
-                                                     hValuesOnlySqlValue: B ContainsOnly SqlValue,
-                                                     hValuesContainsSqlValues: A,
-                                                     hValuesToList: ToTraversable.Aux[B, List, SqlValue],
-                                                     hColumnsToList: ToTraversable.Aux[A, List, String]) extends SqlAction {
+                                      (implicit columnsValuesSameLength: A SameLengthAs B,
+                                                columnsOnlyStrings: A ContainsOnly String,
+                                                hValuesOnlySqlValue: B ContainsOnly SqlValue,
+                                                hValuesContainsSqlValues: A,
+                                                hValuesToList: ToTraversable.Aux[B, List, SqlValue],
+                                                hColumnsToList: ToTraversable.Aux[A, List, String]) extends SqlAction {
 
     lazy val values: List[SqlValue] = hValues.toList[SqlValue]
     lazy val columns: List[String] = hColumns.toList[String]
@@ -97,11 +97,11 @@ object ast {
     def unapply(insert: Insert[_, _]): Option[(List[String], List[SqlValue])] = Some((insert.columns,insert.values))
     def apply[A <: HList, B <: HList](hColumns: A, hValues: B)
                                      (implicit columnsValuesSameLength: A SameLengthAs B,
-                                      columnsOnlyStrings: A ContainsOnly String,
-                                      hValuesOnlySqlValue: B ContainsOnly SqlValue,
-                                      hValuesContainsSqlValues: A,
-                                      hValuesToList: ToTraversable.Aux[B, List, SqlValue],
-                                      hColumnsToList: ToTraversable.Aux[A, List, String]): Insert[A, B] = new Insert(hColumns, hValues)
+                                               columnsOnlyStrings: A ContainsOnly String,
+                                               hValuesOnlySqlValue: B ContainsOnly SqlValue,
+                                               hValuesContainsSqlValues: A,
+                                               hValuesToList: ToTraversable.Aux[B, List, SqlValue],
+                                               hColumnsToList: ToTraversable.Aux[A, List, String]): Insert[A, B] = new Insert(hColumns, hValues)
   }
 
   case class Update[A <: HList, B <: HList, C <: HList](update: A, where: B)(implicit setsContainOnlyUpdateValues: A ContainsOnly UpdateValue,
