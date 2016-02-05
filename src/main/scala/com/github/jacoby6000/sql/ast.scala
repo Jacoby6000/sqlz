@@ -69,39 +69,29 @@ object ast {
 
   sealed trait SqlAction
 
-  case class BulkInsert[A <: HList, B <: HList](private val hColumns: A, private val hValues: List[B])
-                                               (implicit columnsValuesSameLength: A SameLengthAs B,
-                                                         columnsOnlyStrings: A ContainsOnly String,
-                                                         hValuesOnlySqlValue: B ContainsOnly SqlValue,
-                                                         hValuesContainsSqlValues: A,
-                                                         hValuesToList: ToTraversable.Aux[B, List, SqlValue],
-                                                         hColumnsToList: ToTraversable.Aux[A, List, String]) extends SqlAction {
+  case class BulkInsert private (columns: List[String], values: List[List[SqlValue]]) extends SqlAction
 
-    lazy val values: List[List[SqlValue]] = hValues.map(hlist => hlist.toList[SqlValue])
-    lazy val columns: List[String] = hColumns.toList[String]
+  object BulkInsert {
+    def apply[A <: HList, B <: HList](hColumns: A, hValues: List[B])
+                                     (implicit columnsValuesSameLength: A SameLengthAs B,
+                                      columnsOnlyStrings: A ContainsOnly String,
+                                      hValuesOnlySqlValue: B ContainsOnly SqlValue,
+                                      hValuesContainsSqlValues: A,
+                                      hValuesToList: ToTraversable.Aux[B, List, SqlValue],
+                                      hColumnsToList: ToTraversable.Aux[A, List, String]): BulkInsert = BulkInsert(hColumns.toList[String], hValues.map(_.toList[SqlValue]))
   }
 
-  class Insert[A <: HList, B <: HList](hColumns: A, hValues: B)
-                                      (implicit columnsValuesSameLength: A SameLengthAs B,
-                                                columnsOnlyStrings: A ContainsOnly String,
-                                                hValuesOnlySqlValue: B ContainsOnly SqlValue,
-                                                hValuesContainsSqlValues: A,
-                                                hValuesToList: ToTraversable.Aux[B, List, SqlValue],
-                                                hColumnsToList: ToTraversable.Aux[A, List, String]) extends SqlAction {
 
-    lazy val values: List[SqlValue] = hValues.toList[SqlValue]
-    lazy val columns: List[String] = hColumns.toList[String]
-  }
+  case class Insert private (columns: List[String], values: List[SqlValue]) extends SqlAction
 
   object Insert {
-    def unapply(insert: Insert[_, _]): Option[(List[String], List[SqlValue])] = Some((insert.columns,insert.values))
-    def apply[A <: HList, B <: HList](hColumns: A, hValues: B)
+    def apply[A <: HList, B <: HList](columns: A, values: B)
                                      (implicit columnsValuesSameLength: A SameLengthAs B,
-                                               columnsOnlyStrings: A ContainsOnly String,
-                                               hValuesOnlySqlValue: B ContainsOnly SqlValue,
-                                               hValuesContainsSqlValues: A,
-                                               hValuesToList: ToTraversable.Aux[B, List, SqlValue],
-                                               hColumnsToList: ToTraversable.Aux[A, List, String]): Insert[A, B] = new Insert(hColumns, hValues)
+                                      columnsOnlyStrings: A ContainsOnly String,
+                                      hValuesOnlySqlValue: B ContainsOnly SqlValue,
+                                      hValuesContainsSqlValues: A,
+                                      hValuesToList: ToTraversable.Aux[B, List, SqlValue],
+                                      hColumnsToList: ToTraversable.Aux[A, List, String]): Insert = Insert(columns.toList[String], values.toList[SqlValue])
   }
 
   case class Update[A <: HList, B <: HList, C <: HList](update: A, where: B)(implicit setsContainOnlyUpdateValues: A ContainsOnly UpdateValue,
