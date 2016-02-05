@@ -74,11 +74,11 @@ object ast {
   object BulkInsert {
     def apply[A <: HList, B <: HList](hColumns: A, hValues: List[B])
                                      (implicit columnsValuesSameLength: A SameLengthAs B,
-                                      columnsOnlyStrings: A ContainsOnly String,
-                                      hValuesOnlySqlValue: B ContainsOnly SqlValue,
-                                      hValuesContainsSqlValues: A,
-                                      hValuesToList: ToTraversable.Aux[B, List, SqlValue],
-                                      hColumnsToList: ToTraversable.Aux[A, List, String]): BulkInsert = BulkInsert(hColumns.toList[String], hValues.map(_.toList[SqlValue]))
+                                               columnsOnlyStrings: A ContainsOnly String,
+                                               hValuesOnlySqlValue: B ContainsOnly SqlValue,
+                                               hValuesContainsSqlValues: A,
+                                               hValuesToList: ToTraversable.Aux[B, List, SqlValue],
+                                               hColumnsToList: ToTraversable.Aux[A, List, String]): BulkInsert = BulkInsert(hColumns.toList, hValues.map(_.toList))
   }
 
 
@@ -87,18 +87,23 @@ object ast {
   object Insert {
     def apply[A <: HList, B <: HList](columns: A, values: B)
                                      (implicit columnsValuesSameLength: A SameLengthAs B,
-                                      columnsOnlyStrings: A ContainsOnly String,
-                                      hValuesOnlySqlValue: B ContainsOnly SqlValue,
-                                      hValuesContainsSqlValues: A,
-                                      hValuesToList: ToTraversable.Aux[B, List, SqlValue],
-                                      hColumnsToList: ToTraversable.Aux[A, List, String]): Insert = Insert(columns.toList[String], values.toList[SqlValue])
+                                               columnsOnlyStrings: A ContainsOnly String,
+                                               hValuesOnlySqlValue: B ContainsOnly SqlValue,
+                                               hValuesContainsSqlValues: A,
+                                               hValuesToList: ToTraversable.Aux[B, List, SqlValue],
+                                               hColumnsToList: ToTraversable.Aux[A, List, String]): Insert = Insert(columns.toList, values.toList)
   }
 
-  case class Update[A <: HList, B <: HList, C <: HList](update: A, where: B)(implicit setsContainOnlyUpdateValues: A ContainsOnly UpdateValue,
-                                                                             whereClausesOnlyContainFilters: B ContainsOnly SqlFilter) extends SqlAction
+  case class Update private (update: List[UpdateValue], where: List[SqlFilter]) extends SqlAction
 
-  case class Select[A <: HList, B <: HList](columns: List[String], joins: B, where: A, groupBy: List[String], offset: Int, limit: Int)(implicit whereClausesOnlyContainFilters: A ContainsOnly SqlFilter,
-                                                                                       joinsContainOnlyJoins: B ContainsOnly SqlJoin) extends SqlAction
+  object Update {
+    def apply[A <: HList, B <: HList, C <: HList](hUpdate: A, hWhere: B)
+                                                 (implicit hUpdateContainOnlyUpdateValues: A ContainsOnly UpdateValue,
+                                                           hWhereOnlyContainFilters: B ContainsOnly SqlFilter,
+                                                           hUpdateToList: ToTraversable.Aux[A, List, UpdateValue],
+                                                           hWhereToList: ToTraversable.Aux[B, List, SqlFilter]) = new Update(hUpdate.toList, hWhere.toList)
+  }
 
-  case class Delete[A <: HList](where: A)(implicit whereClausesOnlyContainFilters: A ContainsOnly SqlFilter)
+  case class Select(columns: List[String], joins: List[SqlJoin], where: List[SqlFilter], groupBy: List[String], offset: Int, limit: Int)
+  case class Delete[A <: HList](where: List[SqlFilter])
 }
