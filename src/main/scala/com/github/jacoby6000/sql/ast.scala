@@ -104,6 +104,6 @@ object ast {
                                                            hWhereToList: ToTraversable.Aux[B, List, SqlFilter]) = new Update(hUpdate.toList, hWhere.toList)
   }
 
-  case class Select(columns: List[String], joins: List[SqlJoin], where: List[SqlFilter], groupBy: List[String], offset: Int, limit: Int)
-  case class Delete[A <: HList](where: List[SqlFilter])
+  case class Select(columns: List[String], joins: List[SqlJoin], where: List[SqlFilter], groupBy: List[String], offset: Int, limit: Int) extends SqlAction
+  case class Delete[A <: HList](where: List[SqlFilter]) extends SqlAction
 }
