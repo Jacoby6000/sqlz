@@ -14,7 +14,7 @@ resolvers += Resolver.sonatypeRepo("releases")
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.7.1")
 
 scalacOptions ++= Seq(
-//  "-Yno-predef",   // no automatic import of Predef (removes irritating implicits)
+  "-Yno-predef",   // no automatic import of Predef (removes irritating implicits)
   "-deprecation",
   "-encoding", "UTF-8",       // yes, this is 2 args
   "-feature",

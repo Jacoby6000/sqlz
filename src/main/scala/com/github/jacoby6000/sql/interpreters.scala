@@ -28,29 +28,27 @@ object interpreters {
       s"$baseSelect\n$joinString\n$whereString\n$offsetString\n$limitString"
     }
 
-    def buildStandardOperation(operator: String): (SqlValue, SqlValue) => String = (s, v) => s"${sqlValueToSqlString(s)} $operator ${sqlValueToSqlString(v)}"
-
+    def buildStandardComparison(operator: String): (SqlValue, SqlValue) => String = (s, v) => s"${sqlValueToSqlString(s)} $operator ${sqlValueToSqlString(v)}"
 
     def updateWithNoFilter(list: List[UpdateValue]) = s"UPDATE $table SET ${list.map(v => v.column + "=" + sqlValueToSqlString(v.value))}"
 
     def sqlValueToSqlString(sqlValue: SqlValue): String =
-      sqlValue.fold(
-        add = (a,b) => sqlValueToSqlString(a) + " + " + sqlValueToSqlString(b),
-        sub = (a,b) => sqlValueToSqlString(a) + " - " + sqlValueToSqlString(b),
-        div = (a,b) => sqlValueToSqlString(a) + " / " + sqlValueToSqlString(b),
-        mul = (a,b) => sqlValueToSqlString(a) + " * " + sqlValueToSqlString(b)
-      )(identity, _.surround('"'), _.toString, _.toString, _.toString, selectToString, "?")
+      sqlValue.fold(x => x, _.surround('"'), _.toString, _.toString, _.toString, selectToString, "?")(
+                    add = (a,b) => sqlValueToSqlString(a) + " + " + sqlValueToSqlString(b),
+                    sub = (a,b) => sqlValueToSqlString(a) + " - " + sqlValueToSqlString(b),
+                    div = (a,b) => sqlValueToSqlString(a) + " / " + sqlValueToSqlString(b),
+                    mul = (a,b) => sqlValueToSqlString(a) + " * " + sqlValueToSqlString(b))
 
     def buildJoin(joinType: String, tbl: String, filters: List[SqlFilter]): String = s"$joinType $tbl ON " + filters.map(filterToSqlString).mkString(" AND\n")
 
     def filterToSqlString(filter: SqlFilter): String =
-      filter.fold(like               = buildStandardOperation("LIKE"),
-                  equal              = buildStandardOperation("="),
-                  notEqual           = buildStandardOperation("<>"),
-                  lessThan           = buildStandardOperation("<"),
-                  greaterThan        = buildStandardOperation(">"),
-                  lessThanOrEqual    = buildStandardOperation("<="),
-                  greaterThanOrEqual = buildStandardOperation(">="),
+      filter.fold(like               = buildStandardComparison("LIKE"),
+                  equal              = buildStandardComparison("="),
+                  notEqual           = buildStandardComparison("<>"),
+                  lessThan           = buildStandardComparison("<"),
+                  greaterThan        = buildStandardComparison(">"),
+                  lessThanOrEqual    = buildStandardComparison("<="),
+                  greaterThanOrEqual = buildStandardComparison(">="),
                   in = (col, values) => s"${sqlValueToSqlString(col)} in (${values.map(sqlValueToSqlString).mkString(", ")})",
                   between =  (col, min, max) => s"${sqlValueToSqlString(col)} BETWEEN ${sqlValueToSqlString(min)} AND ${sqlValueToSqlString(max)}")
 

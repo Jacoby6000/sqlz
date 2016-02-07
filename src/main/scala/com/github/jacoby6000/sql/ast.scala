@@ -18,17 +18,17 @@ object ast {
   }
 
   sealed trait SqlValue {
-    def fold[B](add: (SqlValue, SqlValue) => B,
-                sub: (SqlValue, SqlValue) => B,
-                div: (SqlValue, SqlValue) => B,
-                mul: (SqlValue, SqlValue) => B)
-               (literal: String => B,
+    def fold[B](literal: String => B,
                 string: String => B,
                 bool: Boolean => B,
                 int: Int => B,
                 double: Double => B,
                 select: (List[String], List[SqlJoin], List[SqlFilter], List[String], Option[Int], Option[Int]) => B,
-                prepared: => B): B = SqlValue.fold(this)(add, sub, div, mul)(literal, string, bool, int, double, select, prepared)
+                prepared: => B)
+               (add: (SqlValue, SqlValue) => B,
+                sub: (SqlValue, SqlValue) => B,
+                div: (SqlValue, SqlValue) => B,
+                mul: (SqlValue, SqlValue) => B): B = SqlValue.fold(this)(literal, string, bool, int, double, select, prepared)(add, sub, div, mul)
   }
   case class SqlLiteral(value: String) extends SqlValue
 
@@ -53,17 +53,17 @@ object ast {
   object SqlValue {
 
     def fold[B](sqlValue: SqlValue)
-               (add: (SqlValue, SqlValue) => B,
-                sub: (SqlValue, SqlValue) => B,
-                div: (SqlValue, SqlValue) => B,
-                mul: (SqlValue, SqlValue) => B)
                (literal: String => B,
                 string: String => B,
                 bool: Boolean => B,
                 int: Int => B,
                 double: Double => B,
                 select: (List[String], List[SqlJoin], List[SqlFilter], List[String], Option[Int], Option[Int]) => B,
-                prepared: => B): B =
+                prepared: => B)
+               (add: (SqlValue, SqlValue) => B,
+                sub: (SqlValue, SqlValue) => B,
+                div: (SqlValue, SqlValue) => B,
+                mul: (SqlValue, SqlValue) => B): B =
       sqlValue match {
         case SqlAdd(a, b) => add(a,b)
         case SqlMul(a, b) => mul(a,b)
