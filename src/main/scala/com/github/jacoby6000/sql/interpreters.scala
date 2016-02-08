@@ -7,6 +7,13 @@ import com.github.jacoby6000.sql.ast._
   * Created by jacob.barber on 2/2/16.
   */
 object interpreters {
+
+  /**
+    * A terribly unprincipled sql AST to string query interpreter. Mostly just to prove to myself that this is relatively possible.
+    *
+    * @param action
+    * @return
+    */
   def interpretToString(action: DatabaseAction): String = {
     val table = action.table
 
