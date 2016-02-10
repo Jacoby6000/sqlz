@@ -25,39 +25,42 @@ object ast {
   case class SqlSubQuery(query: Select) extends SqlValue
   case class SqlInt(value: Int) extends SqlValue
   case class SqlDouble(value: Double) extends SqlValue
-  case class SqlColumn(table: Option[String], columnName: String) extends SqlValue
   case class SqlFunction(name: String, params: List[SqlValue]) extends SqlValue
 
+  sealed trait SqlProjection
+  case class SqlColumn(table: Option[String], columnName: String) extends SqlProjection with SqlValue
+  case object SqlAllColumns extends SqlProjection
+
   sealed trait SqlJoin
-  case class InnerJoin(table: String, on: SqlFilter) extends SqlJoin
-  case class FullOuterJoin(table: String, on: SqlFilter) extends SqlJoin
-  case class LeftOuterJoin(table: String, on: SqlFilter) extends SqlJoin
-  case class RightOuterJoin(table: String, on: SqlFilter) extends SqlJoin
-  case class CrossJoin(table: String, on: SqlFilter) extends SqlJoin
+  case class SqlInnerJoin(table: String, on: SqlPredicate) extends SqlJoin
+  case class SqlFullOuterJoin(table: String, on: SqlPredicate) extends SqlJoin
+  case class SqlLeftOuterJoin(table: String, on: SqlPredicate) extends SqlJoin
+  case class SqlRightOuterJoin(table: String, on: SqlPredicate) extends SqlJoin
+  case class SqlCrossJoin(table: String, on: SqlPredicate) extends SqlJoin
 
 
-  sealed trait SqlFilter
-  case class And(left: SqlFilter, right: SqlFilter) extends SqlFilter
-  case class Or(left: SqlFilter, right: SqlFilter) extends SqlFilter
-  case class Not(filter: SqlFilter) extends SqlFilter
-  case class In(column: SqlValue, values: List[SqlValue]) extends SqlFilter
-  case class Like(column: SqlValue, value: SqlValue) extends SqlFilter
-  case class Equal(column: SqlValue, value: SqlValue) extends SqlFilter
-  case class NotEqual(column: SqlValue, value: SqlValue) extends SqlFilter
-  case class LessThan(column: SqlValue, value: SqlValue) extends SqlFilter
-  case class GreaterThan(column: SqlValue, value: SqlValue) extends SqlFilter
-  case class LessThanOrEqual(column: SqlValue, value: SqlValue) extends SqlFilter
-  case class GreaterThanOrEqual(column: SqlValue, value: SqlValue) extends SqlFilter
-  case class Between(column: SqlValue, min: SqlValue, max: SqlValue) extends SqlFilter
+  sealed trait SqlPredicate
+  case class SqlAnd(left: SqlPredicate, right: SqlPredicate) extends SqlPredicate
+  case class SqlOr(left: SqlPredicate, right: SqlPredicate) extends SqlPredicate
+  case class SqlNot(filter: SqlPredicate) extends SqlPredicate
+  case class SqlIn(column: SqlValue, values: List[SqlValue]) extends SqlPredicate
+  case class SqlLike(column: SqlValue, value: SqlValue) extends SqlPredicate
+  case class SqlEqual(column: SqlValue, value: SqlValue) extends SqlPredicate
+  case class SqlNotEqual(column: SqlValue, value: SqlValue) extends SqlPredicate
+  case class SqlLessThan(column: SqlValue, value: SqlValue) extends SqlPredicate
+  case class SqlGreaterThan(column: SqlValue, value: SqlValue) extends SqlPredicate
+  case class SqlLessThanOrEqual(column: SqlValue, value: SqlValue) extends SqlPredicate
+  case class SqlGreaterThanOrEqual(column: SqlValue, value: SqlValue) extends SqlPredicate
+  case class SqlBetween(column: SqlValue, min: SqlValue, max: SqlValue) extends SqlPredicate
 
   case class UpdateValue(column: String, value: SqlValue)
 
   sealed trait SqlAction
   case class BulkInsert private (table: String, columns: List[SqlColumn], values: List[List[SqlValue]]) extends SqlAction
   case class Insert private (table: String, columns: List[SqlColumn], values: List[SqlValue]) extends SqlAction
-  case class Update(table: String, update: List[UpdateValue], where: SqlFilter) extends SqlAction
-  case class Select(table: String, columns: List[SqlColumn], joins: List[SqlJoin], where: Option[SqlFilter], groupBy: List[SqlColumn], offset: Option[Int], limit: Option[Int]) extends SqlAction
-  case class Delete(table: String, where: SqlFilter) extends SqlAction
+  case class Update(table: String, update: List[UpdateValue], where: SqlPredicate) extends SqlAction
+  case class Select(table: String, columns: List[SqlProjection], joins: List[SqlJoin], where: Option[SqlPredicate], groupBy: List[SqlColumn], offset: Option[Int], limit: Option[Int]) extends SqlAction
+  case class Delete(table: String, where: SqlPredicate) extends SqlAction
 
   // Companion objects below provide helper constructors so that everything can be constructed safely, or in similar fashions to other objects.
 
@@ -85,17 +88,17 @@ object ast {
 
 
   object Update {
-    def apply[A <: HList](table: String, hUpdate: A, where: SqlFilter)
+    def apply[A <: HList](table: String, hUpdate: A, where: SqlPredicate)
                                                  (implicit hUpdateContainOnlyUpdateValues: A ContainsOnly UpdateValue,
                                                            hUpdateToList: ToTraversable.Aux[A, List, UpdateValue]): Update = Update(table, hUpdate.toList, where)
   }
 
   object Select {
-    def apply[A <: HList, B <: HList, C <: HList](table: String, hColumns: A, hJoins: B, where: Option[SqlFilter], hGroupBy: C, offset: Option[Int], limit: Option[Int])
-                                                             (implicit hColumnsContainsOnlyStrings: A ContainsOnly SqlColumn,
+    def apply[A <: HList, B <: HList, C <: HList](table: String, hColumns: A, hJoins: B, where: Option[SqlPredicate], hGroupBy: C, offset: Option[Int], limit: Option[Int])
+                                                             (implicit hColumnsContainsOnlyStrings: A ContainsOnly SqlProjection,
                                                                        hJoinsContainsOnlySqlJoin: B ContainsOnly SqlJoin,
                                                                        hGroupByContainsOnlyString: C ContainsOnly SqlColumn,
-                                                                       hColumnsToLost: ToTraversable.Aux[A, List, SqlColumn],
+                                                                       hColumnsToLost: ToTraversable.Aux[A, List, SqlProjection],
                                                                        hJoinToList: ToTraversable.Aux[B, List, SqlJoin],
                                                                        hGroupByToList: ToTraversable.Aux[C, List, SqlColumn]): Select = Select(table, hColumns.toList, hJoins.toList, where, hGroupBy.toList, offset, limit)
   }
