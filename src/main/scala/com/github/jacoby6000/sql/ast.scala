@@ -14,7 +14,9 @@ object ast {
 
   case class DatabaseAction(database: String, run: SqlAction)
 
+  sealed trait SqlProjection
   sealed trait SqlValue
+
   case object SqlPrepared extends SqlValue
   case class SqlAdd(a: SqlValue, b: SqlValue) extends SqlValue
   case class SqlSub(a: SqlValue, b: SqlValue) extends SqlValue
@@ -25,10 +27,9 @@ object ast {
   case class SqlSubQuery(query: Select) extends SqlValue
   case class SqlInt(value: Int) extends SqlValue
   case class SqlDouble(value: Double) extends SqlValue
-  case class SqlFunction(name: String, params: List[SqlValue]) extends SqlValue
+  case class SqlFunction(name: String, params: List[SqlValue]) extends SqlValue with SqlProjection
 
-  sealed trait SqlProjection
-  case class SqlColumn(table: Option[String], columnName: String) extends SqlProjection with SqlValue
+  case class SqlColumn(table: Option[String], columnName: String, alias: Option[String]) extends SqlProjection with SqlValue
   case object SqlAllColumns extends SqlProjection
 
   sealed trait SqlJoin
