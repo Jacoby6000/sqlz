@@ -7,6 +7,7 @@ import com.github.jacoby6000.query.ast._
   */
 object interpreter {
   def interpretSql(query: Query): String = {
+    def binOpReduction[A](op: String, left: A, right: A)(f: A => String) = f(left) + " " + op + " " + f(right)
 
     def reducePath(queryPath: QueryPath): String = queryPath match {
       case QueryPathEnd(str) => str
@@ -26,23 +27,23 @@ object interpreter {
       case QueryPathCons(a,b) => reducePath(QueryPathCons(a,b))
       case QueryPathEnd(a) => reducePath(QueryPathEnd(a))
       case QueryFunction(path, args) => reducePath(path) + "(" + args.map(reduceValue).mkString(", ") + ")"
-      case QueryAdd(left, right) => reduceValue(left) + "+" + reduceValue(right)
-      case QuerySub(left, right) => reduceValue(left) + "-" + reduceValue(right)
-      case QueryDiv(left, right) => reduceValue(left) + "/" + reduceValue(right)
-      case QueryMul(left, right) => reduceValue(left) + "*" + reduceValue(right)
+      case QueryAdd(left, right) => binOpReduction("+", left, right)(reduceValue)
+      case QuerySub(left, right) => binOpReduction("-", left, right)(reduceValue)
+      case QueryDiv(left, right) => binOpReduction("/", left, right)(reduceValue)
+      case QueryMul(left, right) => binOpReduction("*", left, right)(reduceValue)
       case QueryParameter => "?"
     }
 
     def reduceComparison(value: QueryComparison): String = value match {
       case QueryLit(v) => reduceValue(v)
-      case QueryEqual(left, right) => reduceValue(left) + " = " + reduceValue(right)
-      case QueryNotEqual(left, right) => reduceValue(left) + " <> " + reduceValue(right)
-      case QueryGreaterThan(left, right) => reduceValue(left) + " > " + reduceValue(right)
-      case QueryGreaterThanOrEqual(left, right) => reduceValue(left) + " >= " + reduceValue(right)
-      case QueryLessThan(left, right) => reduceValue(left) + " < " + reduceValue(right)
-      case QueryLessThanOrEqual(left, right) => reduceValue(left) + " > " + reduceValue(right)
-      case QueryAnd(left, right) => reduceComparison(left) + " AND " + reduceComparison(right)
-      case QueryOr(left, right) => reduceComparison(left) + " OR " + reduceComparison(right)
+      case QueryEqual(left, right) => binOpReduction("=", left, right)(reduceValue)
+      case QueryNotEqual(left, right) => binOpReduction("<>", left, right)(reduceValue)
+      case QueryGreaterThan(left, right) => binOpReduction(">", left, right)(reduceValue)
+      case QueryGreaterThanOrEqual(left, right) => binOpReduction(">=", left, right)(reduceValue)
+      case QueryLessThan(left, right) => binOpReduction("<", left, right)(reduceValue)
+      case QueryLessThanOrEqual(left, right) => binOpReduction("<=", left, right)(reduceValue)
+      case QueryAnd(left, right) => binOpReduction(" AND ", left, right)(reduceComparison)
+      case QueryOr(left, right) => binOpReduction(" OR ", left, right)(reduceComparison)
       case QueryNot(v) => "!" + reduceComparison(v)
     }
 
