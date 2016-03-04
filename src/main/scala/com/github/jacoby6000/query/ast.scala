@@ -57,10 +57,8 @@ object ast {
                     sorts: List[QuerySort],
                     groupings: List[QuerySort])
 
-  case class Insert(
-                   into: QueryPath,
-                   values: List[QueryValue]
-                   )
-
-
+  case class InsertField(key: QueryPath, value: QueryValue)
+  case class Insert(collection: QueryPath, values: List[InsertField])
+  case class Update(collection: QueryPath, values: List[InsertField], where: Option[QueryComparison])
+  case class Delete(collection: QueryPath, where: QueryComparison)
 }
