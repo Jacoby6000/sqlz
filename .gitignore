@@ -1,5 +1,7 @@
 *.class
 *.log
+.idea/
+project/project/
 
 # sbt specific
 .cache
@@ -17,4 +19,4 @@ project/plugins/project/
 .worksheet
 
 
-.idea/
+*.sc
