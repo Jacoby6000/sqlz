@@ -35,7 +35,7 @@ object ast {
   case class QueryPathCons(path: String, queryPath: QueryPath) extends QueryPath with QueryValue
 
   sealed trait QueryProjection
-  case class QueryProjectOne(selection: QueryPath, alias: Option[String]) extends QueryProjection
+  case class QueryProjectOne(selection: QueryValue, alias: Option[String]) extends QueryProjection
   case object QueryProjectAll extends QueryProjection
 
   sealed trait QueryUnion

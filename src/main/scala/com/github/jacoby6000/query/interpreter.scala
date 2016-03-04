@@ -16,7 +16,7 @@ object interpreter {
 
     def reduceProjection(projection: QueryProjection): String = projection match {
       case QueryProjectAll => "*"
-      case QueryProjectOne(path, alias) => reducePath(path) + alias.map(" AS " + _).getOrElse("")
+      case QueryProjectOne(path, alias) => reduceValue(path) + alias.map(" AS " + _).getOrElse("")
     }
 
     def reduceValue(value: QueryValue): String = value match {
@@ -69,7 +69,7 @@ object interpreter {
 
     val groups =
       if(query.groupings.isEmpty) ""
-      else "GROUP BY" + query.groupings.map(reduceSort).mkString(", ")
+      else "GROUP BY " + query.groupings.map(reduceSort).mkString(", ")
 
     val table = reducePath(query.table)
 
