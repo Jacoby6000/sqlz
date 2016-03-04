@@ -14,7 +14,7 @@ resolvers += Resolver.sonatypeRepo("releases")
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.7.1")
 
 scalacOptions ++= Seq(
-  "-Yno-predef",   // no automatic import of Predef (removes irritating implicits)
+//  "-Yno-predef",   // no automatic import of Predef (removes irritating implicits)
   "-deprecation",
   "-encoding", "UTF-8",       // yes, this is 2 args
   "-feature",
@@ -28,6 +28,6 @@ scalacOptions ++= Seq(
   "-Ywarn-dead-code",        // N.B. doesn’t work well with the ??? hole
   "-Ywarn-numeric-widen",
   "-Ywarn-value-discard",
-  "-Xfuture",
-  "-Ywarn-unused-import"     // 2.11 only
+  "-Xfuture"
+//  "-Ywarn-unused-import"     // 2.11 only
 )
