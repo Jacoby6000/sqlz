@@ -29,12 +29,6 @@ interpreter.interpretSql(q)
 The sql output of this would be
 
 ```sql
-SELECT foo + 10 AS woozle, * FROM bar LEFT OUTER JOIN baz ON bar.id = baz.barId INNER JOIN biz ON biz.id = bar.bizId WHERE biz.name = "LightSaber"  AND  biz.age > 27 ORDER BY biz.age DESC GROUP BY baz.worth ASC
-```
-
-Formatted version
-
-```sql
 SELECT
     foo + 10 AS woozle,
     *
