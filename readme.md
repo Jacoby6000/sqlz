@@ -67,14 +67,14 @@ val q =
       "name",
       "age",
       "worth"
-    ) from "bar" leftOuterJoin "baz" on (
+  ) from "bar" leftOuterJoin "baz" on (
       p"bar.id" eeq p"baz.barId"
-    ) innerJoin "biz" on (
+  ) innerJoin "biz" on (
       p"biz.id" eeq p"bar.bizId"
-    ) where (
+  ) where (
       p"biz.name" eeq "LightSaber" and (
       p"biz.age" gt `?`)
-    ) orderBy p"biz.age".desc groupBy p"baz.worth".asc
+  ) orderBy p"biz.age".desc groupBy p"baz.worth".asc
 
 
 val connectionIO: scalaz.stream.Process[hi.ConnectionIO, Biz] = q.prepare(ProxyT[Biz])(5 :: 29 :: HNil)
