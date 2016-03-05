@@ -11,7 +11,8 @@ import com.github.jacoby6000.query.ast._
 import com.github.jacoby6000.query.interpreter
 import com.github.jacoby6000.query.dsl.sql._
 
-val q = select (
+val q =
+  select (
     p"foo" ++ 10 as "woozle",
     `*`
   ) from "bar" leftOuterJoin "baz" on (
