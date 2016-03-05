@@ -55,7 +55,7 @@ object sql {
   def select(projections: QueryProjection*): SelectBuilder = new SelectBuilder(projections.toList)
 
   case class SelectBuilder(projections: List[QueryProjection]) {
-    def from(path: QueryPath): QueryBuilder = QueryBuilder(Query(path, projections, List.empty, None, List.empty, List.empty))
+    def from(path: QueryProjection): QueryBuilder = QueryBuilder(Query(path, projections, List.empty, None, List.empty, List.empty))
   }
 
   case class QueryBuilder(query: Query) {
