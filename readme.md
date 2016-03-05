@@ -16,12 +16,12 @@ val q =
     p"foo" ++ 10 as "woozle",
     `*`
   ) from "bar" leftOuterJoin "baz" on (
-    p"bar.id" eeq p"baz.barId"
+    p"bar.id" === p"baz.barId"
   ) innerJoin "biz" on (
-    p"biz.id" eeq p"bar.bizId"
+    p"biz.id" === p"bar.bizId"
   ) where (
-    p"biz.name" eeq "LightSaber" and (
-    p"biz.age" gt 27)
+    p"biz.name" === "LightSaber" and
+    p"biz.age" > 27
   ) orderBy p"biz.age".desc groupBy p"baz.worth".asc
 
 interpreter.interpretSql(q.query)
@@ -65,16 +65,16 @@ case class Biz(woozle: Int, name: String, age: Int, worth: Double)
 val q =
   select (
     p"foo" ++ `?` as "woozle",
-      "name",
-      "age",
-      "worth"
+    "name",
+    "age",
+    "worth"
   ) from "bar" leftOuterJoin "baz" on (
-      p"bar.id" eeq p"baz.barId"
+    p"bar.id" === p"baz.barId"
   ) innerJoin "biz" on (
-      p"biz.id" eeq p"bar.bizId"
+    p"biz.id" === p"bar.bizId"
   ) where (
-      p"biz.name" eeq "LightSaber" and (
-      p"biz.age" gt `?`)
+    p"biz.name" === "LightSaber" and
+    p"biz.age" > `?`
   ) orderBy p"biz.age".desc groupBy p"baz.worth".asc
 
 

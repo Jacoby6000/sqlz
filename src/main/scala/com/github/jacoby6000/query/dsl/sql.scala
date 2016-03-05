@@ -62,13 +62,13 @@ object sql {
   implicit def queryValueFromableToQueryComparison[A](a: A)(implicit arg0: QueryValueFrom[A]): QueryComparison = QueryLit(arg0.toQueryValue(a))
 
   implicit class QueryValueFromExtensions[A: QueryValueFrom](a: A) {
-    def gt[B: QueryValueFrom](b: B) = QueryGreaterThan(a, b)
-    def gte[B: QueryValueFrom](b: B) = QueryGreaterThanOrEqual(a, b)
-    def lt[B: QueryValueFrom](b: B) = QueryLessThan(a, b)
-    def lte[B: QueryValueFrom](b: B) = QueryLessThanOrEqual(a, b)
+    def >[B: QueryValueFrom](b: B) = QueryGreaterThan(a, b)
+    def >=[B: QueryValueFrom](b: B) = QueryGreaterThanOrEqual(a, b)
+    def <[B: QueryValueFrom](b: B) = QueryLessThan(a, b)
+    def <=[B: QueryValueFrom](b: B) = QueryLessThanOrEqual(a, b)
 
-    def eeq[B: QueryValueFrom](b: B) = QueryEqual(a, b)
-    def neq[B: QueryValueFrom](b: B) = QueryNotEqual(a, b)
+    def ===[B: QueryValueFrom](b: B) = QueryEqual(a, b)
+    def !==[B: QueryValueFrom](b: B) = QueryNotEqual(a, b)
 
     def ++[B: QueryValueFrom](b: B) = QueryAdd(a,b)
     def --[B: QueryValueFrom](b: B) = QuerySub(a,b)

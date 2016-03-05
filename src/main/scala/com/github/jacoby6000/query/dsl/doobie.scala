@@ -11,11 +11,6 @@ import _root_.doobie.imports._
   */
 object doobie {
 
-  class ProxyT[T]
-  object ProxyT {
-    def apply[T] = new ProxyT[T]
-  }
-
   class Builder[A: Composite](query: Query) {
     def prepare[B: Composite](params: B) =
       HC.process[A](interpreter.interpretSql(query), HPS.set(params))
