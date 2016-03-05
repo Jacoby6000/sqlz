@@ -12,7 +12,7 @@ object sql {
     def apply(params: QueryValue*) = QueryFunction(f, params.toList)
   }
 
-  implicit class StringContextExtensions(c: StringContext) {
+  implicit class StringContextExtensions(val c: StringContext) extends AnyVal {
     def p(): QueryPath = {
       def go(remainingParts: List[String], queryPath: QueryPath): QueryPath = remainingParts match {
         case head :: tail => go(tail, QueryPathCons(head, queryPath))
@@ -34,11 +34,11 @@ object sql {
   implicit def pathToProjection(f: QueryPath): QueryProjection = QueryProjectOne(f, None)
   implicit def stringToPathEnd(f: String): QueryPathEnd = QueryPathEnd(f)
 
-  implicit class QueryValueExtensions(f: QueryValue) {
+  implicit class QueryValueExtensions(val f: QueryValue) extends AnyVal {
     def as(alias: String) = QueryProjectOne(f, Some(alias))
   }
 
-  implicit class QueryPathExtensions(f: QueryPath) {
+  implicit class QueryPathExtensions(val f: QueryPath) extends AnyVal  {
     def as(alias: String) = f match {
       case c: QueryPathCons => QueryProjectOne(c, Some(alias))
       case c: QueryPathEnd => QueryProjectOne(c, Some(alias))
@@ -77,7 +77,7 @@ object sql {
   implicit def queryValueFromableToQueryValue[A](a: A)(implicit arg0: QueryValueFrom[A]): QueryValue = arg0.toQueryValue(a)
   implicit def queryValueFromableToQueryComparison[A](a: A)(implicit arg0: QueryValueFrom[A]): QueryComparison = QueryLit(arg0.toQueryValue(a))
 
-  implicit class QueryValueFromExtensions[A: QueryValueFrom](a: A) {
+  implicit class QueryValueFromExtensions[A: QueryValueFrom](val a: A) {
     def >[B: QueryValueFrom](b: B) = QueryGreaterThan(a, b)
     def >=[B: QueryValueFrom](b: B) = QueryGreaterThanOrEqual(a, b)
     def <[B: QueryValueFrom](b: B) = QueryLessThan(a, b)
@@ -94,7 +94,7 @@ object sql {
 
   def !(queryComparison: QueryComparison): QueryNot = queryComparison.not
 
-  implicit class QueryComparisonExtensions(left: QueryComparison) {
+  implicit class QueryComparisonExtensions(val left: QueryComparison) extends AnyVal {
     def not: QueryNot = QueryNot(left)
     def and(right: QueryComparison) = QueryAnd(left, right)
     def or(right: QueryComparison) = QueryOr(left, right)

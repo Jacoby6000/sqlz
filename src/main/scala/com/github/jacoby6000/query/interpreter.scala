@@ -75,7 +75,7 @@ object interpreter {
       if(query.groupings.isEmpty) ""
       else "GROUP BY " + query.groupings.map(reduceSort).mkString(", ")
 
-    val table = reducePath(query.table)
+    val table = reduceProjection(query.table)
 
     s"SELECT $projections FROM $table $unions $filter $sorts $groups"
   }

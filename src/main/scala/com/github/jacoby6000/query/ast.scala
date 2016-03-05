@@ -52,7 +52,7 @@ object ast {
   case class QuerySortDesc(path: QueryPath) extends QuerySort
 
   case class Query(
-                    table: QueryPath,
+                    table: QueryProjection,
                     values: List[QueryProjection],
                     unions: List[QueryUnion],
                     filters: Option[QueryComparison],
