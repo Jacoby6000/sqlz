@@ -101,3 +101,39 @@ val populationInRun = populationIn(1000 to 10000).transact(xa).run
         Country(PAK,Pakistan,156483000,Some(61289.0))
       )*/
 ```
+
+And a more complicated example
+
+```scala
+def joined: ConnectionIO[List[ComplimentaryCountries]] =
+  (select(
+    p"c1.code",
+    p"c1.name",
+    p"c2.code",
+    p"c2.name"
+  ) from (
+    p"country" as "c1"
+  ) leftOuterJoin (
+    p"country" as "c2"
+  ) on (
+    func"reverse"(p"c1.code") === p"c2.code"
+  ) where (
+    (p"c2.code" !== `null`) and
+    (p"c2.name" !== p"c1.name")
+  )).query[ComplimentaryCountries]
+    .prepare
+    .list
+
+val joinResult = joined.transact(xa).run
+    /*List(
+        ComplimentaryCountries(PSE,Palestine,ESP,Spain),
+        ComplimentaryCountries(YUG,Yugoslavia,GUY,Guyana),
+        ComplimentaryCountries(ESP,Spain,PSE,Palestine),
+        ComplimentaryCountries(SUR,Suriname,RUS,Russian Federation),
+        ComplimentaryCountries(RUS,Russian Federation,SUR,Suriname),
+        ComplimentaryCountries(VUT,Vanuatu,TUV,Tuvalu),
+        ComplimentaryCountries(TUV,Tuvalu,VUT,Vanuatu),
+        ComplimentaryCountries(GUY,Guyana,YUG,Yugoslavia)
+    )*/
+
+```
