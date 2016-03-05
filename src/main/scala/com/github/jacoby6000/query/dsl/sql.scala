@@ -19,6 +19,10 @@ object sql {
       val parts = c.parts.mkString.split('.').toList.reverse
       go(parts.tail, QueryPathEnd(parts.head))
     }
+
+    def expr(args: String*): QueryRawExpression[String] = {
+      QueryRawExpression(c.standardInterpolator(identity,args))
+    }
   }
 
   implicit def stringToProjection(f: String): QueryProjectOne = QueryProjectOne(f, None)

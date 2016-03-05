@@ -7,6 +7,7 @@ package com.github.jacoby6000.query
 object ast {
 
   sealed trait QueryValue
+  case class QueryRawExpression[T](t: T) extends QueryValue
   case class QueryString(value: String) extends QueryValue
   case class QueryInt(value: Int) extends QueryValue
   case class QueryDouble(value: Double) extends QueryValue
