@@ -8,6 +8,9 @@ import shapeless.HList
   */
 object sql {
 
+  case class SqlQueryFunctionBuilder(f: QueryPath) {
+    def apply(params: QueryValue*) = QueryFunction(f, params.toList)
+  }
 
   implicit class StringContextExtensions(c: StringContext) {
     def p(): QueryPath = {
@@ -23,6 +26,8 @@ object sql {
     def expr(args: String*): QueryRawExpression[String] = {
       QueryRawExpression(c.standardInterpolator(identity,args))
     }
+
+    def func(): SqlQueryFunctionBuilder = SqlQueryFunctionBuilder(p())
   }
 
   implicit def stringToProjection(f: String): QueryProjectOne = QueryProjectOne(f, None)
@@ -34,12 +39,18 @@ object sql {
   }
 
   implicit class QueryPathExtensions(f: QueryPath) {
+    def as(alias: String) = f match {
+      case c: QueryPathCons => QueryProjectOne(c, Some(alias))
+      case c: QueryPathEnd => QueryProjectOne(c, Some(alias))
+    }
+
     def asc: QuerySortAsc = QuerySortAsc(f)
     def desc: QuerySortDesc = QuerySortDesc(f)
   }
 
   val `*` = QueryProjectAll
   val `?` = QueryParameter
+  val `null` = QueryNull
 
   def select(projections: QueryProjection*): SelectBuilder = new SelectBuilder(projections.toList)
 
@@ -48,11 +59,11 @@ object sql {
   }
 
   case class QueryBuilder(query: Query) {
-    def leftOuterJoin(table: QueryPath): JoinBuilder = new JoinBuilder(query, QueryLeftOuterJoin(table, _))
-    def rightOuterJoin(table: QueryPath): JoinBuilder = new JoinBuilder(query, QueryRightOuterJoin(table, _))
-    def innerJoin(table: QueryPath): JoinBuilder = new JoinBuilder(query, QueryInnerJoin(table, _))
-    def fullOuterJoin(table: QueryPath): JoinBuilder = new JoinBuilder(query, QueryFullOuterJoin(table, _))
-    def crossJoin(table: QueryPath): JoinBuilder = new JoinBuilder(query, QueryCrossJoin(table, _))
+    def leftOuterJoin(table: QueryProjectOne): JoinBuilder = new JoinBuilder(query, QueryLeftOuterJoin(table, _))
+    def rightOuterJoin(table: QueryProjectOne): JoinBuilder = new JoinBuilder(query, QueryRightOuterJoin(table, _))
+    def innerJoin(table: QueryProjectOne): JoinBuilder = new JoinBuilder(query, QueryInnerJoin(table, _))
+    def fullOuterJoin(table: QueryProjectOne): JoinBuilder = new JoinBuilder(query, QueryFullOuterJoin(table, _))
+    def crossJoin(table: QueryProjectOne): JoinBuilder = new JoinBuilder(query, QueryCrossJoin(table, _))
 
     def where(comparison: QueryComparison): QueryBuilder = QueryBuilder(query.copy(filters = Some(comparison)))
     def orderBy(sorts: QuerySort*): QueryBuilder = QueryBuilder(query.copy(sorts = sorts.toList))
@@ -112,4 +123,5 @@ object sql {
   }
   implicit val queryPathCons = QueryValueFrom[QueryPathCons](identity)
   implicit val queryPathEnd = QueryValueFrom[QueryPathEnd](identity)
+  implicit val queryFunction = QueryValueFrom[QueryFunction](identity)
 }

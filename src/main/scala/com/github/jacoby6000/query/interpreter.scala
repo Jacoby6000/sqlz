@@ -52,11 +52,11 @@ object interpreter {
     }
 
     def reduceUnion(union: QueryUnion): String = union match {
-      case QueryLeftOuterJoin(path, logic) => "LEFT OUTER JOIN " + reducePath(path) + " ON " + reduceComparison(logic)
-      case QueryRightOuterJoin(path, logic) => "RIGHT OUTER JOIN " + reducePath(path) + " ON " + reduceComparison(logic)
-      case QueryCrossJoin(path, logic) => "CROSS JOIN " + reducePath(path) + " ON " + reduceComparison(logic)
-      case QueryFullOuterJoin(path, logic) => "FULL OUTER JOIN " + reducePath(path) + " ON " + reduceComparison(logic)
-      case QueryInnerJoin(path, logic) => "INNER JOIN " + reducePath(path) + " ON " + reduceComparison(logic)
+      case QueryLeftOuterJoin(path, logic) => "LEFT OUTER JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
+      case QueryRightOuterJoin(path, logic) => "RIGHT OUTER JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
+      case QueryCrossJoin(path, logic) => "CROSS JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
+      case QueryFullOuterJoin(path, logic) => "FULL OUTER JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
+      case QueryInnerJoin(path, logic) => "INNER JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
     }
 
     def reduceSort(sort: QuerySort): String = sort match {

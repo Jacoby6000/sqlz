@@ -41,11 +41,11 @@ object ast {
   case object QueryProjectAll extends QueryProjection
 
   sealed trait QueryUnion
-  case class QueryInnerJoin(table: QueryPath, on: QueryComparison) extends QueryUnion
-  case class QueryFullOuterJoin(table: QueryPath, on: QueryComparison) extends QueryUnion
-  case class QueryLeftOuterJoin(table: QueryPath, on: QueryComparison) extends QueryUnion
-  case class QueryRightOuterJoin(table: QueryPath, on: QueryComparison) extends QueryUnion
-  case class QueryCrossJoin(table: QueryPath, on: QueryComparison) extends QueryUnion
+  case class QueryInnerJoin(table: QueryProjectOne, on: QueryComparison) extends QueryUnion
+  case class QueryFullOuterJoin(table: QueryProjectOne, on: QueryComparison) extends QueryUnion
+  case class QueryLeftOuterJoin(table: QueryProjectOne, on: QueryComparison) extends QueryUnion
+  case class QueryRightOuterJoin(table: QueryProjectOne, on: QueryComparison) extends QueryUnion
+  case class QueryCrossJoin(table: QueryProjectOne, on: QueryComparison) extends QueryUnion
 
   sealed trait QuerySort
   case class QuerySortAsc(path: QueryPath) extends QuerySort
