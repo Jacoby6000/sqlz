@@ -77,7 +77,7 @@ def biggerThan(n: Int) =
     .prepare(n)
     .list
 
-val biggerThanRun = biggerThan(150000000).quick.run
+val biggerThanRun = biggerThan(150000000).transact(xa).run
     /*List(
         Country(BRA,Brazil,170115000,Some(776739.0))
         Country(IDN,Indonesia,212107000,Some(84982.0))
