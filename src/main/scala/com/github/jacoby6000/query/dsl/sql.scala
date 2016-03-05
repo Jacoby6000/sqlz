@@ -26,6 +26,7 @@ object sql {
   }
 
   implicit def stringToProjection(f: String): QueryProjectOne = QueryProjectOne(f, None)
+  implicit def pathToProjection(f: QueryPath): QueryProjection = QueryProjectOne(f, None)
   implicit def stringToPathEnd(f: String): QueryPathEnd = QueryPathEnd(f)
 
   implicit class QueryValueExtensions(f: QueryValue) {
