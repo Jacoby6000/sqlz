@@ -85,7 +85,7 @@ val biggerThanRun = biggerThan(150000000).quick.run
         Country(CHN,China,1277558000,Some(982268.0))
         Country(PAK,Pakistan,156483000,Some(61289.0))
         Country(USA,United States,278357000,Some(8510700.0))
-    /*)
+      )*/
 
 def populationIn(r: Range) =
   (baseQuery where (
@@ -99,5 +99,5 @@ val populationInRun = populationIn(1000 to 10000).transact(xa).run
     /*List(
         Country(BRA,Brazil,170115000,Some(776739.0)),
         Country(PAK,Pakistan,156483000,Some(61289.0))
-    /*)
+      )*/
 ```
