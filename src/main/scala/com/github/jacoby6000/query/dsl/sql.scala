@@ -65,9 +65,9 @@ object sql {
     def fullOuterJoin(table: QueryProjectOne): JoinBuilder = new JoinBuilder(query, QueryFullOuterJoin(table, _))
     def crossJoin(table: QueryProjectOne): JoinBuilder = new JoinBuilder(query, QueryCrossJoin(table, _))
 
-    def where(comparison: QueryComparison): QueryBuilder = QueryBuilder(query.copy(filters = Some(comparison)))
-    def orderBy(sorts: QuerySort*): QueryBuilder = QueryBuilder(query.copy(sorts = sorts.toList))
-    def groupBy(groups: QuerySort*): QueryBuilder = QueryBuilder(query.copy(groupings = groups.toList))
+    def where(comparison: QueryComparison): QueryBuilder = QueryBuilder(query.copy(filters = query.filters.map(_ and comparison) orElse Some(comparison)))
+    def orderBy(sorts: QuerySort*): QueryBuilder = QueryBuilder(query.copy(sorts = query.sorts ::: sorts.toList))
+    def groupBy(groups: QuerySort*): QueryBuilder = QueryBuilder(query.copy(groupings = query.groupings ::: groups.toList))
   }
 
   case class JoinBuilder(query: Query, building: QueryComparison => QueryUnion) {
