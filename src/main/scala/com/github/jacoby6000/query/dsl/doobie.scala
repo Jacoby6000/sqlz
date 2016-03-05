@@ -6,7 +6,6 @@ import shapeless.{HNil, HList}
 import _root_.doobie.hi
 import _root_.doobie.imports._
 import _root_.doobie.syntax.string._
-import scalaz.concurrent._
 
 /**
   * Created by jacob.barber on 3/4/16.
@@ -14,11 +13,11 @@ import scalaz.concurrent._
 object doobie {
 
   class Builder[A: Composite](query: Query) {
-    def prepare[B: Composite](params: B) =
+    def prepare[B: Composite](params: B): scalaz.stream.Process[ConnectionIO, A] =
       HC.process[A](interpreter.interpretSql(query), HPS.set(params))
 
-    def prepare =
-      new SqlInterpolator(new StringContext(interpreter.interpretSql(query))).sql.apply().query[A]
+    def prepare: scalaz.stream.Process[ConnectionIO, A] =
+      new SqlInterpolator(new StringContext(interpreter.interpretSql(query))).sql.apply().query[A].process
   }
 
   implicit class QueryExtensions(query: Query) {
