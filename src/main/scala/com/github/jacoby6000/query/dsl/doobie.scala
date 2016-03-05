@@ -16,9 +16,13 @@ object doobie {
     def apply[T] = new ProxyT[T]
   }
 
+  class Builder[A: Composite](query: Query) {
+    def prepare[B: Composite](params: B) =
+      HC.process[A](interpreter.interpretSql(query), HPS.set(params))
+  }
+
   implicit class QueryExtensions(query: Query) {
-    def prepare[A <: HList : Composite, B: Composite](outType: ProxyT[B])(params: A): scalaz.stream.Process[hi.ConnectionIO, B] =
-      HC.process[B](interpreter.interpretSql(query), HPS.set(params))
+    def apply[A: Composite] = new Builder[A](query)
   }
 
 }

@@ -24,7 +24,7 @@ val q =
     p"biz.age" gt 27)
   ) orderBy p"biz.age".desc groupBy p"baz.worth".asc
 
-interpreter.interpretSql(q)
+interpreter.interpretSql(q.query)
 ```
 
 The sql output of this would be
@@ -78,7 +78,7 @@ val q =
   ) orderBy p"biz.age".desc groupBy p"baz.worth".asc
 
 
-val connectionIO: scalaz.stream.Process[hi.ConnectionIO, Biz] = q.prepare(ProxyT[Biz])(5 :: 29 :: HNil)
+val connectionIO: scalaz.stream.Process[hi.ConnectionIO, Biz] = q.query[Biz].prepare(5 :: 29 :: HNil)
 ```
 
 I don't particularly like the ProxyT solution, but I'm not sure how else to approach this.

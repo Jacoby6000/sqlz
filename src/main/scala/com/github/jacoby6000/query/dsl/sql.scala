@@ -39,23 +39,23 @@ object sql {
   def select(projections: QueryProjection*): SelectBuilder = new SelectBuilder(projections.toList)
 
   case class SelectBuilder(projections: List[QueryProjection]) {
-    def from(path: QueryPath): Query = Query(path, projections, List.empty, None, List.empty, List.empty)
+    def from(path: QueryPath): QueryBuilder = QueryBuilder(Query(path, projections, List.empty, None, List.empty, List.empty))
   }
 
-  implicit class QueryExtensions(query: Query) {
+  case class QueryBuilder(query: Query) {
     def leftOuterJoin(table: QueryPath): JoinBuilder = new JoinBuilder(query, QueryLeftOuterJoin(table, _))
     def rightOuterJoin(table: QueryPath): JoinBuilder = new JoinBuilder(query, QueryRightOuterJoin(table, _))
     def innerJoin(table: QueryPath): JoinBuilder = new JoinBuilder(query, QueryInnerJoin(table, _))
     def fullOuterJoin(table: QueryPath): JoinBuilder = new JoinBuilder(query, QueryFullOuterJoin(table, _))
     def crossJoin(table: QueryPath): JoinBuilder = new JoinBuilder(query, QueryCrossJoin(table, _))
 
-    def where(comparison: QueryComparison): Query = query.copy(filters = Some(comparison))
-    def orderBy(sorts: QuerySort*): Query = query.copy(sorts = sorts.toList)
-    def groupBy(groups: QuerySort*): Query = query.copy(groupings = groups.toList)
+    def where(comparison: QueryComparison): QueryBuilder = QueryBuilder(query.copy(filters = Some(comparison)))
+    def orderBy(sorts: QuerySort*): QueryBuilder = QueryBuilder(query.copy(sorts = sorts.toList))
+    def groupBy(groups: QuerySort*): QueryBuilder = QueryBuilder(query.copy(groupings = groups.toList))
   }
 
   case class JoinBuilder(query: Query, building: QueryComparison => QueryUnion) {
-    def on(comp: QueryComparison): Query = query.copy(unions = query.unions ::: List(building(comp)))
+    def on(comp: QueryComparison): QueryBuilder = QueryBuilder(query.copy(unions = query.unions ::: List(building(comp))))
   }
 
   implicit def queryValueFromableToQueryValue[A](a: A)(implicit arg0: QueryValueFrom[A]): QueryValue = arg0.toQueryValue(a)
