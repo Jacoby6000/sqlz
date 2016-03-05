@@ -1,11 +1,13 @@
 package com.github.jacoby6000.query.dsl
 
 import com.github.jacoby6000.query.ast._
+import shapeless.HList
 
 /**
   * Created by jacob.barber on 3/4/16.
   */
 object sql {
+
 
   implicit class StringContextExtensions(c: StringContext) {
     def p(): QueryPath = {
@@ -35,7 +37,6 @@ object sql {
   val `?` = QueryParameter
 
   def select(projections: QueryProjection*): SelectBuilder = new SelectBuilder(projections.toList)
-
 
   case class SelectBuilder(projections: List[QueryProjection]) {
     def from(path: QueryPath): Query = Query(path, projections, List.empty, None, List.empty, List.empty)
@@ -94,6 +95,7 @@ object sql {
       }
   }
 
+  implicit val queryParam = QueryValueFrom[QueryParameter.type](identity)
   implicit val queryStringValue = QueryValueFrom[String](QueryString)
   implicit val queryBooleanValue = QueryValueFrom[Boolean](QueryBoolean)
   implicit val queryIntValue = QueryValueFrom[Int](QueryInt)
