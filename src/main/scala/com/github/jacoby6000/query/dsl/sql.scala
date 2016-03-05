@@ -96,6 +96,7 @@ object sql {
   }
 
   implicit val queryParam = QueryValueFrom[QueryParameter.type](identity)
+  implicit val queryNull = QueryValueFrom[QueryNull.type](identity)
   implicit val queryStringValue = QueryValueFrom[String](QueryString)
   implicit val queryBooleanValue = QueryValueFrom[Boolean](QueryBoolean)
   implicit val queryIntValue = QueryValueFrom[Int](QueryInt)

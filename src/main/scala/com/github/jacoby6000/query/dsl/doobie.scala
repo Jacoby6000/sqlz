@@ -17,7 +17,7 @@ object doobie {
   }
 
   implicit class QueryExtensions(query: Query) {
-    def prepare[A <: HList : Composite, B](outType: ProxyT[B])(params: A): scalaz.stream.Process[hi.ConnectionIO, B] =
+    def prepare[A <: HList : Composite, B: Composite](outType: ProxyT[B])(params: A): scalaz.stream.Process[hi.ConnectionIO, B] =
       HC.process[B](interpreter.interpretSql(query), HPS.set(params))
   }
 

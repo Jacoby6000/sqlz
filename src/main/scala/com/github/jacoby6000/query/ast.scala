@@ -17,6 +17,7 @@ object ast {
   case class QueryDiv(left: QueryValue, right: QueryValue) extends QueryValue
   case class QueryMul(left: QueryValue, right: QueryValue) extends QueryValue
   case object QueryParameter extends QueryValue
+  case object QueryNull extends QueryValue
 
   sealed trait QueryComparison
   case class QueryEqual(left: QueryValue, right: QueryValue) extends QueryComparison

@@ -32,11 +32,14 @@ object interpreter {
       case QueryDiv(left, right) => binOpReduction("/", left, right)(reduceValue)
       case QueryMul(left, right) => binOpReduction("*", left, right)(reduceValue)
       case QueryParameter => "?"
+      case QueryNull => "NULL"
     }
 
     def reduceComparison(value: QueryComparison): String = value match {
       case QueryLit(v) => reduceValue(v)
+      case QueryEqual(left, QueryNull) => reduceValue(left) + " IS NULL"
       case QueryEqual(left, right) => binOpReduction("=", left, right)(reduceValue)
+      case QueryNotEqual(left, QueryNull) => reduceValue(left) + " IS NOT NULL"
       case QueryNotEqual(left, right) => binOpReduction("<>", left, right)(reduceValue)
       case QueryGreaterThan(left, right) => binOpReduction(">", left, right)(reduceValue)
       case QueryGreaterThanOrEqual(left, right) => binOpReduction(">=", left, right)(reduceValue)
