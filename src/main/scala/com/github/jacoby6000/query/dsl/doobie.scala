@@ -29,11 +29,11 @@ object doobie {
   }
 
 
-  implicit class DoobieQueryExtensions(query: QuerySelect) {
+  implicit class DoobieQueryExtensions(val query: QuerySelect) extends AnyVal {
     def apply[A: Composite] = new DoobieQueryBuilder[A](query)
   }
 
-  implicit class DoobieInsertExtensions(query: QueryInsert) {
+  implicit class DoobieInsertExtensions(val query: QueryInsert) extends AnyVal {
     def apply[A: Composite] = new DoobieInsertBuilder[A](query)
   }
 
