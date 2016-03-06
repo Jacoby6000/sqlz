@@ -3,6 +3,8 @@
 The goal of this project is to have a relatively lightweight and simple querying AST, that can be built a variety of ways.
 As it stands now, this lib is less than 500 SLOC, and when I properly segregate modules, I expect to see only 1 dependency per module.
 
+PS: I *really* don't like the name of the project, /please/ suggest something better.
+
 ### Building the AST
 
 The current DSL available for building the AST is based on SQL, but you can conceivably make something resembling scala collections with a little bit of work.
