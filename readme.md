@@ -7,7 +7,7 @@ This project is still under relatively heavy development. I expect much to chang
 
 Please check the issues section and lend a hand if you can!
 
-PS: I *really* don't like the name of the project, _please_ suggest something better.
+PS: I **really** don't like the name of the project, *please* suggest something better.
 
 ### Building the AST
 
@@ -15,9 +15,9 @@ The current DSL available for building the AST is based on SQL, but you can conc
 
 ### Using the AST
 
-Currently, there is an interpreter than can take the AST and build it in to SQL queries. There is also a small doobie piece that takes the interpreted AST and converts it directly in to doobie ConnectionIO.
+Currently, there is an interpreter than can take the AST and build it in to SQL queries. There is also a small doobie piece that takes the interpreted AST and converts it directly in to Doobie ConnectionIO.
 This is not the only possible use case.
-You can build an interpreter that could build slick queries, spark queries, BSON queries, raw hadoop queries, and maybe even a way to query an in-memory scala collection. Not sure about that one, thoguh
+You can build an interpreter that could build slick queries, spark queries, BSON queries, raw hadoop queries, and maybe even a way to query an in-memory scala collection. Not sure about that one, though
 
 # Scala Query AST
 
