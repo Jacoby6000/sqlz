@@ -7,7 +7,7 @@ This project is still under relatively heavy development. I expect much to chang
 
 Please check the issues section and lend a hand if you can!
 
-PS: I *really* don't like the name of the project, /please/ suggest something better.
+PS: I *really* don't like the name of the project, _please_ suggest something better.
 
 ### Building the AST
 
