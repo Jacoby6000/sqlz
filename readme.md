@@ -5,14 +5,13 @@ As it stands now, this lib is less than 500 SLOC, and when I properly segregate 
 
 ### Building the AST
 
-The current DSL available for building the AST is based on SQL, but you can concievably make something resembling scala collections
-with a little bit of work.
+The current DSL available for building the AST is based on SQL, but you can conceivably make something resembling scala collections with a little bit of work.
 
 ### Using the AST
 
 Currently, there is an interpreter than can take the AST and build it in to SQL queries. There is also a small doobie piece that takes the interpreted AST and converts it directly in to doobie ConnectionIO.
 This is not the only possible use case.
-You can build an interpreter that could build spark queries, BSON queries, raw hadoop queries, and maybe even a way to query an in-memory scala collection. Not sure about that one, thoguh
+You can build an interpreter that could build slick queries, spark queries, BSON queries, raw hadoop queries, and maybe even a way to query an in-memory scala collection. Not sure about that one, thoguh
 
 # Scala Query AST
 
