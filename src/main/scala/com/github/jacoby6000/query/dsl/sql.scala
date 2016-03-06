@@ -8,12 +8,33 @@ import shapeless.HList
   */
 object sql {
 
+  // Delete DSL helpers
+  def deleteFrom(table: QueryPath): DeleteBuilder = DeleteBuilder(table)
+
+  case class DeleteBuilder(table: QueryPath) {
+    def where(queryComparison: QueryComparison) = Delete(table, queryComparison)
+  }
+
+  // Update DSL helpers
+  def update(table: QueryPath): UpdateBuilder = UpdateBuilder(Update(table, List.empty, None))
+
+  case class UpdateBuilder(update: Update) {
+    def set(modifyFields: ModifyField*): UpdateBuilder = UpdateBuilder(update.copy(values = update.values ::: modifyFields.toList))
+    def where(where: QueryComparison): Update = Update(update.collection, update.values, Some(where))
+  }
+
+  implicit class QueryPathUpdateExtensions(val queryPath: QueryPath) extends AnyVal {
+    def ==>(value: QueryValue): ModifyField = ModifyField(queryPath, value)
+  }
+
+  // Insert DSL helpers
   def insertInto(table: QueryPath)(columns: QueryPath*): InsertBuilder = InsertBuilder(table, columns.toList)
 
   case class InsertBuilder(table: QueryPath, columns: List[QueryPath]) {
-    def values(values: QueryValue*): Insert = Insert(table, (columns zip values) map (kv => InsertField(kv._1, kv._2)))
+    def values(values: QueryValue*): Insert = Insert(table, (columns zip values) map (kv => ModifyField(kv._1, kv._2)))
   }
 
+  // Select/Query DSL helpers
   case class SqlQueryFunctionBuilder(f: QueryPath) {
     def apply(params: QueryValue*) = QueryFunction(f, params.toList)
   }

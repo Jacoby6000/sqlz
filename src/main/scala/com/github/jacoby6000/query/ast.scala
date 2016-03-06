@@ -61,8 +61,8 @@ object ast {
                     sorts: List[QuerySort],
                     groupings: List[QuerySort]) extends Expression
 
-  case class InsertField(key: QueryPath, value: QueryValue)
-  case class Insert(collection: QueryPath, values: List[InsertField]) extends Expression
-  case class Update(collection: QueryPath, values: List[InsertField], where: Option[QueryComparison]) extends Expression
+  case class ModifyField(key: QueryPath, value: QueryValue)
+  case class Insert(collection: QueryPath, values: List[ModifyField]) extends Expression
+  case class Update(collection: QueryPath, values: List[ModifyField], where: Option[QueryComparison]) extends Expression
   case class Delete(collection: QueryPath, where: QueryComparison) extends Expression
 }

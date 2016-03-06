@@ -64,7 +64,7 @@ object interpreter {
       case QuerySortDesc(path) => reducePath(path) + " DESC"
     }
 
-    def reduceInsertValues(insertValue: InsertField): (String, String) =
+    def reduceInsertValues(insertValue: ModifyField): (String, String) =
       reducePath(insertValue.key) -> reduceValue(insertValue.value)
 
     expr match {
