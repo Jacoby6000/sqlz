@@ -12,15 +12,15 @@ object sql {
   def deleteFrom(table: QueryPath): DeleteBuilder = DeleteBuilder(table)
 
   case class DeleteBuilder(table: QueryPath) {
-    def where(queryComparison: QueryComparison) = Delete(table, queryComparison)
+    def where(queryComparison: QueryComparison) = QueryDelete(table, queryComparison)
   }
 
   // Update DSL helpers
-  def update(table: QueryPath): UpdateBuilder = UpdateBuilder(Update(table, List.empty, None))
+  def update(table: QueryPath): UpdateBuilder = UpdateBuilder(QueryUpdate(table, List.empty, None))
 
-  case class UpdateBuilder(update: Update) {
+  case class UpdateBuilder(update: QueryUpdate) {
     def set(modifyFields: ModifyField*): UpdateBuilder = UpdateBuilder(update.copy(values = update.values ::: modifyFields.toList))
-    def where(where: QueryComparison): Update = Update(update.collection, update.values, Some(where))
+    def where(where: QueryComparison): QueryUpdate = QueryUpdate(update.collection, update.values, Some(where))
   }
 
   implicit class QueryPathUpdateExtensions(val queryPath: QueryPath) extends AnyVal {
@@ -31,7 +31,7 @@ object sql {
   def insertInto(table: QueryPath)(columns: QueryPath*): InsertBuilder = InsertBuilder(table, columns.toList)
 
   case class InsertBuilder(table: QueryPath, columns: List[QueryPath]) {
-    def values(values: QueryValue*): Insert = Insert(table, (columns zip values) map (kv => ModifyField(kv._1, kv._2)))
+    def values(values: QueryValue*): QueryInsert = QueryInsert(table, (columns zip values) map (kv => ModifyField(kv._1, kv._2)))
   }
 
   // Select/Query DSL helpers
@@ -57,7 +57,6 @@ object sql {
     def func(): SqlQueryFunctionBuilder = SqlQueryFunctionBuilder(p())
   }
 
-  implicit def pathToProjection(f: QueryPath): QueryProjection = QueryProjectOne(f, None)
 
   implicit class QueryValueExtensions(val f: QueryValue) extends AnyVal {
     def as(alias: String) = QueryProjectOne(f, Some(alias))
@@ -80,10 +79,10 @@ object sql {
   def select(projections: QueryProjection*): SelectBuilder = new SelectBuilder(projections.toList)
 
   case class SelectBuilder(projections: List[QueryProjection]) {
-    def from(path: QueryProjection): QueryBuilder = QueryBuilder(Query(path, projections, List.empty, None, List.empty, List.empty))
+    def from(path: QueryProjection): QueryBuilder = QueryBuilder(QuerySelect(path, projections, List.empty, None, List.empty, List.empty))
   }
 
-  case class QueryBuilder(query: Query) {
+  case class QueryBuilder(query: QuerySelect) {
     def leftOuterJoin(table: QueryProjectOne): JoinBuilder = new JoinBuilder(query, QueryLeftOuterJoin(table, _))
     def rightOuterJoin(table: QueryProjectOne): JoinBuilder = new JoinBuilder(query, QueryRightOuterJoin(table, _))
     def innerJoin(table: QueryProjectOne): JoinBuilder = new JoinBuilder(query, QueryInnerJoin(table, _))
@@ -95,7 +94,7 @@ object sql {
     def groupBy(groups: QuerySort*): QueryBuilder = QueryBuilder(query.copy(groupings = query.groupings ::: groups.toList))
   }
 
-  case class JoinBuilder(query: Query, building: QueryComparison => QueryUnion) {
+  case class JoinBuilder(query: QuerySelect, building: QueryComparison => QueryUnion) {
     def on(comp: QueryComparison): QueryBuilder = QueryBuilder(query.copy(unions = query.unions ::: List(building(comp))))
   }
 
@@ -149,4 +148,7 @@ object sql {
   implicit val queryPathEnd = QueryValueFrom[QueryPathEnd](identity)
   implicit val queryStringValue = QueryValueFrom[String](QueryString)
   implicit val queryFunction = QueryValueFrom[QueryFunction](identity)
+
+  implicit def pathToProjection(f: QueryPath): QueryProjection = QueryProjectOne(f, None)
+
 }

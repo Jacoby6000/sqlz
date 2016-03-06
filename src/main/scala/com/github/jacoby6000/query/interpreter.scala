@@ -68,7 +68,7 @@ object interpreter {
       reducePath(insertValue.key) -> reduceValue(insertValue.value)
 
     expr match {
-      case Query(table, values, unions, filters, sorts, groups) =>
+      case QuerySelect(table, values, unions, filters, sorts, groups) =>
         val sqlProjections = values.map(reduceProjection).mkString(", ")
         val sqlFilter = filters.map("WHERE " + reduceComparison(_)).getOrElse("")
         val sqlUnions = unions.map(reduceUnion).mkString(" ")
@@ -84,7 +84,7 @@ object interpreter {
 
         s"SELECT $sqlProjections FROM $sqlTable $sqlUnions $sqlFilter $sqlSorts $sqlGroups"
 
-      case Insert(table, values) =>
+      case QueryInsert(table, values) =>
         val sqlTable = reducePath(table)
         val mappedSqlValuesKV = values.map(reduceInsertValues)
         val sqlColumns = mappedSqlValuesKV.map(_._1).mkString(", ")
@@ -92,14 +92,14 @@ object interpreter {
 
         s"INSERT INTO $sqlTable ($sqlColumns) VALUES ($sqlValues)"
 
-      case Update(table, values, where) =>
+      case QueryUpdate(table, values, where) =>
         val sqlTable = reducePath(table)
         val mappedSqlValuesKV = values.map(reduceInsertValues).map(kv => kv._1 + "=" + kv._2).mkString(", ")
         val sqlWhere = where.map("WHERE " + reduceComparison(_)).getOrElse("")
 
         s"UPDATE $sqlTable SET $mappedSqlValuesKV $sqlWhere"
 
-      case Delete(table, where) =>
+      case QueryDelete(table, where) =>
         val sqlTable = reducePath(table)
         val sqlWhere = reduceComparison(where)
 

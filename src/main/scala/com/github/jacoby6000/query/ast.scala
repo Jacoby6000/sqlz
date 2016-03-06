@@ -53,7 +53,7 @@ object ast {
 
   sealed trait Expression
 
-  case class Query(
+  case class QuerySelect(
                     table: QueryProjection,
                     values: List[QueryProjection],
                     unions: List[QueryUnion],
@@ -62,7 +62,7 @@ object ast {
                     groupings: List[QuerySort]) extends Expression
 
   case class ModifyField(key: QueryPath, value: QueryValue)
-  case class Insert(collection: QueryPath, values: List[ModifyField]) extends Expression
-  case class Update(collection: QueryPath, values: List[ModifyField], where: Option[QueryComparison]) extends Expression
-  case class Delete(collection: QueryPath, where: QueryComparison) extends Expression
+  case class QueryInsert(collection: QueryPath, values: List[ModifyField]) extends Expression
+  case class QueryUpdate(collection: QueryPath, values: List[ModifyField], where: Option[QueryComparison]) extends Expression
+  case class QueryDelete(collection: QueryPath, where: QueryComparison) extends Expression
 }
