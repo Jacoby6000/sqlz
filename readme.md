@@ -3,6 +3,10 @@
 The goal of this project is to have a relatively lightweight and simple querying AST, that can be built a variety of ways.
 As it stands now, this lib is less than 500 SLOC, and when I properly segregate modules, I expect to see only 1 dependency per module.
 
+This project is still under relatively heavy development. I expect much to change, as there is much that could probably be improved.
+
+Please check the issues section and lend a hand if you can!
+
 PS: I *really* don't like the name of the project, /please/ suggest something better.
 
 ### Building the AST
