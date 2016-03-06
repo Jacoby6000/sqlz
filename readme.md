@@ -1,6 +1,6 @@
 ## Foreword
 
-The goal of this project is to have a relatively lightweight and simple querying AST, that can be built a variety of ways.
+The goal of this project is to have a relatively lightweight and simple intermediate format for queries, that can be built a variety of ways.
 As it stands now, this lib is less than 500 SLOC, and when I properly segregate modules, I expect to see only 1 dependency per module.
 
 This project is still under relatively heavy development. I expect much to change, as there is much that could probably be improved.
