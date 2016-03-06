@@ -69,7 +69,12 @@ val xa = DriverManagerTransactor[Task](
 )
 
 val baseQuery =
-  select("code", "name", "population", "gnp") from p"country"
+  select(
+    p"code",
+    p"name",
+    p"population",
+    p"gnp"
+  ) from p"country"
 
 def biggerThan(n: Int) =
   (baseQuery where p"population" > `?`)

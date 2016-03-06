@@ -8,6 +8,12 @@ import shapeless.HList
   */
 object sql {
 
+  def insertInto(table: QueryPath)(columns: QueryPath*): InsertBuilder = InsertBuilder(table, columns.toList)
+
+  case class InsertBuilder(table: QueryPath, columns: List[QueryPath]) {
+    def values(values: QueryValue*): Insert = Insert(table, (columns zip values) map (kv => InsertField(kv._1, kv._2)))
+  }
+
   case class SqlQueryFunctionBuilder(f: QueryPath) {
     def apply(params: QueryValue*) = QueryFunction(f, params.toList)
   }
@@ -30,9 +36,7 @@ object sql {
     def func(): SqlQueryFunctionBuilder = SqlQueryFunctionBuilder(p())
   }
 
-  implicit def stringToProjection(f: String): QueryProjectOne = QueryProjectOne(f, None)
   implicit def pathToProjection(f: QueryPath): QueryProjection = QueryProjectOne(f, None)
-  implicit def stringToPathEnd(f: String): QueryPathEnd = QueryPathEnd(f)
 
   implicit class QueryValueExtensions(val f: QueryValue) extends AnyVal {
     def as(alias: String) = QueryProjectOne(f, Some(alias))
@@ -113,7 +117,6 @@ object sql {
 
   implicit val queryParam = QueryValueFrom[QueryParameter.type](identity)
   implicit val queryNull = QueryValueFrom[QueryNull.type](identity)
-  implicit val queryStringValue = QueryValueFrom[String](QueryString)
   implicit val queryBooleanValue = QueryValueFrom[Boolean](QueryBoolean)
   implicit val queryIntValue = QueryValueFrom[Int](QueryInt)
   implicit val queryDoubleValue = QueryValueFrom[Double](QueryDouble)
@@ -123,5 +126,6 @@ object sql {
   }
   implicit val queryPathCons = QueryValueFrom[QueryPathCons](identity)
   implicit val queryPathEnd = QueryValueFrom[QueryPathEnd](identity)
+  implicit val queryStringValue = QueryValueFrom[String](QueryString)
   implicit val queryFunction = QueryValueFrom[QueryFunction](identity)
 }

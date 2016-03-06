@@ -6,7 +6,7 @@ import com.github.jacoby6000.query.ast._
   * Created by jacob.barber on 3/3/16.
   */
 object interpreter {
-  def interpretSql(query: Query): String = {
+  def interpretSql(expr: Expression): String = {
     def binOpReduction[A](op: String, left: A, right: A)(f: A => String) = f(left) + " " + op + " " + f(right)
 
     def reducePath(queryPath: QueryPath): String = queryPath match {
@@ -64,19 +64,49 @@ object interpreter {
       case QuerySortDesc(path) => reducePath(path) + " DESC"
     }
 
-    val projections = query.values.map(reduceProjection).mkString(", ")
-    val filter = query.filters.map("WHERE " + reduceComparison(_)).getOrElse("")
-    val unions = query.unions.map(reduceUnion).mkString(" ")
-    val sorts =
-      if(query.sorts.isEmpty) ""
-      else "ORDER BY " + query.sorts.map(reduceSort).mkString(", ")
+    def reduceInsertValues(insertValue: InsertField): (String, String) =
+      reducePath(insertValue.key) -> reduceValue(insertValue.value)
 
-    val groups =
-      if(query.groupings.isEmpty) ""
-      else "GROUP BY " + query.groupings.map(reduceSort).mkString(", ")
+    expr match {
+      case Query(table, values, unions, filters, sorts, groups) =>
+        val sqlProjections = values.map(reduceProjection).mkString(", ")
+        val sqlFilter = filters.map("WHERE " + reduceComparison(_)).getOrElse("")
+        val sqlUnions = unions.map(reduceUnion).mkString(" ")
+        val sqlSorts =
+          if(sorts.isEmpty) ""
+          else "ORDER BY " + sorts.map(reduceSort).mkString(", ")
 
-    val table = reduceProjection(query.table)
+        val sqlGroups =
+          if(groups.isEmpty) ""
+          else "GROUP BY " + groups.map(reduceSort).mkString(", ")
 
-    s"SELECT $projections FROM $table $unions $filter $sorts $groups"
+        val sqlTable = reduceProjection(table)
+
+        s"SELECT $sqlProjections FROM $sqlTable $sqlUnions $sqlFilter $sqlSorts $sqlGroups"
+
+      case Insert(table, values) =>
+        val sqlTable = reducePath(table)
+        val mappedSqlValuesKV = values.map(reduceInsertValues)
+        val sqlColumns = mappedSqlValuesKV.map(_._1).mkString(", ")
+        val sqlValues = mappedSqlValuesKV.map(_._2).mkString(", ")
+
+        s"INSERT INTO $sqlTable ($sqlColumns) VALUES ($sqlValues)"
+
+      case Update(table, values, where) =>
+        val sqlTable = reducePath(table)
+        val mappedSqlValuesKV = values.map(reduceInsertValues).map(kv => kv._1 + "=" + kv._2).mkString(", ")
+        val sqlWhere = where.map("WHERE " + reduceComparison(_)).getOrElse("")
+
+        s"UPDATE $sqlTable SET $mappedSqlValuesKV $sqlWhere"
+
+      case Delete(table, where) =>
+        val sqlTable = reducePath(table)
+        val sqlWhere = reduceComparison(where)
+
+        s"DELETE $sqlTable WHERE $sqlWhere"
+    }
+
+
+
   }
 }

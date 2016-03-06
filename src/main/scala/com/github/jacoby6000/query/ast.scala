@@ -51,16 +51,18 @@ object ast {
   case class QuerySortAsc(path: QueryPath) extends QuerySort
   case class QuerySortDesc(path: QueryPath) extends QuerySort
 
+  sealed trait Expression
+
   case class Query(
                     table: QueryProjection,
                     values: List[QueryProjection],
                     unions: List[QueryUnion],
                     filters: Option[QueryComparison],
                     sorts: List[QuerySort],
-                    groupings: List[QuerySort])
+                    groupings: List[QuerySort]) extends Expression
 
   case class InsertField(key: QueryPath, value: QueryValue)
-  case class Insert(collection: QueryPath, values: List[InsertField])
-  case class Update(collection: QueryPath, values: List[InsertField], where: Option[QueryComparison])
-  case class Delete(collection: QueryPath, where: QueryComparison)
+  case class Insert(collection: QueryPath, values: List[InsertField]) extends Expression
+  case class Update(collection: QueryPath, values: List[InsertField], where: Option[QueryComparison]) extends Expression
+  case class Delete(collection: QueryPath, where: QueryComparison) extends Expression
 }
