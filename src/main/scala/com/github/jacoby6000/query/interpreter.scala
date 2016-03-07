@@ -6,7 +6,7 @@ import com.github.jacoby6000.query.ast._
   * Created by jacob.barber on 3/3/16.
   */
 object interpreter {
-  def interpretSql(expr: Expression): String = {
+  def interpretPSql(expr: Expression): String = {
     def binOpReduction[A](op: String, left: A, right: A)(f: A => String) = f(left) + " " + op + " " + f(right)
 
     def reducePath(queryPath: QueryPath): String = queryPath match {
@@ -21,7 +21,7 @@ object interpreter {
 
     def reduceValue(value: QueryValue): String = value match {
       case QueryRawExpression(ex) => ex.toString
-      case QueryString(s) => "\"" + s + "\""
+      case QueryString(s) => "'" + s + "'"
       case QueryInt(n) => n.toString
       case QueryDouble(d) => d.toString
       case QueryBoolean(b) => b.toString

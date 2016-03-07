@@ -12,29 +12,35 @@ import _root_.doobie.syntax.string._
   */
 object doobie {
 
-  class DoobieQueryBuilder[A: Composite](query: QuerySelect) {
-    def prepare[B: Composite](params: B): scalaz.stream.Process[ConnectionIO, A] =
-      HC.process[A](interpreter.interpretSql(query), HPS.set(params))
-
-    def prepare: scalaz.stream.Process[ConnectionIO, A] =
-      new SqlInterpolator(StringContext(interpreter.interpretSql(query))).sql.apply().query[A].process
-  }
-
-  class DoobieInsertBuilder[A: Composite](insert: QueryInsert) {
-    def prepare[B: Composite](params: B)(generatedKeys: List[String]): scalaz.stream.Process[ConnectionIO, A] =
-      HC.updateWithGeneratedKeys[A](generatedKeys)(interpreter.interpretSql(insert), HPS.set(params))
-
-    def prepare(generatedKeys: List[String]): ConnectionIO[A] =
-      new SqlInterpolator(StringContext(interpreter.interpretSql(insert))).sql.apply().update.withUniqueGeneratedKeys[A](generatedKeys: _*)
-  }
-
-
   implicit class DoobieQueryExtensions(val query: QuerySelect) extends AnyVal {
     def apply[A: Composite] = new DoobieQueryBuilder[A](query)
   }
 
-  implicit class DoobieInsertExtensions(val query: QueryInsert) extends AnyVal {
+  implicit class DoobieInsertExtensions(val query: QueryInsert) {
     def apply[A: Composite] = new DoobieInsertBuilder[A](query)
   }
+
+  class DoobieQueryBuilder[A: Composite](query: QuerySelect) {
+    def prepare[B: Composite](params: B): scalaz.stream.Process[ConnectionIO, A] =
+      HC.process[A](interpreter.interpretPSql(query), HPS.set(params))
+
+    def prepare: scalaz.stream.Process[ConnectionIO, A] =
+      Query.apply[HNil, A](interpreter.interpretPSql(query)).toQuery0(HNil).process
+  }
+
+  class DoobieInsertBuilder[A: Composite](insert: QueryInsert) {
+    import scalaz._, Scalaz._
+
+    def prepare[B: Composite](params: B)(generatedKeys: List[String]): ConnectionIO[A] =
+      HC.prepareStatementS(interpreter.interpretPSql(insert), generatedKeys)(HPS.set(params) >> HPS.executeUpdateWithUniqueGeneratedKeys[A])
+
+    def prepare(generatedKeys: List[String]): ConnectionIO[A] =
+      HC.prepareStatementS(interpreter.interpretPSql(insert), generatedKeys)(HPS.executeUpdateWithUniqueGeneratedKeys[A])
+
+    def prepare(implicit ev: A =:= Int): ConnectionIO[Int] =
+      HC.prepareStatementS(interpreter.interpretPSql(insert), List.empty)(HPS.executeUpdate)
+  }
+
+
 
 }
