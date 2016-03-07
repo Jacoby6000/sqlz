@@ -7,11 +7,14 @@ import com.github.jacoby6000.query.ast._
   */
 object interpreter {
   def interpretPSql(expr: Expression): String = {
-    def binOpReduction[A](op: String, left: A, right: A)(f: A => String) = f(left) + " " + op + " " + f(right)
+    val singleQuote = '"'.toString
+    def wrap(s: String, using: String): String = s"$using$s$using"
+
+    def binOpReduction[A](op: String, left: A, right: A)(f: A => String) = f(left) + wrap(op, " ") + f(right)
 
     def reducePath(queryPath: QueryPath): String = queryPath match {
-      case QueryPathEnd(str) => str
-      case QueryPathCons(head, tail) => head + "." + reducePath(tail)
+      case QueryPathEnd(str) => wrap(str, singleQuote)
+      case QueryPathCons(head, tail) => wrap(head, singleQuote) + "." + reducePath(tail)
     }
 
     def reduceProjection(projection: QueryProjection): String = projection match {
