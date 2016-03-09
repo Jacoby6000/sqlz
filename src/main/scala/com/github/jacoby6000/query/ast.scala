@@ -32,7 +32,7 @@ object ast {
   case class QueryAnd(left: QueryComparison, right: QueryComparison) extends QueryComparison
   case class QueryOr(left: QueryComparison, right: QueryComparison) extends QueryComparison
 
-  sealed trait QueryPath
+  sealed trait QueryPath extends QueryValue
   case class QueryPathEnd(path: String) extends QueryPath with QueryValue
   case class QueryPathCons(path: String, queryPath: QueryPath) extends QueryPath with QueryValue
 
@@ -59,7 +59,7 @@ object ast {
                     unions: List[QueryUnion],
                     filters: Option[QueryComparison],
                     sorts: List[QuerySort],
-                    groupings: List[QuerySort]) extends Expression
+                    groupings: List[QuerySort]) extends Expression with QueryValue
 
   case class ModifyField(key: QueryPath, value: QueryValue)
   case class QueryInsert(collection: QueryPath, values: List[ModifyField]) extends Expression

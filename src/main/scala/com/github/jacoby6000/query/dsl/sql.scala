@@ -1,7 +1,7 @@
 package com.github.jacoby6000.query.dsl
 
 import com.github.jacoby6000.query.ast._
-import shapeless.HList
+import scala.annotation.implicitNotFound
 
 /**
   * Created by jacob.barber on 3/4/16.
@@ -98,22 +98,23 @@ object sql {
     def on(comp: QueryComparison): QueryBuilder = QueryBuilder(query.copy(unions = query.unions ::: List(building(comp))))
   }
 
-  implicit def queryValueFromableToQueryValue[A](a: A)(implicit arg0: QueryValueFrom[A]): QueryValue = arg0.toQueryValue(a)
-  implicit def queryValueFromableToQueryComparison[A](a: A)(implicit arg0: QueryValueFrom[A]): QueryComparison = QueryLit(arg0.toQueryValue(a))
 
-  implicit class QueryValueFromExtensions[A: QueryValueFrom](val a: A) {
-    def >[B: QueryValueFrom](b: B) = QueryGreaterThan(a, b)
-    def >=[B: QueryValueFrom](b: B) = QueryGreaterThanOrEqual(a, b)
-    def <[B: QueryValueFrom](b: B) = QueryLessThan(a, b)
-    def <=[B: QueryValueFrom](b: B) = QueryLessThanOrEqual(a, b)
+  implicit class QueryValueTransformerSqlOps[A](val a: A)(implicit arg0: QueryValueTransformer[A]) {
+    def >[B: QueryValueTransformer](b: B) = QueryGreaterThan(a.toQueryValue, b.toQueryValue)
+    def >=[B: QueryValueTransformer](b: B) = QueryGreaterThanOrEqual(a.toQueryValue, b.toQueryValue)
+    def <[B: QueryValueTransformer](b: B) = QueryLessThan(a.toQueryValue, b.toQueryValue)
+    def <=[B: QueryValueTransformer](b: B) = QueryLessThanOrEqual(a.toQueryValue, b.toQueryValue)
 
-    def ===[B: QueryValueFrom](b: B) = QueryEqual(a, b)
-    def !==[B: QueryValueFrom](b: B) = QueryNotEqual(a, b)
+    def ===[B: QueryValueTransformer](b: B) = QueryEqual(a.toQueryValue, b.toQueryValue)
+    def !==[B: QueryValueTransformer](b: B) = QueryNotEqual(a.toQueryValue, b.toQueryValue)
 
-    def ++[B: QueryValueFrom](b: B) = QueryAdd(a,b)
-    def --[B: QueryValueFrom](b: B) = QuerySub(a,b)
-    def /[B: QueryValueFrom](b: B) = QueryDiv(a,b)
-    def **[B: QueryValueFrom](b: B) = QueryMul(a,b)
+    def ++[B: QueryValueTransformer](b: B) = QueryAdd(a.toQueryValue,b.toQueryValue)
+    def --[B: QueryValueTransformer](b: B) = QuerySub(a.toQueryValue,b.toQueryValue)
+    def /[B: QueryValueTransformer](b: B) = QueryDiv(a.toQueryValue,b.toQueryValue)
+    def **[B: QueryValueTransformer](b: B) = QueryMul(a.toQueryValue,b.toQueryValue)
+
+    def toQueryValue: QueryValue = arg0.toQueryValue(a)
+
   }
 
   def !(queryComparison: QueryComparison): QueryNot = queryComparison.not
@@ -124,31 +125,32 @@ object sql {
     def or(right: QueryComparison) = QueryOr(left, right)
   }
 
-  trait QueryValueFrom[A] {
+  @implicitNotFound("Could not find implicit QueryValueTransformer[${A}. Make sure you have imported package com.github.jacoby6000.query.dsl.sql._, and that the typed provided has a QueryValueTransformer in scope.")
+  trait QueryValueTransformer[A] {
     def toQueryValue(a: A): QueryValue
   }
 
-  object QueryValueFrom {
+  object QueryValueTransformer {
     def apply[A](f: A => QueryValue) =
-      new QueryValueFrom[A] {
+      new QueryValueTransformer[A] {
         def toQueryValue(a: A): QueryValue = f(a)
       }
   }
 
-  implicit val queryParam = QueryValueFrom[QueryParameter.type](identity)
-  implicit val queryNull = QueryValueFrom[QueryNull.type](identity)
-  implicit val queryBooleanValue = QueryValueFrom[Boolean](QueryBoolean)
-  implicit val queryIntValue = QueryValueFrom[Int](QueryInt)
-  implicit val queryDoubleValue = QueryValueFrom[Double](QueryDouble)
-  implicit val queryPath = QueryValueFrom[QueryPath] {
+  implicit val queryParamTransformer = QueryValueTransformer[QueryParameter.type](identity)
+  implicit val queryNullTransformer = QueryValueTransformer[QueryNull.type](identity)
+  implicit val queryBooleanValueTransformer = QueryValueTransformer[Boolean](QueryBoolean)
+  implicit val queryIntValueTransformer = QueryValueTransformer[Int](QueryInt)
+  implicit val queryDoubleValueTransformer = QueryValueTransformer[Double](QueryDouble)
+  implicit val queryPathTransformer = QueryValueTransformer[QueryPath] {
     case cons: QueryPathCons => cons
     case end: QueryPathEnd => end
   }
-  implicit val queryPathCons = QueryValueFrom[QueryPathCons](identity)
-  implicit val queryPathEnd = QueryValueFrom[QueryPathEnd](identity)
-  implicit val queryStringValue = QueryValueFrom[String](QueryString)
-  implicit val queryFunction = QueryValueFrom[QueryFunction](identity)
+  implicit val queryPathConsTransformer = QueryValueTransformer[QueryPathCons](identity)
+  implicit val queryPathEndTransformer = QueryValueTransformer[QueryPathEnd](identity)
+  implicit val queryStringValueTransformer = QueryValueTransformer[String](QueryString)
+  implicit val queryFunctionTransformer = QueryValueTransformer[QueryFunction](identity)
 
-  implicit def pathToProjection(f: QueryPath): QueryProjection = QueryProjectOne(f, None)
+  implicit def pathToProjection(f: QueryPath): QueryProjection = QueryProjectOne(f.toQueryValue, None)
 
 }

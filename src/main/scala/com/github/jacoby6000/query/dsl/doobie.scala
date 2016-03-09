@@ -25,7 +25,7 @@ object doobie {
       HC.process[A](interpreter.interpretPSql(query), HPS.set(params))
 
     def prepare: scalaz.stream.Process[ConnectionIO, A] =
-      Query.apply[HNil, A](interpreter.interpretPSql(query)).toQuery0(HNil).process
+      Query.apply[Unit, A](interpreter.interpretPSql(query)).toQuery0(()).process
   }
 
   class DoobieInsertBuilder[A: Composite](insert: QueryInsert) {
@@ -40,7 +40,5 @@ object doobie {
     def prepare(implicit ev: A =:= Int): ConnectionIO[Int] =
       HC.prepareStatementS(interpreter.interpretPSql(insert), List.empty)(HPS.executeUpdate)
   }
-
-
 
 }
