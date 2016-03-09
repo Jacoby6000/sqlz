@@ -35,6 +35,7 @@ object interpreter {
       case QuerySub(left, right) => binOpReduction("-", left, right)(reduceValue)
       case QueryDiv(left, right) => binOpReduction("/", left, right)(reduceValue)
       case QueryMul(left, right) => binOpReduction("*", left, right)(reduceValue)
+      case sel: QuerySelect => "(" + interpretPSql(sel) + ")"
       case QueryParameter => "?"
       case QueryNull => "NULL"
     }
@@ -85,7 +86,7 @@ object interpreter {
 
         val sqlTable = reduceProjection(table)
 
-        s"SELECT $sqlProjections FROM $sqlTable $sqlUnions $sqlFilter $sqlSorts $sqlGroups"
+        s"SELECT $sqlProjections FROM $sqlTable $sqlUnions $sqlFilter $sqlSorts $sqlGroups".trim
 
       case QueryInsert(table, values) =>
         val sqlTable = reducePath(table)
