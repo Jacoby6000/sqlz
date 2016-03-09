@@ -98,11 +98,8 @@ object sql {
     def on(comp: QueryComparison): QueryBuilder = QueryBuilder(query.copy(unions = query.unions ::: List(building(comp))))
   }
 
-  implicit class QueryValueFromOps[A](val a: A)(implicit arg0: QueryValueTransformer[A]) {
-    def toQueryValue: QueryValue = arg0.toQueryValue(a)
-  }
 
-  implicit class QueryValueFromExtensions[A: QueryValueTransformer](val a: A) {
+  implicit class QueryValueTransformerSqlOps[A](val a: A)(implicit arg0: QueryValueTransformer[A]) {
     def >[B: QueryValueTransformer](b: B) = QueryGreaterThan(a.toQueryValue, b.toQueryValue)
     def >=[B: QueryValueTransformer](b: B) = QueryGreaterThanOrEqual(a.toQueryValue, b.toQueryValue)
     def <[B: QueryValueTransformer](b: B) = QueryLessThan(a.toQueryValue, b.toQueryValue)
@@ -115,6 +112,9 @@ object sql {
     def --[B: QueryValueTransformer](b: B) = QuerySub(a.toQueryValue,b.toQueryValue)
     def /[B: QueryValueTransformer](b: B) = QueryDiv(a.toQueryValue,b.toQueryValue)
     def **[B: QueryValueTransformer](b: B) = QueryMul(a.toQueryValue,b.toQueryValue)
+
+    def toQueryValue: QueryValue = arg0.toQueryValue(a)
+
   }
 
   def !(queryComparison: QueryComparison): QueryNot = queryComparison.not
