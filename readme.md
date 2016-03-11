@@ -1,5 +1,7 @@
 ## Foreword
 
+[![Join the chat at https://gitter.im/Jacoby6000/Scala-SQL-AST](https://badges.gitter.im/Jacoby6000/Scala-SQL-AST.svg)](https://gitter.im/Jacoby6000/Scala-SQL-AST?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 The goal of this project is to have a relatively lightweight and simple intermediate format for queries, that can be built a variety of ways.
 As it stands now, this lib is less than 500 SLOC, and when I properly segregate modules, I expect to see only 1 dependency per module.
 
