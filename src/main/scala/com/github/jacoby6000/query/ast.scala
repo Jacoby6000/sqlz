@@ -59,7 +59,7 @@ object ast {
                     unions: List[QueryUnion],
                     filters: Option[QueryComparison],
                     sorts: List[QuerySort],
-                    groupings: List[QuerySort]) extends Expression with QueryValue
+                    groupings: List[QuerySort], offset: Option[Int], limit: Option[Int]) extends Expression with QueryValue
 
   case class ModifyField(key: QueryPath, value: QueryValue)
   case class QueryInsert(collection: QueryPath, values: List[ModifyField]) extends Expression
