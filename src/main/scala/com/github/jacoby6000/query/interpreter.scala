@@ -72,7 +72,7 @@ object interpreter {
       reducePath(insertValue.key) -> reduceValue(insertValue.value)
 
     expr match {
-      case QuerySelect(table, values, unions, filters, sorts, groups) =>
+      case QuerySelect(table, values, unions, filters, sorts, groups, offset, limit) =>
         val sqlProjections = values.map(reduceProjection).mkString(", ")
         val sqlFilter = filters.map("WHERE " + reduceComparison(_)).getOrElse("")
         val sqlUnions = unions.map(reduceUnion).mkString(" ")
@@ -86,7 +86,10 @@ object interpreter {
 
         val sqlTable = reduceProjection(table)
 
-        s"SELECT $sqlProjections FROM $sqlTable $sqlUnions $sqlFilter $sqlSorts $sqlGroups".trim
+        val sqlOffset = offset.map("OFFSET " + _).getOrElse("")
+        val sqlLimit = limit.map("LIMIT " + _).getOrElse("")
+
+        s"SELECT $sqlProjections FROM $sqlTable $sqlUnions $sqlFilter $sqlSorts $sqlGroups $sqlLimit $sqlOffset".trim
 
       case QueryInsert(table, values) =>
         val sqlTable = reducePath(table)

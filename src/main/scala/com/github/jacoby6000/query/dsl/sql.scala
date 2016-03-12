@@ -79,7 +79,7 @@ object sql {
   def select(projections: QueryProjection*): SelectBuilder = new SelectBuilder(projections.toList)
 
   case class SelectBuilder(projections: List[QueryProjection]) {
-    def from(path: QueryProjection): QueryBuilder = QueryBuilder(QuerySelect(path, projections, List.empty, None, List.empty, List.empty))
+    def from(path: QueryProjection): QueryBuilder = QueryBuilder(QuerySelect(path, projections, List.empty, None, List.empty, List.empty, None, None))
   }
 
   case class QueryBuilder(query: QuerySelect) {
@@ -92,6 +92,9 @@ object sql {
     def where(comparison: QueryComparison): QueryBuilder = QueryBuilder(query.copy(filters = query.filters.map(_ and comparison) orElse Some(comparison)))
     def orderBy(sorts: QuerySort*): QueryBuilder = QueryBuilder(query.copy(sorts = query.sorts ::: sorts.toList))
     def groupBy(groups: QuerySort*): QueryBuilder = QueryBuilder(query.copy(groupings = query.groupings ::: groups.toList))
+
+    def offset(n: Int): QueryBuilder = QueryBuilder(query.copy(offset = Some(n)))
+    def limit(n: Int): QueryBuilder = QueryBuilder(query.copy(limit = Some(n)))
   }
 
   case class JoinBuilder(query: QuerySelect, building: QueryComparison => QueryUnion) {
