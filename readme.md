@@ -10,7 +10,7 @@ As it stands now, there is a quick 'n dirty SQL DSL, implemented with a lightwei
 
 ### The Sql DSL
 
-Below is a sample query that somebody may wants to write. The query below is perfectly valid; try it out!
+Below is a sample query that somebody may want to write. The query below is perfectly valid; try it out!
 
 ```scala
 import com.github.jacoby6000.query.ast._
