@@ -2,6 +2,7 @@ package com.github.jacoby6000.query
 
 import _root_.doobie.imports._
 import com.github.jacoby6000.query.ast.{QueryInsert, QuerySelect}
+import scalaz._, Scalaz._
 
 /**
   * Created by jacob.barber on 3/4/16.

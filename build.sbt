@@ -1,7 +1,5 @@
 name := "dooqie"
 
-version := "1.0"
-
 scalaVersion := "2.11.7"
 
 organization := "com.github.jacoby6000"
