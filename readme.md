@@ -1,33 +1,16 @@
-## Foreword
+
 
 [![Join the chat at https://gitter.im/Jacoby6000/Scala-SQL-AST](https://badges.gitter.im/Jacoby6000/Scala-SQL-AST.svg)](https://gitter.im/Jacoby6000/Scala-SQL-AST?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-The goal of this project is to have a relatively lightweight and simple intermediate format for queries, that can be built a variety of ways.
-As it stands now, this lib is less than 500 SLOC, and when I properly segregate modules, I expect to see only 1 dependency per module.
+### Querying with Doobie, without raw sql
 
-This project is still under relatively heavy development. I expect much to change, as there is much that could probably be improved.
+The goal of this project is to produce an alternative to writing SQL queries for use with Doobie.
 
-Please check the issues section and lend a hand if you can!
+As it stands now, there is a quick 'n dirty SQL DSL, implemented with a lightweight AST. Other DSLs may be created in the future.
 
-PS: I **really** don't like the name of the project, *please* suggest something better.
+### The Sql DSL
 
-### Building the AST
-
-The current DSL available for building the AST is based on SQL, but you can conceivably make something resembling scala collections with a little bit of work.
-
-### Using the AST
-
-Currently, there is an interpreter than can take the AST and build it in to SQL queries. There is also a small doobie piece that takes the interpreted AST and converts it directly in to Doobie ConnectionIO.
-This is not the only possible use case.
-You can build an interpreter that could build slick queries, spark queries, BSON queries, raw hadoop queries, and maybe even a way to query an in-memory scala collection. Not sure about that one, though
-
-# Scala Query AST
-
-The goal of this AST is to sufficiently generalize a querying AST such that it can be used for many platforms.
-
-As it stands now, there is a quick 'n dirty SQL DSL, and a first pass implementation of a simple, high level AST.
-
-The sample below uses the SQL DSL, and is a valid query.
+Below is a sample query that somebody may wants to write. The query below is perfectly valid; try it out!
 
 ```scala
 import com.github.jacoby6000.query.ast._
@@ -47,7 +30,7 @@ val q =
     p"biz.age" > 27
   ) orderBy p"biz.age".desc groupBy p"baz.worth".asc
 
-interpreter.interpretSql(q.query)
+interpreter.interpretPSql(q.query) // Print the Postgres sql string that would be created by this query
 ```
 
 The sql output of this would be
