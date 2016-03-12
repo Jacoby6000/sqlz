@@ -62,7 +62,7 @@ As a proof of concept, here are some examples translated over from the book of d
 import com.github.jacoby6000.query.ast._
 import com.github.jacoby6000.query.interpreter
 import com.github.jacoby6000.query.dsl.sql._
-import com.github.jacoby6000.query.dsl.doobie._
+import com.github.jacoby6000.query.doobie._
 import doobie.imports._
 import shapeless.HNil
 

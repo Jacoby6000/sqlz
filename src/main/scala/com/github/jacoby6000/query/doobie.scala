@@ -1,11 +1,7 @@
-package com.github.jacoby6000.query.dsl
+package com.github.jacoby6000.query
 
-import com.github.jacoby6000.query.ast.{QueryInsert, QuerySelect}
-import com.github.jacoby6000.query.interpreter
-import shapeless.{HNil, HList}
-import _root_.doobie.hi
 import _root_.doobie.imports._
-import _root_.doobie.syntax.string._
+import com.github.jacoby6000.query.ast.{QueryInsert, QuerySelect}
 
 /**
   * Created by jacob.barber on 3/4/16.
@@ -29,7 +25,6 @@ object doobie {
   }
 
   class DoobieInsertBuilder[A: Composite](insert: QueryInsert) {
-    import scalaz._, Scalaz._
 
     def prepare[B: Composite](params: B)(generatedKeys: List[String]): ConnectionIO[A] =
       HC.prepareStatementS(interpreter.interpretPSql(insert), generatedKeys)(HPS.set(params) >> HPS.executeUpdateWithUniqueGeneratedKeys[A])
