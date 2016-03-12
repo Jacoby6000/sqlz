@@ -51,7 +51,8 @@ object ast {
   case class QuerySortAsc(path: QueryPath) extends QuerySort
   case class QuerySortDesc(path: QueryPath) extends QuerySort
 
-  sealed trait Expression
+  sealed trait QueryExpression
+  sealed trait QueryModify extends QueryExpression
 
   case class QuerySelect(
                     table: QueryProjection,
@@ -61,10 +62,10 @@ object ast {
                     sorts: List[QuerySort],
                     groupings: List[QuerySort],
                     offset: Option[Int],
-                    limit: Option[Int]) extends Expression with QueryValue
+                    limit: Option[Int]) extends QueryExpression with QueryValue
 
   case class ModifyField(key: QueryPath, value: QueryValue)
-  case class QueryInsert(collection: QueryPath, values: List[ModifyField]) extends Expression
-  case class QueryUpdate(collection: QueryPath, values: List[ModifyField], where: Option[QueryComparison]) extends Expression
-  case class QueryDelete(collection: QueryPath, where: QueryComparison) extends Expression
+  case class QueryInsert(collection: QueryPath, values: List[ModifyField]) extends QueryExpression with QueryModify
+  case class QueryUpdate(collection: QueryPath, values: List[ModifyField], where: Option[QueryComparison]) extends QueryExpression with QueryModify
+  case class QueryDelete(collection: QueryPath, where: QueryComparison) extends QueryExpression
 }
