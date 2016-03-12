@@ -1,8 +1,13 @@
-name := "Scala-SQL-AST"
+name := "dooqie"
 
 version := "1.0"
 
 scalaVersion := "2.11.7"
+
+organization := "com.github.jacoby6000"
+
+version := "0.0.1"
+
 
 libraryDependencies ++= Seq(
   "com.chuusai" %% "shapeless" % "2.2.5",

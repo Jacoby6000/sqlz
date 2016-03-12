@@ -92,6 +92,7 @@ object sql {
     def where(comparison: QueryComparison): QueryBuilder = QueryBuilder(query.copy(filters = query.filters.map(_ and comparison) orElse Some(comparison)))
     def orderBy(sorts: QuerySort*): QueryBuilder = QueryBuilder(query.copy(sorts = query.sorts ::: sorts.toList))
     def groupBy(groups: QuerySort*): QueryBuilder = QueryBuilder(query.copy(groupings = query.groupings ::: groups.toList))
+
     def offset(n: Int): QueryBuilder = QueryBuilder(query.copy(offset = Some(n)))
     def limit(n: Int): QueryBuilder = QueryBuilder(query.copy(limit = Some(n)))
   }
