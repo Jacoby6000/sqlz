@@ -120,6 +120,8 @@ object sql {
     def /[B: QueryValueTransformer](b: B) = QueryDiv(a.toQueryValue,b.toQueryValue)
     def **[B: QueryValueTransformer](b: B) = QueryMul(a.toQueryValue,b.toQueryValue)
 
+    def in[B: QueryValueTransformer](b: B*) = QueryIn(a.toQueryValue, b.map(_.toQueryValue).toList)
+
     def toQueryValue: QueryValue = arg0.toQueryValue(a)
 
   }

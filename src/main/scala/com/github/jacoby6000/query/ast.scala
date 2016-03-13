@@ -27,6 +27,7 @@ object ast {
   case class QueryGreaterThanOrEqual(left: QueryValue, right: QueryValue) extends QueryComparison
   case class QueryLessThan(left: QueryValue, right: QueryValue) extends QueryComparison
   case class QueryLessThanOrEqual(left: QueryValue, right: QueryValue) extends QueryComparison
+  case class QueryIn(left: QueryValue, rights: List[QueryValue]) extends QueryComparison
   case class QueryLit(value: QueryValue) extends QueryComparison
   case class QueryNot(value: QueryComparison) extends QueryComparison
   case class QueryAnd(left: QueryComparison, right: QueryComparison) extends QueryComparison
