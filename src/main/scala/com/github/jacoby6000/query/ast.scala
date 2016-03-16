@@ -6,8 +6,18 @@ package com.github.jacoby6000.query
   */
 object ast {
 
+  trait RawExpressionHandler[A] {
+    def interpret(a: A): String
+  }
+
+  object RawExpressionHandler {
+    def apply[A](f: A => String): RawExpressionHandler[A] = new RawExpressionHandler[A] {
+      def interpret(a: A): String = f(a)
+    }
+  }
+
   sealed trait QueryValue
-  case class QueryRawExpression[T](t: T) extends QueryValue
+  case class QueryRawExpression[T](t: T)(implicit val rawExpressionHandler: RawExpressionHandler[T]) extends QueryValue
   case class QueryString(value: String) extends QueryValue
   case class QueryInt(value: Int) extends QueryValue
   case class QueryDouble(value: Double) extends QueryValue

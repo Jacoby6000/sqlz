@@ -23,7 +23,7 @@ object interpreter {
     }
 
     def reduceValue(value: QueryValue): String = value match {
-      case QueryRawExpression(ex) => ex.toString
+      case expr @ QueryRawExpression(ex) => expr.rawExpressionHandler.interpret(ex)
       case QueryString(s) => "'" + s + "'"
       case QueryInt(n) => n.toString
       case QueryDouble(d) => d.toString

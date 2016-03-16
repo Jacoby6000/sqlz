@@ -8,6 +8,8 @@ import scala.annotation.implicitNotFound
   */
 object sql {
 
+  case class MetaData[A, B](value: A, meta: B)
+
   object implicitConversions {
     implicit def selectBuilderToSelectQuery(queryBuilder: QueryBuilder): QuerySelect = queryBuilder.query
     implicit def updateBuilderToUpdateQuery(updateBuilder: UpdateBuilder): QueryUpdate = updateBuilder.update
@@ -54,7 +56,7 @@ object sql {
       go(parts.tail, QueryPathEnd(parts.head))
     }
 
-    def expr(args: String*): QueryRawExpression[String] = {
+    def expr(args: String*)(implicit ev0: RawExpressionHandler[String]): QueryRawExpression[String] = {
       QueryRawExpression(c.standardInterpolator(identity,args))
     }
 
