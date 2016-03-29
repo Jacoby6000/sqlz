@@ -66,7 +66,6 @@ First, lets set up a repl session with our imports, plus what we need to run doo
 
 ```scala
 import com.github.jacoby6000.query.ast._
-import com.github.jacoby6000.query.interpreter
 import com.github.jacoby6000.query.doobie._
 import com.github.jacoby6000.query.dsl.sql._
 import com.github.jacoby6000.query.dsl.sql.implicitConversions._
@@ -92,7 +91,7 @@ val baseQuery =
   ) from p"country"
 ```
 
-
+And now lets run some basic queries
 
 ```scala
 scala> def biggerThan(n: Int) = {
