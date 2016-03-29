@@ -100,11 +100,18 @@ scala> def biggerThan(n: Int) = {
      |     .query
      |     .prepare(n :: HNil)
      |     .query[Country]
-     | 
-     | biggerThan(150000000).quick.run
-     | 
-     | 
-     | def populationIn(r: Range) = {
+     | }
+biggerThan: (n: Int)doobie.util.query.Query0[Country]
+
+scala> biggerThan(150000000).quick.run
+  Country(BRA,Brazil,170115000,Some(776739.0))
+  Country(IDN,Indonesia,212107000,Some(84982.0))
+  Country(IND,India,1013662000,Some(447114.0))
+  Country(CHN,China,1277558000,Some(982268.0))
+  Country(PAK,Pakistan,156483000,Some(61289.0))
+  Country(USA,United States,278357000,Some(8510700.0))
+
+scala> def populationIn(r: Range) = {
      |   (baseQuery where (
      |     p"population" >= `?` and
      |     p"population" <= `?`
@@ -112,16 +119,20 @@ scala> def biggerThan(n: Int) = {
      |     .prepare(r.min :: r.max :: HNil)
      |     .query[Country]
      | } 
-     | 
-     | populationIn(150000000 to 200000000).quick.run
+populationIn: (r: Range)doobie.util.query.Query0[Country]
+
+scala> populationIn(150000000 to 200000000).quick.run
+  Country(BRA,Brazil,170115000,Some(776739.0))
+  Country(PAK,Pakistan,156483000,Some(61289.0))
 ```
 
 And a more complicated example
 
 ```scala
-     | case class ComplimentaryCountries(code1: String, name1: String, code2: String, name2: String)
-     | 
-     | def joined = {
+scala> case class ComplimentaryCountries(code1: String, name1: String, code2: String, name2: String)
+defined class ComplimentaryCountries
+
+scala> def joined = {
      |   (select(
      |     p"c1.code",
      |     p"c1.name",
@@ -140,6 +151,15 @@ And a more complicated example
      |     .prepare
      |     .query[ComplimentaryCountries] 
      | }
-     | 
-     | joined.quick.run
+joined: doobie.util.query.Query0[ComplimentaryCountries]
+
+scala> joined.quick.run
+  ComplimentaryCountries(PSE,Palestine,ESP,Spain)
+  ComplimentaryCountries(YUG,Yugoslavia,GUY,Guyana)
+  ComplimentaryCountries(ESP,Spain,PSE,Palestine)
+  ComplimentaryCountries(SUR,Suriname,RUS,Russian Federation)
+  ComplimentaryCountries(RUS,Russian Federation,SUR,Suriname)
+  ComplimentaryCountries(VUT,Vanuatu,TUV,Tuvalu)
+  ComplimentaryCountries(TUV,Tuvalu,VUT,Vanuatu)
+  ComplimentaryCountries(GUY,Guyana,YUG,Yugoslavia)
 ```
