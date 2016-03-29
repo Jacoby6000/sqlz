@@ -13,7 +13,7 @@ object doobie {
 
   implicit def compositeDerivedFromParam[A](implicit ev: Param[A]): Composite[A] = ev.composite
 
-  implicit class DoobieExpressionExtensions(val query: QuerySelect) extends AnyVal {
+  implicit class DoobieExpressionExtensions(val query: QueryExpression) extends AnyVal {
     def sql: String = interpreter.interpretPSql(query)
 
     def prepare[A <: HList : Param](params: A): Builder[A] =
