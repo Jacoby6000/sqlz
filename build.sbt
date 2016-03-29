@@ -35,3 +35,5 @@ scalacOptions ++= Seq(
   "-Xfuture"
 //  "-Ywarn-unused-import"     // 2.11 only
 )
+
+tutSettings
