@@ -84,9 +84,10 @@ val baseQuery =
 
 def biggerThan(n: Int) =
   (baseQuery where p"population" > `?`)
+    .prepare(n :: HNil)
     .query[Country]
-    .prepare(n)
-    .list
+    .list 
+    
 
 val biggerThanRun = biggerThan(150000000).transact(xa).run
     /*List(
@@ -102,8 +103,8 @@ def populationIn(r: Range) =
   (baseQuery where (
     p"population" >= `?` and
     p"population" <= `?`
-  )).query[Country]
-    .prepare((r.min, r.max))
+  )).prepare(r.min :: r.max :: HNil)
+    .query[Country]
     .list
 
 val populationInRun = populationIn(1000 to 10000).transact(xa).run
@@ -131,8 +132,8 @@ def joined: ConnectionIO[List[ComplimentaryCountries]] =
   ) where (
     (p"c2.code" !== `null`) and
     (p"c2.name" !== p"c1.name")
-  )).query[ComplimentaryCountries]
-    .prepare
+  )).prepare(HNil)
+    .query[ComplimentaryCountries] 
     .list
 
 val joinResult = joined.transact(xa).run
