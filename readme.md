@@ -67,28 +67,13 @@ As a proof of concept, here are some examples translated over from the book of d
 
 ```scala
 scala> import com.github.jacoby6000.query.ast._
-import com.github.jacoby6000.query.ast._
-
 scala> import com.github.jacoby6000.query.interpreter
-import com.github.jacoby6000.query.interpreter
-
 scala> import com.github.jacoby6000.query.doobie._
-import com.github.jacoby6000.query.doobie._
-
 scala> import com.github.jacoby6000.query.dsl.sql._
-import com.github.jacoby6000.query.dsl.sql._
-
 scala> import com.github.jacoby6000.query.dsl.sql.implicitConversions._
-import com.github.jacoby6000.query.dsl.sql.implicitConversions._
-
 scala> import doobie.imports._
-import doobie.imports._
-
 scala> import shapeless.HNil
-import shapeless.HNil
-
 scala> import scalaz.concurrent.Task
-import scalaz.concurrent.Task
 
 scala> case class Country(code: String, name: String, pop: Int, gnp: Option[Double])
 defined class Country
