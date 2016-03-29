@@ -73,14 +73,13 @@ import doobie.imports._
 import shapeless.HNil
 import scalaz.concurrent.Task
 
-case class Country(code: String, name: String, pop: Int, gnp: Option[Double])
-
 val xa = DriverManagerTransactor[Task](
   "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"
 )
 
 import xa.yolo._
 
+case class Country(code: String, name: String, pop: Int, gnp: Option[Double])
 
 val baseQuery =
   select(
