@@ -1,6 +1,5 @@
-
-
 [![Join the chat at https://gitter.im/Jacoby6000/Scala-SQL-AST](https://badges.gitter.im/Jacoby6000/Scala-SQL-AST.svg)](https://gitter.im/Jacoby6000/Scala-SQL-AST?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Code samples verified by Tut](https://img.shields.io/badge/tut-verified-brightgreen.svg)](https://github.com/tpolecat/tut)
 
 ### Querying with Doobie, without raw sql
 
