@@ -94,7 +94,7 @@ And now lets run some basic queries
 ```scala
 scala> def biggerThan(n: Int) = {
      |   (baseQuery where p"population" > `?`)
-     |     .prepare(n :: HNil)
+     |     .prepare(n)
      |     .query[Country]
      | }
 biggerThan: (n: Int)doobie.util.query.Query0[Country]
@@ -111,7 +111,7 @@ scala> def populationIn(r: Range) = {
      |   (baseQuery where (
      |     p"population" >= `?` and
      |     p"population" <= `?`
-     |   )).prepare(r.min :: r.max :: HNil)
+     |   )).prepare(r.min, r.max)
      |     .query[Country]
      | } 
 populationIn: (r: Range)doobie.util.query.Query0[Country]
