@@ -14,7 +14,9 @@ object doobie {
   implicit def selectBuilderToSelectQuery(queryBuilder: QueryBuilder): DoobieExpressionExtensions = new DoobieExpressionExtensions(queryBuilder.query)
   implicit def updateBuilderToUpdateQuery(updateBuilder: UpdateBuilder): DoobieExpressionExtensions = new DoobieExpressionExtensions(updateBuilder.query)
 
-  def narrow[A <: AnyRef](a: A): a.type {} = a
+  implicit class NarrowingExtensions[A <: AnyRef](val a: A) extends AnyVal{
+    def narrowed: a.type {} = a
+  }
 
   implicit class DoobieExpressionExtensions(val query: QueryExpression) extends AnyVal {
     def sql: String = interpreter.interpretPSql(query)
