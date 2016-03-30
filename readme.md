@@ -1,5 +1,6 @@
+
+
 [![Join the chat at https://gitter.im/Jacoby6000/Scala-SQL-AST](https://badges.gitter.im/Jacoby6000/Scala-SQL-AST.svg)](https://gitter.im/Jacoby6000/Scala-SQL-AST?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Code samples verified by Tut](https://img.shields.io/badge/tut-verified-brightgreen.svg)](https://github.com/tpolecat/tut)
 
 ### Querying with Doobie, without raw sql
 
@@ -67,7 +68,6 @@ First, lets set up a repl session with our imports, plus what we need to run doo
 import com.github.jacoby6000.query.ast._
 import com.github.jacoby6000.query.doobie._
 import com.github.jacoby6000.query.dsl.sql._
-import com.github.jacoby6000.query.dsl.sql.implicitConversions._
 import doobie.imports._
 import shapeless.HNil
 import scalaz.concurrent.Task
@@ -94,7 +94,6 @@ And now lets run some basic queries
 ```scala
 scala> def biggerThan(n: Int) = {
      |   (baseQuery where p"population" > `?`)
-     |     .query
      |     .prepare(n :: HNil)
      |     .query[Country]
      | }
@@ -112,8 +111,7 @@ scala> def populationIn(r: Range) = {
      |   (baseQuery where (
      |     p"population" >= `?` and
      |     p"population" <= `?`
-     |   )).query
-     |     .prepare(r.min :: r.max :: HNil)
+     |   )).prepare(r.min :: r.max :: HNil)
      |     .query[Country]
      | } 
 populationIn: (r: Range)doobie.util.query.Query0[Country]
@@ -144,8 +142,7 @@ scala> def joined = {
      |   ) where (
      |     (p"c2.code" !== `null`) and
      |     (p"c2.name" !== p"c1.name")
-     |   )).query
-     |     .prepare
+     |   )).prepare
      |     .query[ComplimentaryCountries] 
      | }
 joined: doobie.util.query.Query0[ComplimentaryCountries]
