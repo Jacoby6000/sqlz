@@ -68,7 +68,6 @@ First, lets set up a repl session with our imports, plus what we need to run doo
 import com.github.jacoby6000.query.ast._
 import com.github.jacoby6000.query.doobie._
 import com.github.jacoby6000.query.dsl.sql._
-import com.github.jacoby6000.query.dsl.sql.implicitConversions._
 import doobie.imports._
 import shapeless.HNil
 import scalaz.concurrent.Task
@@ -95,8 +94,7 @@ And now lets run some basic queries
 ```tut
 def biggerThan(n: Int) = {
   (baseQuery where p"population" > `?`)
-    .query
-    .prepare(n :: HNil)
+    .prepare(n)
     .query[Country]
 }
 
@@ -107,8 +105,7 @@ def populationIn(r: Range) = {
   (baseQuery where (
     p"population" >= `?` and
     p"population" <= `?`
-  )).query
-    .prepare(r.min :: r.max :: HNil)
+  )).prepare(r.min, r.max)
     .query[Country]
 } 
 
@@ -135,8 +132,7 @@ def joined = {
   ) where (
     (p"c2.code" !== `null`) and
     (p"c2.name" !== p"c1.name")
-  )).query
-    .prepare
+  )).prepare
     .query[ComplimentaryCountries] 
 }
 
