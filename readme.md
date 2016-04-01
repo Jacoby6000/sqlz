@@ -14,7 +14,7 @@ Below is a sample query that somebody may want to write. The query below is perf
 
 ```scala
 import com.github.jacoby6000.query.ast._
-import com.github.jacoby6000.query.interpreters
+import com.github.jacoby6000.query.interpreters.sqlDialects.postgres
 import com.github.jacoby6000.query.dsl.sql._
 
 val q =
@@ -34,7 +34,7 @@ val q =
     p"biz.age" > 27
   ) orderBy p"biz.age".desc groupBy p"baz.worth".asc
 
-interpreters.interpretPSql(q.query) // Print the Postgres sql string that would be created by this query
+postgres.interpret(q.query) // Print the Postgres sql string that would be created by this query
 ```
 
 The formatted output of this is
