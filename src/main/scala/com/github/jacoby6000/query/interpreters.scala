@@ -5,7 +5,13 @@ import com.github.jacoby6000.query.ast._
 /**
   * Created by jacob.barber on 3/3/16.
   */
-object interpreter {
+object interpreters {
+  class SqlInterpreter(val interpret: QueryExpression => String) extends AnyVal
+
+  object sqlDialects {
+    implicit val postgres = new SqlInterpreter(interpretPSql _)
+  }
+
   def interpretPSql(expr: QueryExpression): String = {
     val singleQuote = '"'.toString
     def wrap(s: String, using: String): String = s"$using$s$using"
