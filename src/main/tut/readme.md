@@ -66,7 +66,7 @@ First, lets set up a repl session with our imports, plus what we need to run doo
 
 ```tut:silent
 import com.github.jacoby6000.query.ast._
-import com.github.jacoby6000.query.doobie._
+import com.github.jacoby6000.query.doobie.postgres._
 import com.github.jacoby6000.query.dsl.sql._
 import doobie.imports._
 import shapeless.HNil
