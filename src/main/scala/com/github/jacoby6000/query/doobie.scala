@@ -3,6 +3,7 @@ package com.github.jacoby6000.query
 import _root_.doobie.imports._
 import _root_.doobie.syntax.string.Builder
 import com.github.jacoby6000.query.ast._
+import com.github.jacoby6000.query.doobie.postgres.DoobiePostgresExtensions
 import com.github.jacoby6000.query.dsl.sql._
 import shapeless._
 
@@ -11,11 +12,27 @@ import shapeless._
   */
 object doobie {
 
-  implicit def selectBuilderToSelectQuery(queryBuilder: QueryBuilder): DoobieExpressionExtensions = new DoobieExpressionExtensions(queryBuilder.query)
-  implicit def updateBuilderToUpdateQuery(updateBuilder: UpdateBuilder): DoobieExpressionExtensions = new DoobieExpressionExtensions(updateBuilder.query)
+  trait ImplicitQueryConversions {
+    implicit def selectBuilderToSelectQuery(queryBuilder: QueryBuilder): DoobieExpressionExtensions
+    implicit def updateBuilderToUpdateQuery(updateBuilder: UpdateBuilder): DoobieExpressionExtensions
+  }
 
-  implicit class DoobieExpressionExtensions(val query: QueryExpression) extends AnyVal {
-    def sql: String = interpreter.interpretPSql(query)
+
+  object postgres extends ImplicitQueryConversions {
+    implicit def selectBuilderToSelectQuery(queryBuilder: QueryBuilder): DoobiePostgresExtensions = new DoobiePostgresExtensions(queryBuilder.query)
+    implicit def updateBuilderToUpdateQuery(updateBuilder: UpdateBuilder): DoobiePostgresExtensions = new DoobiePostgresExtensions(updateBuilder.query)
+
+
+    implicit class DoobiePostgresExtensions(val query: QueryExpression) extends DoobieExpressionExtensions{
+      val interpret = interpreter.interpretPSql _
+    }
+  }
+
+  trait DoobieExpressionExtensions {
+    val query: QueryExpression
+    val interpret: QueryExpression => String
+
+    def sql: String = interpret(query)
 
     def prepareProduct[A <: HList : Param](params: A): Builder[A] =
       new StringContext(sql.split('?'): _*).sql.applyProduct(params)
