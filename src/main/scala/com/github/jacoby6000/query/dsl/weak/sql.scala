@@ -1,4 +1,4 @@
-package com.github.jacoby6000.query.dsl
+package com.github.jacoby6000.query.dsl.weak
 
 import com.github.jacoby6000.query.ast._
 import scala.annotation.implicitNotFound

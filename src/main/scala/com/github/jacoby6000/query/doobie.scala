@@ -3,7 +3,7 @@ package com.github.jacoby6000.query
 import _root_.doobie.imports._
 import _root_.doobie.syntax.string.Builder
 import com.github.jacoby6000.query.ast._
-import com.github.jacoby6000.query.dsl.sql._
+import com.github.jacoby6000.query.dsl.weak.sql._
 import com.github.jacoby6000.query.interpreters.SqlInterpreter
 import shapeless._
 

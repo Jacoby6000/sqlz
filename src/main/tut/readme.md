@@ -15,7 +15,7 @@ Below is a sample query that somebody may want to write. The query below is perf
 ```tut:silent
 import com.github.jacoby6000.query.ast._
 import com.github.jacoby6000.query.interpreters.sqlDialects.postgres
-import com.github.jacoby6000.query.dsl.sql._
+import com.github.jacoby6000.query.dsl.weak.sql._
 
 val q =
   select (
@@ -68,7 +68,7 @@ First, lets set up a repl session with our imports, plus what we need to run doo
 import com.github.jacoby6000.query.ast._
 import com.github.jacoby6000.query.doobie._
 import com.github.jacoby6000.query.interpreters.sqlDialects.postgres
-import com.github.jacoby6000.query.dsl.sql._
+import com.github.jacoby6000.query.dsl.weak.sql._
 import doobie.imports._
 import shapeless.HNil
 import scalaz.concurrent.Task
