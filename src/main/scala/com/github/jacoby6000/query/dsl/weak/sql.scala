@@ -1,7 +1,9 @@
 package com.github.jacoby6000.query.dsl.weak
 
 import com.github.jacoby6000.query.ast._
+
 import scala.annotation.implicitNotFound
+import scala.util.matching.Regex
 
 /**
   * Created by jacob.barber on 3/4/16.
@@ -56,12 +58,16 @@ object sql {
       go(parts.tail, QueryPathEnd(parts.head))
     }
 
+    def r(args: Any*): Regex = c.standardInterpolator(identity, args).r
+
     def expr(args: String*)(implicit ev0: RawExpressionHandler[String]): QueryRawExpression[String] = {
       QueryRawExpression(c.standardInterpolator(identity,args))
     }
 
     def func(): SqlQueryFunctionBuilder = SqlQueryFunctionBuilder(p())
   }
+
+  r"asdasda"
 
 
   implicit class QueryValueExtensions(val f: QueryValue) extends AnyVal {
