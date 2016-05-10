@@ -22,6 +22,7 @@ object interpreters {
 
   implicit class QuerySelectExtensions[A <: HList : Param](expr: QuerySelect[A])(implicit sqlInterpreter: SqlInterpreter) {
     def query[B: Composite](printer: String => Unit = void): Query0[B] = sqlInterpreter.query[A,B](expr, printer)
+    def query[B: Composite]: Query0[B] = sqlInterpreter.query[A,B](expr, void)
   }
 
   object sqlDialects {
