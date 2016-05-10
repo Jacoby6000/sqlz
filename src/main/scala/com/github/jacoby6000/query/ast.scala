@@ -1,4 +1,5 @@
 package com.github.jacoby6000.query
+import doobie.imports._
 import shapeless._
 import shapeless.ops.hlist.{Comapped, LeftFolder, Mapped, Mapper, Prepend}
 
@@ -8,9 +9,29 @@ import shapeless.ops.hlist.{Comapped, LeftFolder, Mapped, Mapper, Prepend}
   */
 object ast {
 
-  type OfKindContainingHList[TC[_ <: HList]] = {
-    type HL[L <: HList] = UnaryTCConstraint[L, TC] forSome { type TC[_] }
+  trait OfKindContainingHListTC[L <: HList, TC[_ <: HList]] extends Serializable
+
+  object OfKindContainingHListTC {
+    def apply[L <: HList, TC[_ <: HList]](implicit utcc: OfKindContainingHListTC[L, TC]): OfKindContainingHListTC[L, TC] = utcc
+
+    type OfKindContainingHList[TC[_ <: HList]] = {
+      type HL[L <: HList] = OfKindContainingHListTC[L, TC]
+    }
+
+    implicit def hnilUnaryTC[TC[_ <: HList]] = new OfKindContainingHListTC[HNil, TC] {}
+    implicit def hlistUnaryTC1[H <: HList, T <: HList, TC[_ <: HList]](implicit utct : OfKindContainingHListTC[T, TC]) =
+      new OfKindContainingHListTC[TC[H] :: T, TC] {}
+
+    implicit def hlistUnaryTC2[L <: HList] = new OfKindContainingHListTC[L, Id] {}
+
+    implicit def hlistUnaryTC3[H] = new OfKindContainingHListTC[HNil, Const[H]#λ] {}
+    implicit def hlistUnaryTC4[H, T <: HList](implicit utct : OfKindContainingHListTC[T, Const[H]#λ]) =
+      new OfKindContainingHListTC[H :: T, Const[H]#λ] {}
   }
+
+  import OfKindContainingHListTC.OfKindContainingHList
+
+
 
   trait RawExpressionHandler[A] {
     def interpret(a: A): String
@@ -85,56 +106,66 @@ object ast {
     def unwrap[A <: HList](f: QueryComparison[A]): A = f.params
   }
 
+  object ModifyFieldUnwrapper extends UnwrapperPoly[ModifyField] {
+    def unwrap[A <: HList](f: ModifyField[A]): A = f.params
+  }
+
+
+  object QuerySelect {
+    def apply[
+      Table <: HList,
+      QueryProjections <: HList : OfKindContainingHList[QueryProjection]#HL,
+      QueryUnions <: HList : OfKindContainingHList[QueryUnion]#HL,
+      QueryComparisons <: HList,
+      MappedValues <: HList,
+      MappedUnions <: HList,
+      MappedFilters <: HList,
+      Out1 <: HList,
+      Out2 <: HList,
+      Params <: HList
+      ](
+         table: QueryProjection[Table],
+         values: QueryProjections,
+         unions: QueryUnions,
+         filter: QueryComparison[QueryComparisons],
+         sorts: List[QuerySort],
+         groupings: List[QuerySort],
+         offset: Option[Int],
+         limit: Option[Int]
+       )(implicit
+         mv: Mapper.Aux[QueryProjectionUnwrapper.type, QueryProjections, MappedValues],
+         mu: Mapper.Aux[QueryUnionUnwrapper.type, QueryUnions, MappedUnions],
+         p1: Prepend.Aux[Table, MappedValues, Out1],
+         p2: Prepend.Aux[Out1, MappedUnions, Out2],
+         p3: Prepend.Aux[Out2, QueryComparisons, Params]
+       ): QuerySelect[Table, QueryProjections, QueryUnions, QueryComparisons, Params] = QuerySelect(table, values, unions, filter, sorts, groupings, offset, limit, p3(p2(p1(table.params,mv(values)),mu(unions)), filter.params))
+  }
+
   case class QuerySelect[
                           Table <: HList,
                           QueryProjections <: HList : OfKindContainingHList[QueryProjection]#HL,
                           QueryUnions <: HList : OfKindContainingHList[QueryUnion]#HL,
-                          QueryComparisons <: HList : OfKindContainingHList[QueryComparison]#HL,
-                          MappedValues <: HList,
-                          MappedUnions <: HList,
-                          MappedFilters <: HList,
-                          Out1 <: HList,
-                          Out2 <: HList,
-                          Out3 <: HList
-                        ](
+                          QueryComparisons <: HList,
+                          Params <: HList
+                        ] private (
                           table: QueryProjection[Table],
                           values: QueryProjections,
                           unions: QueryUnions,
-                          filters: QueryComparisons,
+                          filter: QueryComparison[QueryComparisons],
                           sorts: List[QuerySort],
                           groupings: List[QuerySort],
                           offset: Option[Int],
-                          limit: Option[Int]
-                        )(implicit
-                          cv: Mapper.Aux[QueryProjectionUnwrapper.type, QueryProjections, MappedValues],
-                          cu: Mapper.Aux[QueryUnionUnwrapper.type, QueryUnions, MappedUnions],
-                          cf: Mapper.Aux[QueryComparisonUnwrapper.type, QueryComparisons, MappedFilters],
-                          p1: Prepend.Aux[Table, MappedValues, Out1],
-                          p2: Prepend.Aux[Out1, MappedUnions, Out2],
-                          p3: Prepend.Aux[Out2, MappedFilters, Out3]
-                        ) extends QueryExpression[Out3] with QueryValue[Out3] {
-    lazy val params: Out3 = p3(p2(p1(table.params,cv(values)),cu(unions)), cf(filters))
-  }
+                          limit: Option[Int],
+                          params: Params
+                        ) extends QueryExpression[Params]
 
-//  case class ModifyField[A <: HList](key: QueryPath, value: QueryValue[A])
-//  case class QueryInsert[A <: HList : OfKind[ModifyField]#HL](collection: QueryPath, values: A) extends QueryExpression[A] with QueryModify[A]
+  case class ModifyField[A <: HList](key: QueryPath, value: QueryValue[A]) { lazy val params: A = value.params}
+  case class QueryInsert[A <: HList : OfKindContainingHList[ModifyField]#HL, Out <: HList]
+                        (collection: QueryPath, values: A)
+                        (implicit m: Mapper.Aux[ModifyFieldUnwrapper.type, A, Out]) extends QueryExpression[Out] with QueryModify[Out] {
+    lazy val params: Out = m(values)
+  }
 //  case class QueryUpdate[A <: HList : OfKind[ModifyField]#HL, B <: HList](collection: QueryPath, values: A, where: Option[B]) extends QueryExpression[B] with QueryModify[B]
 //  case class QueryDelete[B <:(collection: QueryPath, where: QueryComparison) extends QueryExpression
 
-//  QuerySelect(
-//    table = QueryProjectOne(QueryPathEnd("foo"), None): QueryProjection[HNil],
-//    values = QueryProjectOne(QueryParameter("bar"), Some("b")) ::
-//      QueryProjectOne(QueryParameter(5), Some("five")) ::
-//      QueryProjectAll ::
-//      HNil,
-//    unions = QueryLeftOuterJoin(
-//      table = QueryProjectOne(QueryPathEnd("table2"), Some("t2")),
-//      on = QueryEqual(QueryPathEnd("t2"), QueryParameter(5))
-//    ),
-//    filters = QueryNot(QueryLit(QueryParameter(false))),
-//    List.empty,
-//    List.empty,
-//    None,
-//    None
-//  )
 }

@@ -3,6 +3,7 @@
 //import com.github.jacoby6000.query.ast._
 //import doobie.imports.{Param, Query0}
 //import doobie.util.composite.Composite
+//import doobie.util.query.Query
 //
 ///**
 //  * Created by jacob.barber on 3/3/16.
@@ -10,13 +11,14 @@
 //object interpreters {
 //  class SqlInterpreter {
 //    def query[A : Param, B: Composite](ast: QueryExpression[A]): Query0[B] =
+//      Query[A,B](interpretPSql(ast), None).toQuery0(ast.params)
 //  }
 //
 //  object sqlDialects {
 //    implicit val postgres = new SqlInterpreter(interpretPSql _)
 //  }
 //
-//  def interpretPSql(expr: QueryExpression): String = {
+//  def interpretPSql(expr: QueryExpression[_]): String = {
 //    val singleQuote = '"'.toString
 //    def wrap(s: String, using: String): String = s"$using$s$using"
 //
@@ -27,14 +29,14 @@
 //      case QueryPathCons(head, tail) => wrap(head, singleQuote) + "." + reducePath(tail)
 //    }
 //
-//    def reduceProjection(projection: QueryProjection): String = projection match {
+//    def reduceProjection(projection: QueryProjection[_]): String = projection match {
 //      case QueryProjectAll => "*"
 //      case QueryProjectOne(path, alias) => reduceValue(path) + alias.map(" AS " + _).getOrElse("")
 //    }
 //
-//    def reduceValue(value: QueryValue): String = value match {
+//    def reduceValue(value: QueryValue[_]): String = value match {
 //      case expr @ QueryRawExpression(ex) => expr.rawExpressionHandler.interpret(ex)
-//      case QueryString(s) => "'" + s + "'"
+//      case QueryParameter(s) => "?"
 //      case QueryPathCons(a,b) => reducePath(QueryPathCons(a,b))
 //      case QueryPathEnd(a) => reducePath(QueryPathEnd(a))
 //      case QueryFunction(path, args) => reducePath(path) + "(" + args.map(reduceValue).mkString(", ") + ")"
@@ -43,11 +45,10 @@
 //      case QueryDiv(left, right) => binOpReduction("/", left, right)(reduceValue)
 //      case QueryMul(left, right) => binOpReduction("*", left, right)(reduceValue)
 //      case sel: QuerySelect => "(" + interpretPSql(sel) + ")"
-//      case QueryParameter => "?"
 //      case QueryNull => "NULL"
 //    }
 //
-//    def reduceComparison(value: QueryComparison): String = value match {
+//    def reduceComparison(value: QueryComparison[_]): String = value match {
 //      case QueryLit(v) => reduceValue(v)
 //      case QueryEqual(left, QueryNull) => reduceValue(left) + " IS NULL"
 //      case QueryEqual(left, right) => binOpReduction("=", left, right)(reduceValue)
@@ -55,7 +56,7 @@
 //      case QueryNotEqual(left, right) => binOpReduction("<>", left, right)(reduceValue)
 //      case QueryGreaterThan(left, right) => binOpReduction(">", left, right)(reduceValue)
 //      case QueryGreaterThanOrEqual(left, right) => binOpReduction(">=", left, right)(reduceValue)
-//      case QueryIn(left, rights) => reduceValue(left) + " IN " + rights.map(reduceValue).mkString("(", ", ", ")")
+////      case QueryIn(left, rights) => reduceValue(left) + " IN " + rights.map(reduceValue).mkString("(", ", ", ")")
 //      case QueryLessThan(left, right) => binOpReduction("<", left, right)(reduceValue)
 //      case QueryLessThanOrEqual(left, right) => binOpReduction("<=", left, right)(reduceValue)
 //      case QueryAnd(left, right) => binOpReduction(" AND ", left, right)(reduceComparison)
@@ -63,7 +64,7 @@
 //      case QueryNot(v) => "!" + reduceComparison(v)
 //    }
 //
-//    def reduceUnion(union: QueryUnion): String = union match {
+//    def reduceUnion(union: QueryUnion[_]): String = union match {
 //      case QueryLeftOuterJoin(path, logic) => "LEFT OUTER JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
 //      case QueryRightOuterJoin(path, logic) => "RIGHT OUTER JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
 //      case QueryCrossJoin(path, logic) => "CROSS JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
@@ -76,13 +77,13 @@
 //      case QuerySortDesc(path) => reducePath(path) + " DESC"
 //    }
 //
-//    def reduceInsertValues(insertValue: ModifyField): (String, String) =
+//    def reduceInsertValues(insertValue: ModifyField[_]): (String, String) =
 //      reducePath(insertValue.key) -> reduceValue(insertValue.value)
 //
 //    expr match {
 //      case QuerySelect(table, values, unions, filters, sorts, groups, offset, limit) =>
 //        val sqlProjections = values.map(reduceProjection).mkString(", ")
-//        val sqlFilter = filters.map("WHERE " + reduceComparison(_)).getOrElse("")
+//        val sqlFilter = "WHERE " + reduceComparison(filters)
 //        val sqlUnions = unions.map(reduceUnion).mkString(" ")
 //        val sqlSorts =
 //          if(sorts.isEmpty) ""
