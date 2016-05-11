@@ -1,9 +1,10 @@
 package com.github.jacoby6000.query.dsl.weak
 
 import com.github.jacoby6000.query.ast._
+import com.github.jacoby6000.query.shapeless.KindConstraint.OfKindContainingHListTC
 import com.github.jacoby6000.query.shapeless.KindConstraint.OfKindContainingHListTC._
 import shapeless.ops.hlist.{Mapper, Prepend, ToTraversable}
-import shapeless.{HList, HNil, ProductArgs}
+import shapeless._
 
 import scala.annotation.implicitNotFound
 import scala.util.matching.Regex
@@ -59,8 +60,9 @@ object sql {
 
   implicit class StringContextExtensions(val c: StringContext) extends AnyVal {
     def p(): QueryPath = {
+      val -::- = scala.collection.immutable.::
       def go(remainingParts: List[String], queryPath: QueryPath): QueryPath = remainingParts match {
-        case head :: tail => go(tail, QueryPathCons(head, queryPath))
+        case head -::- tail => go(tail, QueryPathCons(head, queryPath))
         case Nil => queryPath
       }
 
@@ -104,18 +106,28 @@ object sql {
                                                   arg3: QueryProjection[C]) = SelectBuilder(arg1 :: arg2 :: arg3 :: HNil)
 
     def applyProduct[A <: HList : OfKindContainingHList[QueryProjection]#HL, Out <: HList](a: A)
-                                                                                     (implicit toList: ToTraversable.Aux[A, List, QueryValue[_]],
-                                                                                      m: Mapper.Aux[QueryValueUnwrapper.type, A, Out]) = SelectBuilder(a)
+                                                                                     (implicit toList: ToTraversable.Aux[A, List, QueryProjection[_]],
+                                                                                      m: Mapper.Aux[QueryProjectionUnwrapper.type, A, Out]) = SelectBuilder(a)
 
   }
 
 
-  case class SelectBuilder[QueryProjections <: HList : OfKindContainingHList[QueryProjection]#HL, MappedValues]
+  case class SelectBuilder[QueryProjections <: HList : OfKindContainingHList[QueryProjection]#HL, MappedValues <: HList]
                           (projections: QueryProjections)
-                          (implicit mv: Mapper.Aux[QueryProjectionUnwrapper.type, QueryProjections, MappedValues],
-                                    pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]]) {
+                          (implicit toList: ToTraversable.Aux[QueryProjections, List, QueryProjection[_]],
+                                    m: Mapper.Aux[QueryProjectionUnwrapper.type, QueryProjections, MappedValues]) {
 
-    def from[B <: HList](path: QueryProjection[B]) = QueryBuilder(path, projections, HNil, QueryEqual(QueryParameter(true), QueryParameter(true)),List.empty, List.empty, None, None)
+    implicit def um: Mapper.Aux[QueryUnionUnwrapper.type, HNil.type, HNil.type] = new Mapper[QueryUnionUnwrapper.type, HNil.type] {
+      type Out = HNil.type
+      def apply(l : HNil.type): Out = HNil
+    }
+
+    val queryEqual = QueryEqual(QueryParameter(true), QueryParameter(true))
+
+    def from[B <: HList, Out1 <: HList, Out2 <: HList, Out3 <: HList](path: QueryProjection[B])
+                                       (implicit
+                                        p1: Prepend.Aux[B, MappedValues, Out1]) =
+      QueryBuilder(path, projections, HNil, queryEqual,List.empty, List.empty, None, None)
   }
 
   trait Joiner[F[_]] {
