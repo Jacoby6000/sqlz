@@ -51,36 +51,36 @@ object interpreters {
       case QueryPathCons(a,b) => reducePath(QueryPathCons(a,b))
       case QueryPathEnd(a) => reducePath(QueryPathEnd(a))
       case QueryFunction(path, args, _) => reducePath(path) + "(" + args.map(reduceValue).mkString(", ") + ")"
-      case QueryAdd(left, right) => binOpReduction("+", left, right)(reduceValue)
-      case QuerySub(left, right) => binOpReduction("-", left, right)(reduceValue)
-      case QueryDiv(left, right) => binOpReduction("/", left, right)(reduceValue)
-      case QueryMul(left, right) => binOpReduction("*", left, right)(reduceValue)
+      case QueryAdd(left, right, _) => binOpReduction("+", left, right)(reduceValue)
+      case QuerySub(left, right, _) => binOpReduction("-", left, right)(reduceValue)
+      case QueryDiv(left, right, _) => binOpReduction("/", left, right)(reduceValue)
+      case QueryMul(left, right, _) => binOpReduction("*", left, right)(reduceValue)
       case sel: QuerySelect[_] => "(" + interpretPSql(sel) + ")"
       case QueryNull => "NULL"
     }
 
     def reduceComparison(value: QueryComparison[_]): String = value match {
       case QueryLit(v) => reduceValue(v)
-      case QueryEqual(left, QueryNull) => reduceValue(left) + " IS NULL"
-      case QueryEqual(left, right) => binOpReduction("=", left, right)(reduceValue)
-      case QueryNotEqual(left, QueryNull) => reduceValue(left) + " IS NOT NULL"
-      case QueryNotEqual(left, right) => binOpReduction("<>", left, right)(reduceValue)
-      case QueryGreaterThan(left, right) => binOpReduction(">", left, right)(reduceValue)
-      case QueryGreaterThanOrEqual(left, right) => binOpReduction(">=", left, right)(reduceValue)
+      case QueryEqual(left, QueryNull, _) => reduceValue(left) + " IS NULL"
+      case QueryEqual(left, right, _) => binOpReduction("=", left, right)(reduceValue)
+      case QueryNotEqual(left, QueryNull, _) => reduceValue(left) + " IS NOT NULL"
+      case QueryNotEqual(left, right, _) => binOpReduction("<>", left, right)(reduceValue)
+      case QueryGreaterThan(left, right, _) => binOpReduction(">", left, right)(reduceValue)
+      case QueryGreaterThanOrEqual(left, right, _) => binOpReduction(">=", left, right)(reduceValue)
       case QueryIn(left, rights, _) => reduceValue(left) + " IN " + rights.map(reduceValue).mkString("(", ", ", ")")
-      case QueryLessThan(left, right) => binOpReduction("<", left, right)(reduceValue)
-      case QueryLessThanOrEqual(left, right) => binOpReduction("<=", left, right)(reduceValue)
-      case QueryAnd(left, right) => binOpReduction(" AND ", left, right)(reduceComparison)
-      case QueryOr(left, right) => binOpReduction(" OR ", left, right)(reduceComparison)
+      case QueryLessThan(left, right, _) => binOpReduction("<", left, right)(reduceValue)
+      case QueryLessThanOrEqual(left, right, _) => binOpReduction("<=", left, right)(reduceValue)
+      case QueryAnd(left, right, _) => binOpReduction(" AND ", left, right)(reduceComparison)
+      case QueryOr(left, right, _) => binOpReduction(" OR ", left, right)(reduceComparison)
       case QueryNot(v) => "!" + reduceComparison(v)
     }
 
     def reduceUnion(union: QueryUnion[_]): String = union match {
-      case QueryLeftOuterJoin(path, logic) => "LEFT OUTER JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
-      case QueryRightOuterJoin(path, logic) => "RIGHT OUTER JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
-      case QueryCrossJoin(path, logic) => "CROSS JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
-      case QueryFullOuterJoin(path, logic) => "FULL OUTER JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
-      case QueryInnerJoin(path, logic) => "INNER JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
+      case QueryLeftOuterJoin(path, logic, _) => "LEFT OUTER JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
+      case QueryRightOuterJoin(path, logic, _) => "RIGHT OUTER JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
+      case QueryCrossJoin(path, logic, _) => "CROSS JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
+      case QueryFullOuterJoin(path, logic, _) => "FULL OUTER JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
+      case QueryInnerJoin(path, logic, _) => "INNER JOIN " + reduceProjection(path) + " ON " + reduceComparison(logic)
     }
 
     def reduceSort(sort: QuerySort): String = sort match {
@@ -94,7 +94,7 @@ object interpreters {
     expr match {
       case QuerySelect(table, values, unions, filters, sorts, groups, offset, limit, _) =>
         val sqlProjections = values.map(reduceProjection).mkString(", ")
-        val sqlFilter = "WHERE " + reduceComparison(filters)
+        val sqlFilter = filters.map("WHERE " + reduceComparison(_)).getOrElse(" ")
         val sqlUnions = unions.map(reduceUnion).mkString(" ")
         val sqlSorts =
           if(sorts.isEmpty) ""

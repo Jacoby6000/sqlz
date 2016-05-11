@@ -2,7 +2,7 @@ package com.github.jacoby6000.query
 import doobie.imports._
 import _root_.shapeless._
 import _root_.shapeless.ops.hlist.{Mapper, Prepend, ToTraversable}
-import com.github.jacoby6000.query.shapeless.KindConstraint.ConstrainedUnaryTCConstraintTC
+import com.github.jacoby6000.query.shapeless.KindConstraint.OfKindContainingHListTC._
 
 
 /**
@@ -10,13 +10,7 @@ import com.github.jacoby6000.query.shapeless.KindConstraint.ConstrainedUnaryTCCo
   */
 object ast {
 
-  private object OfKindContainingHListTC extends ConstrainedUnaryTCConstraintTC[HList] {
-    type OfKindContainingHList[TC[_ <: HList]] = {
-      type HL[L <: HList] = ConstrainedUnaryTCConstraintTC[L, TC]
-    }
-  }
 
-  import OfKindContainingHListTC._
 
   trait UnwrapperPoly[F[_ <: HList]] extends Poly1 {
     implicit def unwrapHValue[A <: HList] = at[F[A]](unwrap)
@@ -57,32 +51,80 @@ object ast {
     def apply[L <: HList : OfKindContainingHList[QueryValue]#HL, Out <: HList](path: QueryPath, args: L)(implicit toList: ToTraversable.Aux[L, List, QueryValue[_]], m: Mapper.Aux[QueryValueUnwrapper.type, L, Out]): QueryFunction[Out] = QueryFunction[Out](path, toList(args), m(args))
   }
 
-  object QueryIn {
-    def apply[A <: HList, B <: HList : OfKindContainingHList[QueryValue]#HL, MappedValues <: HList, Out <: HList](left: QueryValue[A], rights: B)(implicit toList: ToTraversable.Aux[B, List, QueryValue[_]], m: Mapper.Aux[QueryValueUnwrapper.type, B, MappedValues], p: Prepend.Aux[A,MappedValues,Out]): QueryIn[A,Out] = QueryIn[A,Out](left, toList(rights), left.params ::: m(rights))
+  object QueryAdd {
+    def apply[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]): QueryAdd[Out] = QueryAdd(left, right, left.params ::: right.params)
+  }
+
+  object QuerySub {
+    def apply[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]): QuerySub[Out] = QuerySub(left, right, left.params ::: right.params)
+  }
+
+  object QueryDiv {
+    def apply[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]): QueryDiv[Out] = QueryDiv(left, right, left.params ::: right.params)
+  }
+
+  object QueryMul {
+    def apply[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]): QueryMul[Out] = QueryMul(left, right, left.params ::: right.params)
   }
 
   sealed trait QueryValue[+L <: HList] { def params: L }
-  case class QueryRawExpression[T](t: T)(implicit val rawExpressionHandler: RawExpressionHandler[T]) extends QueryValue[HNil] { lazy val params: HNil = HNil }
-  case class QueryParameter[T](value: T) extends QueryValue[T :: HNil] { lazy val params: T :: HNil = value :: HNil}
+  case class QueryRawExpression[T] private (t: T)(implicit val rawExpressionHandler: RawExpressionHandler[T]) extends QueryValue[HNil] { lazy val params: HNil = HNil }
+  case class QueryParameter[T] private (value: T) extends QueryValue[T :: HNil] { lazy val params: T :: HNil = value :: HNil}
   case class QueryFunction[L <: HList] private (path: QueryPath, args: List[QueryValue[_]], params: L) extends QueryValue[L]
-  case class QueryAdd[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryValue[Out] { lazy val params: Out = left.params ::: right.params }
-  case class QuerySub[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryValue[Out] { lazy val params: Out = left.params ::: right.params }
-  case class QueryDiv[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryValue[Out] { lazy val params: Out = left.params ::: right.params }
-  case class QueryMul[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryValue[Out] { lazy val params: Out = left.params ::: right.params }
+  case class QueryAdd[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryValue[A]
+  case class QuerySub[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryValue[A]
+  case class QueryDiv[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryValue[A]
+  case class QueryMul[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryValue[A]
   case object QueryNull extends QueryValue[HNil] { lazy val params: HNil = HNil }
 
+  object QueryEqual {
+    def apply[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]): QueryEqual[Out] = QueryEqual(left, right, left.params ::: right.params)
+  }
+
+  object QueryNotEqual {
+    def apply[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]): QueryNotEqual[Out] = QueryNotEqual(left, right, left.params ::: right.params)
+  }
+
+  object QueryGreaterThan {
+    def apply[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]): QueryGreaterThan[Out] = QueryGreaterThan(left, right, left.params ::: right.params)
+  }
+
+  object QueryGreaterThanOrEqual {
+    def apply[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]): QueryGreaterThanOrEqual[Out] = QueryGreaterThanOrEqual(left, right, left.params ::: right.params)
+  }
+
+  object QueryLessThan {
+    def apply[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]): QueryLessThan[Out] = QueryLessThan(left, right, left.params ::: right.params)
+  }
+
+  object QueryLessThanOrEqual {
+    def apply[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]): QueryLessThanOrEqual[Out] = QueryLessThanOrEqual(left, right, left.params ::: right.params)
+  }
+
+  object QueryIn {
+    def apply[A <: HList, B <: HList : OfKindContainingHList[QueryValue]#HL, MappedValues <: HList, Out <: HList](left: QueryValue[A], rights: B)(implicit toList: ToTraversable.Aux[B, List, QueryValue[_]], m: Mapper.Aux[QueryValueUnwrapper.type, B, MappedValues], p: Prepend.Aux[A,MappedValues,Out]): QueryIn[Out] = QueryIn[Out](left, toList(rights), left.params ::: m(rights))
+  }
+
+  object QueryAnd {
+    def apply[A <: HList, B <: HList, Out <: HList](left: QueryComparison[A], right: QueryComparison[B])(implicit p: Prepend.Aux[A,B,Out]): QueryAnd[Out] = QueryAnd(left, right, left.params ::: right.params)
+  }
+
+  object QueryOr {
+    def apply[A <: HList, B <: HList, Out <: HList](left: QueryComparison[A], right: QueryComparison[B])(implicit p: Prepend.Aux[A,B,Out]): QueryOr[Out] = QueryOr(left, right, left.params ::: right.params)
+  }
+
   sealed trait QueryComparison[L <: HList] { def params : L }
-  case class QueryEqual[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryComparison[Out] { lazy val params: Out = left.params ::: right.params }
-  case class QueryNotEqual[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryComparison[Out] { lazy val params: Out = left.params ::: right.params }
-  case class QueryGreaterThan[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryComparison[Out] { lazy val params: Out = left.params ::: right.params }
-  case class QueryGreaterThanOrEqual[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryComparison[Out] { lazy val params: Out = left.params ::: right.params }
-  case class QueryLessThan[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryComparison[Out] { lazy val params: Out = left.params ::: right.params }
-  case class QueryLessThanOrEqual[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryComparison[Out] { lazy val params: Out = left.params ::: right.params }
-  case class QueryIn[A <: HList, B <: HList] private (left: QueryValue[A], rights: List[QueryValue[_]], params: B) extends QueryComparison[B]
+  case class QueryEqual[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryComparison[A]
+  case class QueryNotEqual[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryComparison[A]
+  case class QueryGreaterThan[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryComparison[A]
+  case class QueryGreaterThanOrEqual[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryComparison[A]
+  case class QueryLessThan[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryComparison[A]
+  case class QueryLessThanOrEqual[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryComparison[A]
+  case class QueryIn[A <: HList] private (left: QueryValue[_], rights: List[QueryValue[_]], params: A) extends QueryComparison[A]
   case class QueryLit[A <: HList](value: QueryValue[A]) extends QueryComparison[A] { lazy val params: A = value.params }
   case class QueryNot[A <: HList](value: QueryComparison[A]) extends QueryComparison[A] { lazy val params: A = value.params }
-  case class QueryAnd[A <: HList, B <: HList, Out <: HList](left: QueryComparison[A], right: QueryComparison[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryComparison[Out] { lazy val params: Out = left.params ::: right.params }
-  case class QueryOr[A <: HList, B <: HList, Out <: HList](left: QueryComparison[A], right: QueryComparison[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryComparison[Out] { lazy val params: Out = left.params ::: right.params }
+  case class QueryAnd[A <: HList] private (left: QueryComparison[_], right: QueryComparison[_], params: A) extends QueryComparison[A]
+  case class QueryOr[A <: HList] private (left: QueryComparison[_], right: QueryComparison[_], params: A) extends QueryComparison[A]
 
   sealed trait QueryPath extends QueryValue[HNil] { lazy val params: HNil = HNil }
   case class QueryPathEnd(path: String) extends QueryPath with QueryValue[HNil]
@@ -92,12 +134,32 @@ object ast {
   case class QueryProjectOne[A <: HList](selection: QueryValue[A], alias: Option[String]) extends QueryProjection[A] { lazy val params: A = selection.params }
   case object QueryProjectAll extends QueryProjection[HNil] { lazy val params: HNil = HNil }
 
+  object QueryInnerJoin {
+    def apply[A <: HList, B <: HList, Out <: HList](table: QueryProjectOne[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A,B,Out]): QueryInnerJoin[Out] = QueryInnerJoin(table, on, table.params ::: on.params)
+  }
+
+  object QueryFullOuterJoin {
+    def apply[A <: HList, B <: HList, Out <: HList](table: QueryProjectOne[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A,B,Out]): QueryFullOuterJoin[Out] = QueryFullOuterJoin(table, on, table.params ::: on.params)
+  }
+
+  object QueryLeftOuterJoin {
+    def apply[A <: HList, B <: HList, Out <: HList](table: QueryProjectOne[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A,B,Out]): QueryLeftOuterJoin[Out] = QueryLeftOuterJoin(table, on, table.params ::: on.params)
+  }
+
+  object QueryRightOuterJoin {
+    def apply[A <: HList, B <: HList, Out <: HList](table: QueryProjectOne[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A,B,Out]): QueryRightOuterJoin[Out] = QueryRightOuterJoin(table, on, table.params ::: on.params)
+  }
+
+  object QueryCrossJoin {
+    def apply[A <: HList, B <: HList, Out <: HList](table: QueryProjectOne[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A,B,Out]): QueryCrossJoin[Out] = QueryCrossJoin(table, on, table.params ::: on.params)
+  }
+
   sealed trait QueryUnion[A <: HList] { def params: A }
-  case class QueryInnerJoin[A <: HList, B <: HList, Out <: HList](table: QueryProjectOne[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryUnion[Out] { lazy val params: Out = table.params ::: on.params }
-  case class QueryFullOuterJoin[A <: HList, B <: HList, Out <: HList](table: QueryProjectOne[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryUnion[Out] { lazy val params: Out = table.params ::: on.params }
-  case class QueryLeftOuterJoin[A <: HList, B <: HList, Out <: HList](table: QueryProjectOne[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryUnion[Out] { lazy val params: Out = table.params ::: on.params }
-  case class QueryRightOuterJoin[A <: HList, B <: HList, Out <: HList](table: QueryProjectOne[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryUnion[Out] { lazy val params: Out = table.params ::: on.params }
-  case class QueryCrossJoin[A <: HList, B <: HList, Out <: HList](table: QueryProjectOne[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A,B,Out]) extends QueryUnion[Out] { lazy val params: Out = table.params ::: on.params }
+  case class QueryInnerJoin[A <: HList](table: QueryProjectOne[_], on: QueryComparison[_], params: A) extends QueryUnion[A]
+  case class QueryFullOuterJoin[A <: HList](table: QueryProjectOne[_], on: QueryComparison[_], params: A) extends QueryUnion[A]
+  case class QueryLeftOuterJoin[A <: HList](table: QueryProjectOne[_], on: QueryComparison[_], params: A) extends QueryUnion[A]
+  case class QueryRightOuterJoin[A <: HList](table: QueryProjectOne[_], on: QueryComparison[_], params: A) extends QueryUnion[A]
+  case class QueryCrossJoin[A <: HList](table: QueryProjectOne[_], on: QueryComparison[_], params: A) extends QueryUnion[A]
 
   sealed trait QuerySort
   case class QuerySortAsc(path: QueryPath) extends QuerySort
@@ -127,7 +189,7 @@ object ast {
             groupings: List[QuerySort],
             offset: Option[Int],
             limit: Option[Int]
-          )(implicit
+          )( implicit
             mv: Mapper.Aux[QueryProjectionUnwrapper.type, QueryProjections, MappedValues],
             mu: Mapper.Aux[QueryUnionUnwrapper.type, QueryUnions, MappedUnions],
             p1: Prepend.Aux[Table, MappedValues, Out1],
@@ -136,14 +198,42 @@ object ast {
             pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
             ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_ <: HList]]
           ): QuerySelect[Params] =
-              QuerySelect[Params](table, pl(values), ul(unions), filter, sorts, groupings, offset, limit, p3(p2(p1(table.params,mv(values)),mu(unions)), filter.params))
+              QuerySelect[Params](table, pl(values), ul(unions), Some(filter), sorts, groupings, offset, limit, p3(p2(p1(table.params,mv(values)),mu(unions)), filter.params))
+
+  def apply[
+    Table <: HList,
+    QueryProjections <: HList : OfKindContainingHList[QueryProjection]#HL,
+    QueryUnions <: HList : OfKindContainingHList[QueryUnion]#HL,
+    MappedValues <: HList,
+    MappedUnions <: HList,
+    MappedFilters <: HList,
+    Out1 <: HList,
+    Params <: HList
+    ](
+       table: QueryProjection[Table],
+       values: QueryProjections,
+       unions: QueryUnions,
+       sorts: List[QuerySort],
+       groupings: List[QuerySort],
+       offset: Option[Int],
+       limit: Option[Int]
+     )( implicit
+        mv: Mapper.Aux[QueryProjectionUnwrapper.type, QueryProjections, MappedValues],
+        mu: Mapper.Aux[QueryUnionUnwrapper.type, QueryUnions, MappedUnions],
+        p1: Prepend.Aux[Table, MappedValues, Out1],
+        p2: Prepend.Aux[Out1, MappedUnions, Params],
+        pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
+        ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_ <: HList]]
+     ): QuerySelect[Params] =
+      QuerySelect[Params](table, pl(values), ul(unions), None, sorts, groupings, offset, limit, p2(p1(table.params,mv(values)),mu(unions)))
+
   }
 
   case class QuerySelect[Params <: HList] private (
                           table: QueryProjection[_ <: HList],
                           values: List[QueryProjection[_ <: HList]],
                           unions: List[QueryUnion[_ <: HList]],
-                          filter: QueryComparison[_ <: HList],
+                          filter: Option[QueryComparison[_ <: HList]],
                           sorts: List[QuerySort],
                           groupings: List[QuerySort],
                           offset: Option[Int],
