@@ -5,24 +5,23 @@ import doobie.imports._
 import _root_.shapeless._
 import _root_.shapeless.ops.hlist.ToTraversable
 
-
 /**
-  * Created by jacob.barber on 3/3/16.
-  */
+ * Created by jacob.barber on 3/3/16.
+ */
 object interpreters {
   def void[A](a: A): Unit = ()
 
   case class SqlInterpreter(genSql: QueryExpression[_] => String) {
-    def query[A <: HList : Param, B: Composite](ast: QuerySelect[A], printer: String => Unit = void): Query0[B] = {
+    def query[A <: HList: Param, B: Composite](ast: QuerySelect[A], printer: String => Unit = void): Query0[B] = {
       val sql = genSql(ast)
       printer(sql)
       Query[A, B](sql, None)(implicitly[Param[A]].composite, implicitly[Composite[B]]).toQuery0(ast.params)
     }
   }
 
-  implicit class QuerySelectExtensions[A <: HList : Param](expr: QuerySelect[A])(implicit sqlInterpreter: SqlInterpreter) {
-    def query[B: Composite](printer: String => Unit = void): Query0[B] = sqlInterpreter.query[A,B](expr, printer)
-    def query[B: Composite]: Query0[B] = sqlInterpreter.query[A,B](expr, void)
+  implicit class QuerySelectExtensions[A <: HList: Param](expr: QuerySelect[A])(implicit sqlInterpreter: SqlInterpreter) {
+    def query[B: Composite](printer: String => Unit = void): Query0[B] = sqlInterpreter.query[A, B](expr, printer)
+    def query[B: Composite]: Query0[B] = sqlInterpreter.query[A, B](expr, void)
   }
 
   object sqlDialects {
@@ -48,7 +47,7 @@ object interpreters {
     def reduceValue(value: QueryValue[_]): String = value match {
       case expr @ QueryRawExpression(ex) => expr.rawExpressionHandler.interpret(ex)
       case QueryParameter(s) => "?"
-      case QueryPathCons(a,b) => reducePath(QueryPathCons(a,b))
+      case QueryPathCons(a, b) => reducePath(QueryPathCons(a, b))
       case QueryPathEnd(a) => reducePath(QueryPathEnd(a))
       case QueryFunction(path, args, _) => reducePath(path) + "(" + args.map(reduceValue).mkString(", ") + ")"
       case QueryAdd(left, right, _) => binOpReduction("+", left, right)(reduceValue)
@@ -97,11 +96,11 @@ object interpreters {
         val sqlFilter = filters.map("WHERE " + reduceComparison(_)).getOrElse(" ")
         val sqlUnions = unions.map(reduceUnion).mkString(" ")
         val sqlSorts =
-          if(sorts.isEmpty) ""
+          if (sorts.isEmpty) ""
           else "ORDER BY " + sorts.map(reduceSort).mkString(", ")
 
         val sqlGroups =
-          if(groups.isEmpty) ""
+          if (groups.isEmpty) ""
           else "GROUP BY " + groups.map(reduceSort).mkString(", ")
 
         val sqlTable = reduceProjection(table)
@@ -111,29 +110,27 @@ object interpreters {
 
         s"SELECT $sqlProjections FROM $sqlTable $sqlUnions $sqlFilter $sqlSorts $sqlGroups $sqlLimit $sqlOffset".trim
 
-//      case QueryInsert(table, values) =>
-//        val sqlTable = reducePath(table)
-//        val mappedSqlValuesKV = values.map(reduceInsertValues)
-//        val sqlColumns = mappedSqlValuesKV.map(_._1).mkString(", ")
-//        val sqlValues = mappedSqlValuesKV.map(_._2).mkString(", ")
-//
-//        s"INSERT INTO $sqlTable ($sqlColumns) VALUES ($sqlValues)"
+      //      case QueryInsert(table, values) =>
+      //        val sqlTable = reducePath(table)
+      //        val mappedSqlValuesKV = values.map(reduceInsertValues)
+      //        val sqlColumns = mappedSqlValuesKV.map(_._1).mkString(", ")
+      //        val sqlValues = mappedSqlValuesKV.map(_._2).mkString(", ")
+      //
+      //        s"INSERT INTO $sqlTable ($sqlColumns) VALUES ($sqlValues)"
 
-//      case QueryUpdate(table, values, where) =>
-//        val sqlTable = reducePath(table)
-//        val mappedSqlValuesKV = values.map(reduceInsertValues).map(kv => kv._1 + "=" + kv._2).mkString(", ")
-//        val sqlWhere = where.map("WHERE " + reduceComparison(_)).getOrElse("")
-//
-//        s"UPDATE $sqlTable SET $mappedSqlValuesKV $sqlWhere"
-//
-//      case QueryDelete(table, where) =>
-//        val sqlTable = reducePath(table)
-//        val sqlWhere = reduceComparison(where)
-//
-//        s"DELETE $sqlTable WHERE $sqlWhere"
+      //      case QueryUpdate(table, values, where) =>
+      //        val sqlTable = reducePath(table)
+      //        val mappedSqlValuesKV = values.map(reduceInsertValues).map(kv => kv._1 + "=" + kv._2).mkString(", ")
+      //        val sqlWhere = where.map("WHERE " + reduceComparison(_)).getOrElse("")
+      //
+      //        s"UPDATE $sqlTable SET $mappedSqlValuesKV $sqlWhere"
+      //
+      //      case QueryDelete(table, where) =>
+      //        val sqlTable = reducePath(table)
+      //        val sqlWhere = reduceComparison(where)
+      //
+      //        s"DELETE $sqlTable WHERE $sqlWhere"
     }
-
-
 
   }
 }
