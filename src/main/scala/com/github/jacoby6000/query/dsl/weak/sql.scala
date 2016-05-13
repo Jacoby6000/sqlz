@@ -3,8 +3,10 @@ package com.github.jacoby6000.query.dsl.weak
 import com.github.jacoby6000.query.ast._
 import com.github.jacoby6000.query.shapeless.KindConstraint.OfKindContainingHListTC
 import com.github.jacoby6000.query.shapeless.KindConstraint.OfKindContainingHListTC._
+import com.github.jacoby6000.query.shapeless.Polys.Flatten
+import com.github.jacoby6000.query.shapeless.Typeclasses.UnwrapAndFlattenHList
 import doobie.imports.Param
-import shapeless.ops.hlist.{ Mapper, Prepend, ToTraversable }
+import shapeless.ops.hlist.{ FlatMapper, Mapper, Prepend, ToTraversable }
 import shapeless._
 
 import scala.annotation.implicitNotFound
@@ -46,19 +48,9 @@ object sql {
 
   // Select/Query DSL helpers
   case class SqlQueryFunctionBuilder(f: QueryPath) extends ProductArgs {
-    def apply[A <: HList](arg1: QueryValue[A]) = QueryFunction(f, arg1 :: HNil)
-
-    def apply[A <: HList, B <: HList](arg1: QueryValue[A], arg2: QueryValue[B]) = QueryFunction(f, arg1 :: arg2 :: HNil)
-
-    def apply[A <: HList, B <: HList, C <: HList](
-      arg1: QueryValue[A],
-      arg2: QueryValue[B],
-      arg3: QueryValue[C]
-    ) = QueryFunction(f, arg1 :: arg2 :: arg3 :: HNil)
-
-    def applyProduct[A <: HList: OfKindContainingHList[QueryValue]#HL, Out <: HList](a: A)(implicit
-      toList: ToTraversable.Aux[A, List, QueryValue[_ <: HList]],
-      m: Mapper.Aux[QueryValueUnwrapper.type, A, Out]): QueryFunction[Out] = QueryFunction(f, a)
+    def applyProduct[A <: HList, Out <: HList](a: A)(implicit
+      m: UnwrapAndFlattenHList.Aux[QueryValue, A, Out],
+      toList: ToTraversable.Aux[A, List, QueryValue[_ <: HList]]): QueryFunction[Out] = QueryFunction(f, a)
   }
 
   implicit class StringContextExtensions(val c: StringContext) extends AnyVal {
@@ -95,32 +87,21 @@ object sql {
   val `null` = QueryNull
 
   object select extends ProductArgs {
-    def apply[A <: HList: Param](arg1: QueryProjection[A]) = SelectBuilder(arg1 :: HNil)
-
-    def apply[A <: HList: Param, B <: HList: Param](arg1: QueryProjection[A], arg2: QueryProjection[B]) = SelectBuilder(arg1 :: arg2 :: HNil)
-
-    def apply[A <: HList: Param, B <: HList: Param, C <: HList: Param](arg1: QueryProjection[A], arg2: QueryProjection[B], arg3: QueryProjection[C]) = SelectBuilder(arg1 :: arg2 :: arg3 :: HNil)
-
-    def apply[A <: HList: Param, B <: HList: Param, C <: HList: Param, D <: HList: Param](arg1: QueryProjection[A], arg2: QueryProjection[B], arg3: QueryProjection[C], arg4: QueryProjection[D]) = SelectBuilder(arg1 :: arg2 :: arg3 :: arg4 :: HNil)
-
-    def applyProduct[A <: HList: OfKindContainingHList[QueryProjection]#HL, Out <: HList: Param](a: A)(implicit
+    def applyProduct[A <: HList, Out1 <: HList](a: A)(implicit
       toList: ToTraversable.Aux[A, List, QueryProjection[_ <: HList]],
-      m: Mapper.Aux[QueryProjectionUnwrapper.type, A, Out]) = SelectBuilder(a)
-
+      m: UnwrapAndFlattenHList.Aux[QueryProjection, A, Out1]) = SelectBuilder(a)
   }
 
-  case class SelectBuilder[QueryProjections <: HList: OfKindContainingHList[QueryProjection]#HL, MappedValues <: HList: Param](projections: QueryProjections)(implicit
+  case class SelectBuilder[QueryProjections <: HList, Unwrapped <: HList](projections: QueryProjections)(implicit
     toList: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
-      m: Mapper.Aux[QueryProjectionUnwrapper.type, QueryProjections, MappedValues]) {
+      m: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjections, Unwrapped]) {
 
-    implicit def um: Mapper.Aux[QueryUnionUnwrapper.type, HNil.type, HNil.type] = new Mapper[QueryUnionUnwrapper.type, HNil.type] {
-      type Out = HNil.type
-      def apply(l: HNil.type): Out = HNil
+    implicit lazy val queryUnionFlattener = new UnwrapAndFlattenHList[QueryUnion, HNil.type] {
+      override type Out = HNil.type
+      override def apply(t: HNil.type): HNil.type = HNil
     }
 
-    val queryEqual = QueryEqual(QueryParameter(true), QueryParameter(true))
-
-    def from[B <: HList: Param, Out1 <: HList, Out2 <: HList, Out3 <: HList](path: QueryProjection[B])(implicit p1: Prepend.Aux[B, MappedValues, Out1]) =
+    def from[B <: HList, Out1 <: HList, Out2 <: HList](path: QueryProjection[B])(implicit p1: Prepend.Aux[B, Unwrapped, Out1], un: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjection[B] :: HNil, Out2]) =
       QueryBuilder(path, projections, HNil)
   }
 
@@ -148,23 +129,23 @@ object sql {
     def join[A <: HList, B <: HList, Out <: HList](a: QueryProjectOne[A], b: QueryComparison[B])(implicit prepender: Prepend.Aux[A, B, Out]): QueryInnerJoin[Out] = QueryInnerJoin(a, b)
   }
 
-  case class QueryBuilder[Table <: HList: Param, QueryProjections <: HList: OfKindContainingHList[QueryProjection]#HL, QueryUnions <: HList: OfKindContainingHList[QueryUnion]#HL, QBMappedValues <: HList: Param, QBMappedUnions <: HList: Param, QBOut1 <: HList: Param, Params <: HList: Param](
+  case class QueryBuilder[Table <: HList, QueryProjections <: HList, QueryUnions <: HList, QBFlattenedProjections <: HList, QBFlattenedUnions <: HList, QBOut1 <: HList, Params <: HList](
       table: QueryProjection[Table],
       values: QueryProjections,
       unions: QueryUnions
   )(implicit
-    mv: Mapper.Aux[QueryProjectionUnwrapper.type, QueryProjections, QBMappedValues],
-      mu: Mapper.Aux[QueryUnionUnwrapper.type, QueryUnions, QBMappedUnions],
-      qp1: Prepend.Aux[Table, QBMappedValues, QBOut1],
-      qp2: Prepend.Aux[QBOut1, QBMappedUnions, Params],
+    mv: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjections, QBFlattenedProjections],
+      mu: UnwrapAndFlattenHList.Aux[QueryUnion, QueryUnions, QBFlattenedUnions],
+      qp1: Prepend.Aux[Table, QBFlattenedProjections, QBOut1],
+      qp2: Prepend.Aux[QBOut1, QBFlattenedUnions, Params],
       pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
       ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_ <: HList]]) { builder =>
 
-    def leftOuterJoin[A <: HList: Param](table: QueryProjectOne[A]): JoinBuilder[A, QueryLeftOuterJoin] = new JoinBuilder[A, QueryLeftOuterJoin](table, leftJoiner)
-    def rightOuterJoin[A <: HList: Param](table: QueryProjectOne[A]): JoinBuilder[A, QueryRightOuterJoin] = new JoinBuilder[A, QueryRightOuterJoin](table, rightJoiner)
-    def innerJoin[A <: HList: Param](table: QueryProjectOne[A]): JoinBuilder[A, QueryInnerJoin] = new JoinBuilder[A, QueryInnerJoin](table, innerJoiner)
-    def fullOuterJoin[A <: HList: Param](table: QueryProjectOne[A]): JoinBuilder[A, QueryFullOuterJoin] = new JoinBuilder[A, QueryFullOuterJoin](table, outerJoiner)
-    def crossJoin[A <: HList: Param](table: QueryProjectOne[A]): JoinBuilder[A, QueryCrossJoin] = new JoinBuilder[A, QueryCrossJoin](table, crossJoiner)
+    def leftOuterJoin[A <: HList](table: QueryProjectOne[A]): JoinBuilder[A, QueryLeftOuterJoin] = new JoinBuilder[A, QueryLeftOuterJoin](table, leftJoiner)
+    def rightOuterJoin[A <: HList](table: QueryProjectOne[A]): JoinBuilder[A, QueryRightOuterJoin] = new JoinBuilder[A, QueryRightOuterJoin](table, rightJoiner)
+    def innerJoin[A <: HList](table: QueryProjectOne[A]): JoinBuilder[A, QueryInnerJoin] = new JoinBuilder[A, QueryInnerJoin](table, innerJoiner)
+    def fullOuterJoin[A <: HList](table: QueryProjectOne[A]): JoinBuilder[A, QueryFullOuterJoin] = new JoinBuilder[A, QueryFullOuterJoin](table, outerJoiner)
+    def crossJoin[A <: HList](table: QueryProjectOne[A]): JoinBuilder[A, QueryCrossJoin] = new JoinBuilder[A, QueryCrossJoin](table, crossJoiner)
 
     def build: QuerySelect[Params] = QuerySelect(table, values, unions, List.empty, List.empty, None, None)
 
@@ -175,15 +156,15 @@ object sql {
     def offset(n: Int) = builder.copy(offset = Some(n))
     def limit(n: Int) = builder.copy(limit = Some(n))*/
 
-    class JoinBuilder[A <: HList: Param, F[_ <: HList]](table: QueryProjectOne[A], joiner: Joiner[F]) {
-      def on[B <: HList: Param, MappedUnions <: HList: Param, Out1 <: HList: Param, Out2 <: HList: OfKindContainingHList[QueryUnion]#HL, P <: HList: Param](comp: QueryComparison[B])(
+    class JoinBuilder[A <: HList, F[_ <: HList]](table: QueryProjectOne[A], joiner: Joiner[F]) {
+      def on[B <: HList, MappedUnions <: HList, Out1 <: HList, Out2 <: HList: OfKindContainingHList[QueryUnion]#HL, P <: HList](comp: QueryComparison[B])(
         implicit
         p1: Prepend.Aux[A, B, Out1],
         p2: Prepend.Aux[QueryUnions, QueryUnion[Out1] :: HNil, Out2],
         mu2: Mapper.Aux[QueryUnionUnwrapper.type, Out2, MappedUnions],
         p3: Prepend.Aux[QBOut1, MappedUnions, P],
         ul2: ToTraversable.Aux[Out2, List, QueryUnion[_ <: HList]]
-      ): QueryBuilder[Table, QueryProjections, Out2, QBMappedValues, MappedUnions, QBOut1, P] =
+      ): QueryBuilder[Table, QueryProjections, Out2, QBFlattenedValues, QBMappedValues, MappedUnions, QBOut1, P] =
         builder.copy(unions = unions ::: joiner.join(table, comp) :: HNil) /*(
           implicitly[OfKindContainingHList[QueryProjection]#HL[QueryProjections]],
           implicitly[OfKindContainingHList[QueryUnion]#HL[Out2]],

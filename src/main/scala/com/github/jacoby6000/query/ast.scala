@@ -1,36 +1,34 @@
 package com.github.jacoby6000.query
 import doobie.imports._
 import _root_.shapeless._
-import _root_.shapeless.ops.hlist.{ Mapper, Prepend, ToTraversable }
+import _root_.shapeless.ops.hlist.{ FlatMapper, Mapper, Prepend, ToTraversable }
 import com.github.jacoby6000.query.shapeless.KindConstraint.OfKindContainingHListTC._
+import com.github.jacoby6000.query.shapeless.Polys._
+import com.github.jacoby6000.query.shapeless.Typeclasses.{ HListUnwrapper, UnwrapAndFlattenHList, Unwrapper }
+import HListUnwrapper._
 
 /**
  * Created by jacob.barber on 2/2/16.
  */
 object ast {
 
-  trait UnwrapperPoly[F[_ <: HList]] extends Poly1 {
-    implicit def unwrapHValue[A <: HList] = at[F[A]](unwrap)
-    def unwrap[A <: HList](f: F[A]): A
-  }
-
-  object QueryProjectionUnwrapper extends UnwrapperPoly[QueryProjection] {
+  implicit val queryProjectionUnwrapper = new Unwrapper[QueryProjection] {
     def unwrap[A <: HList](f: QueryProjection[A]): A = f.params
   }
 
-  object QueryUnionUnwrapper extends UnwrapperPoly[QueryUnion] {
+  implicit val queryUnionUnwrapper = new Unwrapper[QueryUnion] {
     def unwrap[A <: HList](f: QueryUnion[A]): A = f.params
   }
 
-  object QueryComparisonUnwrapper extends UnwrapperPoly[QueryComparison] {
+  implicit val queryComparisonUnwrapper = new Unwrapper[QueryComparison] {
     def unwrap[A <: HList](f: QueryComparison[A]): A = f.params
   }
 
-  object ModifyFieldUnwrapper extends UnwrapperPoly[ModifyField] {
+  implicit val modifyFieldUnwrapper = new Unwrapper[ModifyField] {
     def unwrap[A <: HList](f: ModifyField[A]): A = f.params
   }
 
-  object QueryValueUnwrapper extends UnwrapperPoly[QueryValue] {
+  implicit val queryValueUnwrapper = new Unwrapper[QueryValue] {
     def unwrap[A <: HList](f: QueryValue[A]): A = f.params
   }
 
@@ -49,7 +47,7 @@ object ast {
   }
 
   object QueryFunction {
-    def apply[L <: HList: OfKindContainingHList[QueryValue]#HL, Out <: HList](path: QueryPath, args: L)(implicit toList: ToTraversable.Aux[L, List, QueryValue[_ <: HList]], m: Mapper.Aux[QueryValueUnwrapper.type, L, Out]): QueryFunction[Out] = QueryFunction[Out](path, toList(args), m(args))
+    def apply[L <: HList, Out <: HList](path: QueryPath, args: L)(implicit m: UnwrapAndFlattenHList.Aux[QueryValue, L, Out], toList: ToTraversable.Aux[L, List, QueryValue[_ <: HList]]): QueryFunction[Out] = QueryFunction[Out](path, toList(args), m(args))
   }
 
   object QueryAdd {
@@ -103,7 +101,7 @@ object ast {
   }
 
   object QueryIn {
-    def apply[A <: HList, B <: HList: OfKindContainingHList[QueryValue]#HL, MappedValues <: HList, Out <: HList](left: QueryValue[A], rights: B)(implicit toList: ToTraversable.Aux[B, List, QueryValue[_ <: HList]], m: Mapper.Aux[QueryValueUnwrapper.type, B, MappedValues], p: Prepend.Aux[A, MappedValues, Out]): QueryIn[Out] = QueryIn[Out](left, toList(rights), left.params ::: m(rights))
+    def apply[A <: HList, B <: HList: OfKindContainingHList[QueryValue]#HL, MappedValues <: HList, Out <: HList](left: QueryValue[A], rights: B)(implicit toList: ToTraversable.Aux[B, List, QueryValue[_ <: HList]], m: Mapper.Aux[Unwrapper[QueryValue], B, MappedValues], p: Prepend.Aux[A, MappedValues, Out]): QueryIn[Out] = QueryIn[Out](left, toList(rights), left.params ::: m(rights))
   }
 
   object QueryAnd {
@@ -170,7 +168,7 @@ object ast {
   sealed trait QueryModify[A <: HList] extends QueryExpression[A]
 
   object QuerySelect {
-    def apply[Table <: HList, QueryProjections <: HList: OfKindContainingHList[QueryProjection]#HL, QueryUnions <: HList: OfKindContainingHList[QueryUnion]#HL, ComparisonParameters <: HList, MappedValues <: HList, MappedUnions <: HList, Out1 <: HList, Out2 <: HList, Params <: HList](
+    def apply[Table <: HList, QueryProjections <: HList: OfKindContainingHList[QueryProjection]#HL, QueryUnions <: HList: OfKindContainingHList[QueryUnion]#HL, ComparisonParameters <: HList, MappedProjections <: HList, MappedUnions <: HList, Out1 <: HList, Out2 <: HList, Params <: HList](
       table: QueryProjection[Table],
       values: QueryProjections,
       unions: QueryUnions,
@@ -180,16 +178,16 @@ object ast {
       offset: Option[Int],
       limit: Option[Int]
     )(implicit
-      mv: Mapper.Aux[QueryProjectionUnwrapper.type, QueryProjections, MappedValues],
-      mu: Mapper.Aux[QueryUnionUnwrapper.type, QueryUnions, MappedUnions],
-      p1: Prepend.Aux[Table, MappedValues, Out1],
+      mv: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjections, MappedProjections],
+      mu: UnwrapAndFlattenHList.Aux[QueryUnion, QueryUnions, MappedUnions],
+      p1: Prepend.Aux[Table, MappedProjections, Out1],
       p2: Prepend.Aux[Out1, MappedUnions, Out2],
       p3: Prepend.Aux[Out2, ComparisonParameters, Params],
       pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
       ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_ <: HList]]): QuerySelect[Params] =
       QuerySelect[Params](table, pl(values), ul(unions), Some(filter), sorts, groupings, offset, limit, p3(p2(p1(table.params, mv(values)), mu(unions)), filter.params))
 
-    def apply[Table <: HList, QueryProjections <: HList: OfKindContainingHList[QueryProjection]#HL, QueryUnions <: HList: OfKindContainingHList[QueryUnion]#HL, MappedValues <: HList, MappedUnions <: HList, Out1 <: HList, Params <: HList](
+    def apply[Table <: HList, QueryProjections <: HList: OfKindContainingHList[QueryProjection]#HL, QueryUnions <: HList: OfKindContainingHList[QueryUnion]#HL, MappedProjections <: HList, MappedUnions <: HList, Out1 <: HList, Params <: HList](
       table: QueryProjection[Table],
       values: QueryProjections,
       unions: QueryUnions,
@@ -198,9 +196,9 @@ object ast {
       offset: Option[Int],
       limit: Option[Int]
     )(implicit
-      mv: Mapper.Aux[QueryProjectionUnwrapper.type, QueryProjections, MappedValues],
-      mu: Mapper.Aux[QueryUnionUnwrapper.type, QueryUnions, MappedUnions],
-      p1: Prepend.Aux[Table, MappedValues, Out1],
+      mv: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjections, MappedProjections],
+      mu: UnwrapAndFlattenHList.Aux[QueryUnion, QueryUnions, MappedUnions],
+      p1: Prepend.Aux[Table, MappedProjections, Out1],
       p2: Prepend.Aux[Out1, MappedUnions, Params],
       pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
       ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_ <: HList]]): QuerySelect[Params] =

@@ -1,6 +1,6 @@
 package com.github.jacoby6000.query.shapeless
 
-import com.github.jacoby6000.query.ast.{ QueryProjection, QueryProjectionUnwrapper, QueryUnion }
+import com.github.jacoby6000.query.ast.{ QueryProjection, QueryUnion }
 import shapeless._
 import shapeless.ops.hlist.{ Mapper, ToTraversable }
 
