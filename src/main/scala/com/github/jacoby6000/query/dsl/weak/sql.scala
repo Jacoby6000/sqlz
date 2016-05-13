@@ -92,16 +92,16 @@ object sql {
       m: UnwrapAndFlattenHList.Aux[QueryProjection, A, Out1]) = SelectBuilder(a)
   }
 
-  case class SelectBuilder[QueryProjections <: HList, Unwrapped <: HList](projections: QueryProjections)(implicit
+  case class SelectBuilder[QueryProjections <: HList, Flattened <: HList](projections: QueryProjections)(implicit
     toList: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
-      m: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjections, Unwrapped]) {
+      m: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjections, Flattened]) {
 
     implicit lazy val queryUnionFlattener = new UnwrapAndFlattenHList[QueryUnion, HNil.type] {
       override type Out = HNil.type
       override def apply(t: HNil.type): HNil.type = HNil
     }
 
-    def from[B <: HList, Out1 <: HList, Out2 <: HList](path: QueryProjection[B])(implicit p1: Prepend.Aux[B, Unwrapped, Out1], un: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjection[B] :: HNil, Out2]) =
+    def from[B <: HList, Out1 <: HList, Out2 <: HList](path: QueryProjection[B])(implicit p1: Prepend.Aux[B, Flattened, Out1], un: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjection[B] :: HNil, Out2]) =
       QueryBuilder(path, projections, HNil)
   }
 
@@ -161,10 +161,10 @@ object sql {
         implicit
         p1: Prepend.Aux[A, B, Out1],
         p2: Prepend.Aux[QueryUnions, QueryUnion[Out1] :: HNil, Out2],
-        mu2: Mapper.Aux[QueryUnionUnwrapper.type, Out2, MappedUnions],
+        mu2: UnwrapAndFlattenHList.Aux[QueryUnion, Out2, MappedUnions],
         p3: Prepend.Aux[QBOut1, MappedUnions, P],
         ul2: ToTraversable.Aux[Out2, List, QueryUnion[_ <: HList]]
-      ): QueryBuilder[Table, QueryProjections, Out2, QBFlattenedValues, QBMappedValues, MappedUnions, QBOut1, P] =
+      ) =
         builder.copy(unions = unions ::: joiner.join(table, comp) :: HNil) /*(
           implicitly[OfKindContainingHList[QueryProjection]#HL[QueryProjections]],
           implicitly[OfKindContainingHList[QueryUnion]#HL[Out2]],

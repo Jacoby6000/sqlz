@@ -168,7 +168,7 @@ object ast {
   sealed trait QueryModify[A <: HList] extends QueryExpression[A]
 
   object QuerySelect {
-    def apply[Table <: HList, QueryProjections <: HList: OfKindContainingHList[QueryProjection]#HL, QueryUnions <: HList: OfKindContainingHList[QueryUnion]#HL, ComparisonParameters <: HList, MappedProjections <: HList, MappedUnions <: HList, Out1 <: HList, Out2 <: HList, Params <: HList](
+    def apply[Table <: HList, QueryProjections <: HList, QueryUnions <: HList, ComparisonParameters <: HList, MappedProjections <: HList, MappedUnions <: HList, Out1 <: HList, Out2 <: HList, Params <: HList](
       table: QueryProjection[Table],
       values: QueryProjections,
       unions: QueryUnions,
@@ -187,7 +187,7 @@ object ast {
       ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_ <: HList]]): QuerySelect[Params] =
       QuerySelect[Params](table, pl(values), ul(unions), Some(filter), sorts, groupings, offset, limit, p3(p2(p1(table.params, mv(values)), mu(unions)), filter.params))
 
-    def apply[Table <: HList, QueryProjections <: HList: OfKindContainingHList[QueryProjection]#HL, QueryUnions <: HList: OfKindContainingHList[QueryUnion]#HL, MappedProjections <: HList, MappedUnions <: HList, Out1 <: HList, Params <: HList](
+    def apply[Table <: HList, QueryProjections <: HList, QueryUnions <: HList, MappedProjections <: HList, MappedUnions <: HList, Out1 <: HList, Params <: HList](
       table: QueryProjection[Table],
       values: QueryProjections,
       unions: QueryUnions,
