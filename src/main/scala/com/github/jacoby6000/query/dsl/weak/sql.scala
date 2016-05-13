@@ -56,7 +56,7 @@ object sql {
     ) = QueryFunction(f, arg1 :: arg2 :: arg3 :: HNil)
 
     def applyProduct[A <: HList: OfKindContainingHList[QueryValue]#HL, Out <: HList](a: A)(implicit
-      toList: ToTraversable.Aux[A, List, QueryValue[_]],
+      toList: ToTraversable.Aux[A, List, QueryValue[_ <: HList]],
       m: Mapper.Aux[QueryValueUnwrapper.type, A, Out]): QueryFunction[Out] = QueryFunction(f, a)
   }
 
@@ -108,13 +108,13 @@ object sql {
     ) = SelectBuilder(arg1 :: arg2 :: arg3 :: HNil)
 
     def applyProduct[A <: HList: OfKindContainingHList[QueryProjection]#HL, Out <: HList](a: A)(implicit
-      toList: ToTraversable.Aux[A, List, QueryProjection[_]],
+      toList: ToTraversable.Aux[A, List, QueryProjection[_ <: HList]],
       m: Mapper.Aux[QueryProjectionUnwrapper.type, A, Out]) = SelectBuilder(a)
 
   }
 
   case class SelectBuilder[QueryProjections <: HList: OfKindContainingHList[QueryProjection]#HL, MappedValues <: HList](projections: QueryProjections)(implicit
-    toList: ToTraversable.Aux[QueryProjections, List, QueryProjection[_]],
+    toList: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
       m: Mapper.Aux[QueryProjectionUnwrapper.type, QueryProjections, MappedValues]) {
 
     implicit def um: Mapper.Aux[QueryUnionUnwrapper.type, HNil.type, HNil.type] = new Mapper[QueryUnionUnwrapper.type, HNil.type] {
@@ -128,7 +128,7 @@ object sql {
       QueryBuilder(path, projections, HNil)
   }
 
-  trait Joiner[F[_]] {
+  trait Joiner[F[_ <: HList]] {
     def join[A <: HList, B <: HList, Out <: HList](a: QueryProjectOne[A], b: QueryComparison[B])(implicit prepender: Prepend.Aux[A, B, Out]): QueryUnion[Out]
   }
 
@@ -159,10 +159,10 @@ object sql {
   )(implicit
     mv: Mapper.Aux[QueryProjectionUnwrapper.type, QueryProjections, QBMappedValues],
       mu: Mapper.Aux[QueryUnionUnwrapper.type, QueryUnions, QBMappedUnions],
-      p1: Prepend.Aux[Table, QBMappedValues, QBOut1],
-      p2: Prepend.Aux[QBOut1, QBMappedUnions, Params],
-      pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_]],
-      ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_]]) { builder =>
+      qp1: Prepend.Aux[Table, QBMappedValues, QBOut1],
+      qp2: Prepend.Aux[QBOut1, QBMappedUnions, Params],
+      pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
+      ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_ <: HList]]) { builder =>
 
     def leftOuterJoin[A <: HList](table: QueryProjectOne[A]): JoinBuilder[A, QueryLeftOuterJoin] = new JoinBuilder[A, QueryLeftOuterJoin](table, leftJoiner)
     def rightOuterJoin[A <: HList](table: QueryProjectOne[A]): JoinBuilder[A, QueryRightOuterJoin] = new JoinBuilder[A, QueryRightOuterJoin](table, rightJoiner)
@@ -177,11 +177,20 @@ object sql {
     def offset(n: Int) = builder.copy(offset = Some(n))
     def limit(n: Int) = builder.copy(limit = Some(n))*/
 
-    class JoinBuilder[A <: HList, F[_]](table: QueryProjectOne[A], joiner: Joiner[F]) {
-      def on[B <: HList, Out1 <: HList, Out2 <: HList: OfKindContainingHList[QueryUnion]#HL, MappedUnions <: HList](comp: QueryComparison[B])(implicit
+    class JoinBuilder[A <: HList, F[_ <: HList]](table: QueryProjectOne[A], joiner: Joiner[F]) {
+      def on[B <: HList, MappedUnions <: HList, Out1 <: HList, Out2 <: HList: OfKindContainingHList[QueryUnion]#HL, Out3 <: HList, P <: HList](comp: QueryComparison[B])(
+        implicit
         p1: Prepend.Aux[A, B, Out1],
         p2: Prepend.Aux[QueryUnions, QueryUnion[Out1] :: HNil, Out2],
-        mu: Mapper.Aux[QueryUnionUnwrapper.type, Out2, MappedUnions]) = builder.copy(unions = unions ::: joiner.join(table, comp) :: HNil)
+        mu2: Mapper.Aux[QueryUnionUnwrapper.type, Out2, MappedUnions],
+        p3: Prepend.Aux[QBOut1, MappedUnions, P],
+        ul2: ToTraversable.Aux[Out2, List, QueryUnion[_ <: HList]]
+      ) =
+        builder.copy(unions = unions ::: joiner.join(table, comp) :: HNil) /*(
+          implicitly[OfKindContainingHList[QueryProjection]#HL[QueryProjections]],
+          implicitly[OfKindContainingHList[QueryUnion]#HL[Out2]],
+          mv, mu2, qp1, , implicitly, implicitly
+        )*/
     }
   }
 
@@ -199,9 +208,10 @@ object sql {
     def /[B <: HList, Out <: HList](b: QueryValue[B])(implicit p: Prepend.Aux[A, B, Out]): QueryValue[Out] = QueryDiv(a, b)
     def **[B <: HList, Out <: HList](b: QueryValue[B])(implicit p: Prepend.Aux[A, B, Out]): QueryValue[Out] = QueryMul(a, b)
 
-    def as(alias: String): QueryProjection[A] = QueryProjectOne(f, Some(alias))
-
+    def as(alias: String): QueryProjection[A] = QueryProjectOne(a, Some(alias))
   }
+
+  implicit def toQueryValue[A](a: A)(implicit ev: A =:!= QueryParameter[_], ev2: A =:!= QueryComparison[_]): QueryValue[A :: HNil] = QueryParameter(a)
 
   def ![A <: HList](queryComparison: QueryComparison[A]): QueryNot[A] = QueryNot(queryComparison)
 

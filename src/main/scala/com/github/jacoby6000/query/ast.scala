@@ -49,7 +49,7 @@ object ast {
   }
 
   object QueryFunction {
-    def apply[L <: HList: OfKindContainingHList[QueryValue]#HL, Out <: HList](path: QueryPath, args: L)(implicit toList: ToTraversable.Aux[L, List, QueryValue[_]], m: Mapper.Aux[QueryValueUnwrapper.type, L, Out]): QueryFunction[Out] = QueryFunction[Out](path, toList(args), m(args))
+    def apply[L <: HList: OfKindContainingHList[QueryValue]#HL, Out <: HList](path: QueryPath, args: L)(implicit toList: ToTraversable.Aux[L, List, QueryValue[_ <: HList]], m: Mapper.Aux[QueryValueUnwrapper.type, L, Out]): QueryFunction[Out] = QueryFunction[Out](path, toList(args), m(args))
   }
 
   object QueryAdd {
@@ -69,13 +69,13 @@ object ast {
   }
 
   sealed trait QueryValue[+L <: HList] { def params: L }
-  case class QueryRawExpression[T] private (t: T)(implicit val rawExpressionHandler: RawExpressionHandler[T]) extends QueryValue[HNil] { lazy val params: HNil = HNil }
+  case class QueryRawExpression[T](t: T)(implicit val rawExpressionHandler: RawExpressionHandler[T]) extends QueryValue[HNil] { lazy val params: HNil = HNil }
   case class QueryParameter[T <: HList](value: T) extends QueryValue[T] { lazy val params: T = value }
-  case class QueryFunction[L <: HList] private (path: QueryPath, args: List[QueryValue[_]], params: L) extends QueryValue[L]
-  case class QueryAdd[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryValue[A]
-  case class QuerySub[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryValue[A]
-  case class QueryDiv[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryValue[A]
-  case class QueryMul[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryValue[A]
+  case class QueryFunction[L <: HList] private (path: QueryPath, args: List[QueryValue[_ <: HList]], params: L) extends QueryValue[L]
+  case class QueryAdd[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryValue[A]
+  case class QuerySub[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryValue[A]
+  case class QueryDiv[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryValue[A]
+  case class QueryMul[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryValue[A]
   case object QueryNull extends QueryValue[HNil] { lazy val params: HNil = HNil }
 
   object QueryEqual {
@@ -103,7 +103,7 @@ object ast {
   }
 
   object QueryIn {
-    def apply[A <: HList, B <: HList: OfKindContainingHList[QueryValue]#HL, MappedValues <: HList, Out <: HList](left: QueryValue[A], rights: B)(implicit toList: ToTraversable.Aux[B, List, QueryValue[_]], m: Mapper.Aux[QueryValueUnwrapper.type, B, MappedValues], p: Prepend.Aux[A, MappedValues, Out]): QueryIn[Out] = QueryIn[Out](left, toList(rights), left.params ::: m(rights))
+    def apply[A <: HList, B <: HList: OfKindContainingHList[QueryValue]#HL, MappedValues <: HList, Out <: HList](left: QueryValue[A], rights: B)(implicit toList: ToTraversable.Aux[B, List, QueryValue[_ <: HList]], m: Mapper.Aux[QueryValueUnwrapper.type, B, MappedValues], p: Prepend.Aux[A, MappedValues, Out]): QueryIn[Out] = QueryIn[Out](left, toList(rights), left.params ::: m(rights))
   }
 
   object QueryAnd {
@@ -115,17 +115,17 @@ object ast {
   }
 
   sealed trait QueryComparison[L <: HList] { def params: L }
-  case class QueryEqual[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryComparison[A]
-  case class QueryNotEqual[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryComparison[A]
-  case class QueryGreaterThan[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryComparison[A]
-  case class QueryGreaterThanOrEqual[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryComparison[A]
-  case class QueryLessThan[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryComparison[A]
-  case class QueryLessThanOrEqual[A <: HList] private (left: QueryValue[_], right: QueryValue[_], params: A) extends QueryComparison[A]
-  case class QueryIn[A <: HList] private (left: QueryValue[_], rights: List[QueryValue[_]], params: A) extends QueryComparison[A]
+  case class QueryEqual[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryComparison[A]
+  case class QueryNotEqual[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryComparison[A]
+  case class QueryGreaterThan[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryComparison[A]
+  case class QueryGreaterThanOrEqual[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryComparison[A]
+  case class QueryLessThan[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryComparison[A]
+  case class QueryLessThanOrEqual[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryComparison[A]
+  case class QueryIn[A <: HList] private (left: QueryValue[_ <: HList], rights: List[QueryValue[_ <: HList]], params: A) extends QueryComparison[A]
   case class QueryLit[A <: HList](value: QueryValue[A]) extends QueryComparison[A] { lazy val params: A = value.params }
   case class QueryNot[A <: HList](value: QueryComparison[A]) extends QueryComparison[A] { lazy val params: A = value.params }
-  case class QueryAnd[A <: HList] private (left: QueryComparison[_], right: QueryComparison[_], params: A) extends QueryComparison[A]
-  case class QueryOr[A <: HList] private (left: QueryComparison[_], right: QueryComparison[_], params: A) extends QueryComparison[A]
+  case class QueryAnd[A <: HList] private (left: QueryComparison[_ <: HList], right: QueryComparison[_ <: HList], params: A) extends QueryComparison[A]
+  case class QueryOr[A <: HList] private (left: QueryComparison[_ <: HList], right: QueryComparison[_ <: HList], params: A) extends QueryComparison[A]
 
   sealed trait QueryPath extends QueryValue[HNil] { lazy val params: HNil = HNil }
   case class QueryPathEnd(path: String) extends QueryPath with QueryValue[HNil]
@@ -156,11 +156,11 @@ object ast {
   }
 
   sealed trait QueryUnion[A <: HList] { def params: A }
-  case class QueryInnerJoin[A <: HList](table: QueryProjectOne[_], on: QueryComparison[_], params: A) extends QueryUnion[A]
-  case class QueryFullOuterJoin[A <: HList](table: QueryProjectOne[_], on: QueryComparison[_], params: A) extends QueryUnion[A]
-  case class QueryLeftOuterJoin[A <: HList](table: QueryProjectOne[_], on: QueryComparison[_], params: A) extends QueryUnion[A]
-  case class QueryRightOuterJoin[A <: HList](table: QueryProjectOne[_], on: QueryComparison[_], params: A) extends QueryUnion[A]
-  case class QueryCrossJoin[A <: HList](table: QueryProjectOne[_], on: QueryComparison[_], params: A) extends QueryUnion[A]
+  case class QueryInnerJoin[A <: HList](table: QueryProjectOne[_ <: HList], on: QueryComparison[_ <: HList], params: A) extends QueryUnion[A]
+  case class QueryFullOuterJoin[A <: HList](table: QueryProjectOne[_ <: HList], on: QueryComparison[_ <: HList], params: A) extends QueryUnion[A]
+  case class QueryLeftOuterJoin[A <: HList](table: QueryProjectOne[_ <: HList], on: QueryComparison[_ <: HList], params: A) extends QueryUnion[A]
+  case class QueryRightOuterJoin[A <: HList](table: QueryProjectOne[_ <: HList], on: QueryComparison[_ <: HList], params: A) extends QueryUnion[A]
+  case class QueryCrossJoin[A <: HList](table: QueryProjectOne[_ <: HList], on: QueryComparison[_ <: HList], params: A) extends QueryUnion[A]
 
   sealed trait QuerySort
   case class QuerySortAsc(path: QueryPath) extends QuerySort
