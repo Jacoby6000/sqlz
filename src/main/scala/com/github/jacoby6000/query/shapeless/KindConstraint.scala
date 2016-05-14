@@ -17,7 +17,7 @@ object KindConstraint {
     def apply[L <: HList, TC[_ <: C]](implicit utcc: ConstrainedUnaryTCConstraintTC[L, TC]): ConstrainedUnaryTCConstraintTC[L, TC] = utcc
 
     implicit def hnilUnaryTC1[TC[_ <: C]] = new ConstrainedUnaryTCConstraintTC[HNil, TC] {}
-    implicit def hnilUnaryTC2[TC[_ <: C]] = new ConstrainedUnaryTCConstraintTC[HNil.type, TC] {}
+//    implicit def hnilUnaryTC2[TC[_ <: C]] = new ConstrainedUnaryTCConstraintTC[HNil.type, TC] {}
     implicit def hlistUnaryTC1[H <: C, T <: HList, TC[_ <: C]](implicit utct: ConstrainedUnaryTCConstraintTC[T, TC]) =
       new ConstrainedUnaryTCConstraintTC[TC[H] :: T, TC] {}
 

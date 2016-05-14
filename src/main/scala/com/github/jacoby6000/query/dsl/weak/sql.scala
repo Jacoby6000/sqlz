@@ -165,27 +165,27 @@ object sql {
   }
 
   trait Joiner[F[_ <: HList]] {
-    def join[A <: HList, B <: HList, Out <: HList](a: QueryProjectOne[A], b: QueryComparison[B])(implicit prepender: Prepend.Aux[A, B, Out]): QueryUnion[Out]
+    def join[A <: HList, B <: HList, Out <: HList](a: QueryProjection[A], b: QueryComparison[B])(implicit prepender: Prepend.Aux[A, B, Out]): QueryUnion[Out]
   }
 
   private val leftJoiner = new Joiner[QueryLeftOuterJoin] {
-    def join[A <: HList, B <: HList, Out <: HList](a: QueryProjectOne[A], b: QueryComparison[B])(implicit prepender: Prepend.Aux[A, B, Out]): QueryLeftOuterJoin[Out] = QueryLeftOuterJoin(a, b)
+    def join[A <: HList, B <: HList, Out <: HList](a: QueryProjection[A], b: QueryComparison[B])(implicit prepender: Prepend.Aux[A, B, Out]): QueryLeftOuterJoin[Out] = QueryLeftOuterJoin(a, b)
   }
 
   private val rightJoiner = new Joiner[QueryRightOuterJoin] {
-    def join[A <: HList, B <: HList, Out <: HList](a: QueryProjectOne[A], b: QueryComparison[B])(implicit prepender: Prepend.Aux[A, B, Out]): QueryRightOuterJoin[Out] = QueryRightOuterJoin(a, b)
+    def join[A <: HList, B <: HList, Out <: HList](a: QueryProjection[A], b: QueryComparison[B])(implicit prepender: Prepend.Aux[A, B, Out]): QueryRightOuterJoin[Out] = QueryRightOuterJoin(a, b)
   }
 
   private val outerJoiner = new Joiner[QueryFullOuterJoin] {
-    def join[A <: HList, B <: HList, Out <: HList](a: QueryProjectOne[A], b: QueryComparison[B])(implicit prepender: Prepend.Aux[A, B, Out]): QueryFullOuterJoin[Out] = QueryFullOuterJoin(a, b)
+    def join[A <: HList, B <: HList, Out <: HList](a: QueryProjection[A], b: QueryComparison[B])(implicit prepender: Prepend.Aux[A, B, Out]): QueryFullOuterJoin[Out] = QueryFullOuterJoin(a, b)
   }
 
   private val crossJoiner = new Joiner[QueryCrossJoin] {
-    def join[A <: HList, B <: HList, Out <: HList](a: QueryProjectOne[A], b: QueryComparison[B])(implicit prepender: Prepend.Aux[A, B, Out]): QueryCrossJoin[Out] = QueryCrossJoin(a, b)
+    def join[A <: HList, B <: HList, Out <: HList](a: QueryProjection[A], b: QueryComparison[B])(implicit prepender: Prepend.Aux[A, B, Out]): QueryCrossJoin[Out] = QueryCrossJoin(a, b)
   }
 
   private val innerJoiner = new Joiner[QueryInnerJoin] {
-    def join[A <: HList, B <: HList, Out <: HList](a: QueryProjectOne[A], b: QueryComparison[B])(implicit prepender: Prepend.Aux[A, B, Out]): QueryInnerJoin[Out] = QueryInnerJoin(a, b)
+    def join[A <: HList, B <: HList, Out <: HList](a: QueryProjection[A], b: QueryComparison[B])(implicit prepender: Prepend.Aux[A, B, Out]): QueryInnerJoin[Out] = QueryInnerJoin(a, b)
   }
 
   case class QueryBuilder[Table <: HList, QueryProjections <: HList, QueryUnions <: HList, QBFlattenedProjections <: HList, QBFlattenedUnions <: HList, QBOut1 <: HList, Params <: HList](
@@ -200,11 +200,11 @@ object sql {
       pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
       ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_ <: HList]]) { builder =>
 
-    def leftOuterJoin[A <: HList](table: QueryProjectOne[A]): JoinBuilder[A, QueryLeftOuterJoin] = new JoinBuilder[A, QueryLeftOuterJoin](table, leftJoiner)
-    def rightOuterJoin[A <: HList](table: QueryProjectOne[A]): JoinBuilder[A, QueryRightOuterJoin] = new JoinBuilder[A, QueryRightOuterJoin](table, rightJoiner)
-    def innerJoin[A <: HList](table: QueryProjectOne[A]): JoinBuilder[A, QueryInnerJoin] = new JoinBuilder[A, QueryInnerJoin](table, innerJoiner)
-    def fullOuterJoin[A <: HList](table: QueryProjectOne[A]): JoinBuilder[A, QueryFullOuterJoin] = new JoinBuilder[A, QueryFullOuterJoin](table, outerJoiner)
-    def crossJoin[A <: HList](table: QueryProjectOne[A]): JoinBuilder[A, QueryCrossJoin] = new JoinBuilder[A, QueryCrossJoin](table, crossJoiner)
+    def leftOuterJoin[A <: HList](table: QueryProjection[A]): JoinBuilder[A, QueryLeftOuterJoin] = new JoinBuilder[A, QueryLeftOuterJoin](table, leftJoiner)
+    def rightOuterJoin[A <: HList](table: QueryProjection[A]): JoinBuilder[A, QueryRightOuterJoin] = new JoinBuilder[A, QueryRightOuterJoin](table, rightJoiner)
+    def innerJoin[A <: HList](table: QueryProjection[A]): JoinBuilder[A, QueryInnerJoin] = new JoinBuilder[A, QueryInnerJoin](table, innerJoiner)
+    def fullOuterJoin[A <: HList](table: QueryProjection[A]): JoinBuilder[A, QueryFullOuterJoin] = new JoinBuilder[A, QueryFullOuterJoin](table, outerJoiner)
+    def crossJoin[A <: HList](table: QueryProjection[A]): JoinBuilder[A, QueryCrossJoin] = new JoinBuilder[A, QueryCrossJoin](table, crossJoiner)
 
     def build: QuerySelect[Params] = QuerySelect(table, values, unions, List.empty, List.empty, None, None)
 
@@ -215,8 +215,8 @@ object sql {
     def offset(n: Int) = builder.copy(offset = Some(n))
     def limit(n: Int) = builder.copy(limit = Some(n))*/
 
-    class JoinBuilder[A <: HList, F[_ <: HList]](table: QueryProjectOne[A], joiner: Joiner[F]) {
-      def on[B <: HList, MappedUnions <: HList, Out1 <: HList, Out2 <: HList: OfKindContainingHList[QueryUnion]#HL, P <: HList](comp: QueryComparison[B])(
+    class JoinBuilder[A <: HList, F[_ <: HList]](table: QueryProjection[A], joiner: Joiner[F]) {
+      def on[B <: HList, MappedUnions <: HList, Out1 <: HList, Out2 <: HList, P <: HList](comp: QueryComparison[B])(
         implicit
         p1: Prepend.Aux[A, B, Out1],
         p2: Prepend.Aux[QueryUnions, QueryUnion[Out1] :: HNil, Out2],

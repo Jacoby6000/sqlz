@@ -29,20 +29,26 @@ class SqlDSLSimpleSelectTest extends Specification { def is = s2"""
   import xa.yolo._
 
   // the below should compile.
-  case class CountryCodePair(name: String, code: String)
+  case class CountryCodePair(gnp: Int, code: String)
 
   def result =
     (
       select(
-        p"name",
-        p"code"
+        (path"c1.gnp" ++ 5) as "c1name",
+        p"c1.code",
+        p"c2.gnp",
+        p"c2.name"
       ) from (
-        p"country"
+        p"country" as "c1"
+      ) innerJoin (
+        p"country" as "c2"
+      ) on (
+        path"c2.code" === func"reverse"(path"c1.code")
       )
     ).build
-      .query[CountryCodePair]
+      .query[(CountryCodePair, CountryCodePair)]
       .list
       .transact(xa)
-      .unsafePerformSync must haveSize(239)
+      .unsafePerformSync must haveSize(12)
 
 }

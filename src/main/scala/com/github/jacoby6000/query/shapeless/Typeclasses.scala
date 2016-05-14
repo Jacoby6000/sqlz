@@ -29,7 +29,7 @@ object Typeclasses {
       def apply(t: HNil.type ): Out = HNil
     }
 
-    implicit def buildUnflattener[F[_ <: HList], A <: HList : OfKindContainingHList[F]#HL, HF <: UnwrapperPoly[F], Out0 <: HList, Out1 <: HList](implicit u: HListUnwrapper.Aux[F, A, HF, Out0], fm: FlatMapper.Aux[identity.type, Out0, Out1]): Aux[F, A, HF, Out1] = new UnwrapAndFlattenHList[F, A, HF] {
+    implicit def buildUnflattener[F[_ <: HList], A <: HList, HF <: UnwrapperPoly[F], Out0 <: HList, Out1 <: HList](implicit u: HListUnwrapper.Aux[F, A, HF, Out0], fm: FlatMapper.Aux[identity.type, Out0, Out1]): Aux[F, A, HF, Out1] = new UnwrapAndFlattenHList[F, A, HF] {
       type Out = Out1
       def apply(t: A): Out1 = fm(u(t))
     }

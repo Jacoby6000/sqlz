@@ -139,31 +139,31 @@ object ast {
   case object QueryProjectAll extends QueryProjection[HNil] { lazy val params: HNil = HNil }
 
   object QueryInnerJoin {
-    def apply[A <: HList, B <: HList, Out <: HList](table: QueryProjectOne[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A, B, Out]): QueryInnerJoin[Out] = QueryInnerJoin(table, on, table.params ::: on.params)
+    def apply[A <: HList, B <: HList, Out <: HList](table: QueryProjection[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A, B, Out]): QueryInnerJoin[Out] = QueryInnerJoin(table, on, table.params ::: on.params)
   }
 
   object QueryFullOuterJoin {
-    def apply[A <: HList, B <: HList, Out <: HList](table: QueryProjectOne[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A, B, Out]): QueryFullOuterJoin[Out] = QueryFullOuterJoin(table, on, table.params ::: on.params)
+    def apply[A <: HList, B <: HList, Out <: HList](table: QueryProjection[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A, B, Out]): QueryFullOuterJoin[Out] = QueryFullOuterJoin(table, on, table.params ::: on.params)
   }
 
   object QueryLeftOuterJoin {
-    def apply[A <: HList, B <: HList, Out <: HList](table: QueryProjectOne[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A, B, Out]): QueryLeftOuterJoin[Out] = QueryLeftOuterJoin(table, on, table.params ::: on.params)
+    def apply[A <: HList, B <: HList, Out <: HList](table: QueryProjection[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A, B, Out]): QueryLeftOuterJoin[Out] = QueryLeftOuterJoin(table, on, table.params ::: on.params)
   }
 
   object QueryRightOuterJoin {
-    def apply[A <: HList, B <: HList, Out <: HList](table: QueryProjectOne[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A, B, Out]): QueryRightOuterJoin[Out] = QueryRightOuterJoin(table, on, table.params ::: on.params)
+    def apply[A <: HList, B <: HList, Out <: HList](table: QueryProjection[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A, B, Out]): QueryRightOuterJoin[Out] = QueryRightOuterJoin(table, on, table.params ::: on.params)
   }
 
   object QueryCrossJoin {
-    def apply[A <: HList, B <: HList, Out <: HList](table: QueryProjectOne[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A, B, Out]): QueryCrossJoin[Out] = QueryCrossJoin(table, on, table.params ::: on.params)
+    def apply[A <: HList, B <: HList, Out <: HList](table: QueryProjection[A], on: QueryComparison[B])(implicit p: Prepend.Aux[A, B, Out]): QueryCrossJoin[Out] = QueryCrossJoin(table, on, table.params ::: on.params)
   }
 
   sealed trait QueryUnion[A <: HList] { def params: A }
-  case class QueryInnerJoin[A <: HList](table: QueryProjectOne[_ <: HList], on: QueryComparison[_ <: HList], params: A) extends QueryUnion[A]
-  case class QueryFullOuterJoin[A <: HList](table: QueryProjectOne[_ <: HList], on: QueryComparison[_ <: HList], params: A) extends QueryUnion[A]
-  case class QueryLeftOuterJoin[A <: HList](table: QueryProjectOne[_ <: HList], on: QueryComparison[_ <: HList], params: A) extends QueryUnion[A]
-  case class QueryRightOuterJoin[A <: HList](table: QueryProjectOne[_ <: HList], on: QueryComparison[_ <: HList], params: A) extends QueryUnion[A]
-  case class QueryCrossJoin[A <: HList](table: QueryProjectOne[_ <: HList], on: QueryComparison[_ <: HList], params: A) extends QueryUnion[A]
+  case class QueryInnerJoin[A <: HList](table: QueryProjection[_ <: HList], on: QueryComparison[_ <: HList], params: A) extends QueryUnion[A]
+  case class QueryFullOuterJoin[A <: HList](table: QueryProjection[_ <: HList], on: QueryComparison[_ <: HList], params: A) extends QueryUnion[A]
+  case class QueryLeftOuterJoin[A <: HList](table: QueryProjection[_ <: HList], on: QueryComparison[_ <: HList], params: A) extends QueryUnion[A]
+  case class QueryRightOuterJoin[A <: HList](table: QueryProjection[_ <: HList], on: QueryComparison[_ <: HList], params: A) extends QueryUnion[A]
+  case class QueryCrossJoin[A <: HList](table: QueryProjection[_ <: HList], on: QueryComparison[_ <: HList], params: A) extends QueryUnion[A]
 
   sealed trait QuerySort
   case class QuerySortAsc(path: QueryPath) extends QuerySort
