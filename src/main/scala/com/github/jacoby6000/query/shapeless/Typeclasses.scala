@@ -11,51 +11,52 @@ import com.github.jacoby6000.query.ast.QueryUnion
  * Created by jacob.barber on 5/13/16.
  */
 object Typeclasses {
-  trait UnwrapAndFlattenHList[F[_ <: HList], A <: HList] extends DepFn1[A] { type Out <: HList }
+
+  trait UnwrapAndFlattenHList[F[_ <: HList], A <: HList, HF <: UnwrapperPoly[F]] extends DepFn1[A] { type Out <: HList }
 
   object UnwrapAndFlattenHList {
-    def apply[F[_ <: HList], A <: HList](implicit unwrapAndFlattenHList: UnwrapAndFlattenHList[F, A]): Aux[F, A, unwrapAndFlattenHList.Out] = unwrapAndFlattenHList
+    def apply[F[_ <: HList], A <: HList : OfKindContainingHList[F]#HL, HF <: UnwrapperPoly[F]](implicit unwrapAndFlattenHList: UnwrapAndFlattenHList[F, A, HF]): Aux[F, A, HF, unwrapAndFlattenHList.Out] = unwrapAndFlattenHList
 
-    type Aux[F[_ <: HList], A <: HList, Out0] = UnwrapAndFlattenHList[F, A] { type Out = Out0 }
+    type Aux[F[_ <: HList], A <: HList, HF <: UnwrapperPoly[F], Out0] = UnwrapAndFlattenHList[F, A, HF] { type Out = Out0 }
 
-    implicit def build[F[_ <: HList], A <: HList, Out0 <: HList, Out1 <: HList](implicit m: HListUnwrapper.Aux[F, A, Out0], fm: FlatMapper.Aux[Flatten.type, Out0, Out1]): Aux[F, A, Out1] = new UnwrapAndFlattenHList[F, A] {
+    implicit def buildHNilUnflattener1[F[_ <: HList], HF <: UnwrapperPoly[F]]: Aux[F, HNil, HF, HNil] = new UnwrapAndFlattenHList[F, HNil, HF] {
+      type Out = HNil
+      def apply(t: HNil): Out = HNil
+    }
+
+    implicit def buildHNilUnflattener2[F[_ <: HList], HF <: UnwrapperPoly[F]]: Aux[F, HNil.type , HF, HNil.type ] = new UnwrapAndFlattenHList[F, HNil.type , HF] {
+      type Out = HNil.type
+      def apply(t: HNil.type ): Out = HNil
+    }
+
+    implicit def buildUnflattener[F[_ <: HList], A <: HList : OfKindContainingHList[F]#HL, HF <: UnwrapperPoly[F], Out0 <: HList, Out1 <: HList](implicit u: HListUnwrapper.Aux[F, A, HF, Out0], fm: FlatMapper.Aux[identity.type, Out0, Out1]): Aux[F, A, HF, Out1] = new UnwrapAndFlattenHList[F, A, HF] {
       type Out = Out1
-
-      override def apply(t: A): Out1 = fm(m(t))
+      def apply(t: A): Out1 = fm(u(t))
     }
   }
 
-  trait HListUnwrapper[F[_ <: HList], L <: HList] extends DepFn1[L] { type Out <: HList }
+
+  trait HListUnwrapper[F[_ <: HList], L <: HList, HF <: UnwrapperPoly[F]] extends DepFn1[L] { type Out <: HList }
 
   object HListUnwrapper {
-    type Aux[F[_ <: HList], L <: HList, Out0] = HListUnwrapper[F, L] { type Out = Out0 }
+    type Aux[F[_ <: HList], L <: HList, HF <: UnwrapperPoly[F], Out0] = HListUnwrapper[F, L, HF] { type Out = Out0 }
 
-    def apply[F[_ <: HList], L <: HList](implicit hListUnwrapper: HListUnwrapper[F, L]): Aux[F, L, hListUnwrapper.Out] = hListUnwrapper
+    def apply[F[_ <: HList], L <: HList, HF <: UnwrapperPoly[F]](implicit hListUnwrapper: HListUnwrapper[F, L, HF]): Aux[F, L, HF, hListUnwrapper.Out] = hListUnwrapper
 
-    implicit def build[F[_ <: HList], L <: HList, PolyOut <: Poly1, Out0 <: HList](implicit poly: UnwrapperPoly.Aux[F, PolyOut], mapper: Mapper.Aux[PolyOut, L, Out0]): Aux[F, L, Out0] = new HListUnwrapper[F, L] {
-      override type Out = Out0
-
-      override def apply(t: L): Out0 = mapper(t)
+    implicit def buildHNilUnwrapper1[F[_ <: HList], HF <: UnwrapperPoly[F]]: Aux[F, HNil, HF, HNil] = new HListUnwrapper[F, HNil, HF] {
+      type Out = HNil
+      def apply(t: HNil): HNil = HNil
     }
-  }
 
-  trait UnwrapperPoly[F[_ <: HList]] extends Poly1 {
-    type Out = this.type
-    implicit def unwrap[A <: HList]: CaseBuilder[A]
-  }
+    implicit def buildHNilUnwrapper2[F[_ <: HList], HF <: UnwrapperPoly[F]]: Aux[F, HNil.type, HF, HNil.type] = new HListUnwrapper[F, HNil.type, HF] {
+      type Out = HNil.type
+      def apply(t: HNil.type): HNil.type = HNil
+    }
 
-  object UnwrapperPoly {
-    type Aux[F[_ <: HList], Out0] = UnwrapperPoly[F] { type Out = Out0 }
-
-    def apply[F[_ <: HList]](implicit unwrapper: UnwrapperPoly[F]): Aux[F, unwrapper.Out] = unwrapper
-  }
-
-  implicit def unwrapperPolyDeriver[F[_ <: HList]](implicit F: Unwrapper[F]) = new Poly1 {
-    implicit def unwrap[A <: HList] = at[F[A]](F.unwrap)
-  }
-
-  trait Unwrapper[F[_ <: HList]] {
-    def unwrap[A <: HList](f: F[A]): A
+    implicit def buildUnwrapper[F[_ <: HList], L <: HList, HF <: UnwrapperPoly[F], Out0 <: HList](implicit mapper: Mapper.Aux[HF, L, Out0]): Aux[F, L, HF, Out0] = new HListUnwrapper[F, L, HF] {
+      type Out = Out0
+      def apply(t: L): Out0 = mapper(t)
+    }
   }
 
 }

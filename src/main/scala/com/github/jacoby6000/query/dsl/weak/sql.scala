@@ -3,7 +3,6 @@ package com.github.jacoby6000.query.dsl.weak
 import com.github.jacoby6000.query.ast._
 import com.github.jacoby6000.query.shapeless.KindConstraint.OfKindContainingHListTC
 import com.github.jacoby6000.query.shapeless.KindConstraint.OfKindContainingHListTC._
-import com.github.jacoby6000.query.shapeless.Polys.Flatten
 import com.github.jacoby6000.query.shapeless.Typeclasses.UnwrapAndFlattenHList
 import doobie.imports.Param
 import shapeless.ops.hlist.{ FlatMapper, Mapper, Prepend, ToTraversable }
@@ -49,7 +48,7 @@ object sql {
   // Select/Query DSL helpers
   case class SqlQueryFunctionBuilder(f: QueryPath) extends ProductArgs {
     def applyProduct[A <: HList, Out <: HList](a: A)(implicit
-      m: UnwrapAndFlattenHList.Aux[QueryValue, A, Out],
+      m: UnwrapAndFlattenHList.Aux[QueryValue, A, QueryValueUnwrapper.type, Out],
       toList: ToTraversable.Aux[A, List, QueryValue[_ <: HList]]): QueryFunction[Out] = QueryFunction(f, a)
   }
 
@@ -73,7 +72,7 @@ object sql {
   }
 
   implicit class QueryPathExtensions(val f: QueryPath) extends AnyVal {
-    def as(alias: String) = f match {
+    def as(alias: String): QueryProjection[HNil] = f match {
       case c: QueryPathCons => QueryProjectOne(c, Some(alias))
       case c: QueryPathEnd => QueryProjectOne(c, Some(alias))
     }
@@ -89,19 +88,19 @@ object sql {
   object select extends ProductArgs {
     def applyProduct[A <: HList, Out1 <: HList](a: A)(implicit
       toList: ToTraversable.Aux[A, List, QueryProjection[_ <: HList]],
-      m: UnwrapAndFlattenHList.Aux[QueryProjection, A, Out1]) = SelectBuilder(a)
+      m: UnwrapAndFlattenHList.Aux[QueryProjection, A, QueryProjectionUnwrapper.type, Out1]) = SelectBuilder(a)
   }
 
   case class SelectBuilder[QueryProjections <: HList, Flattened <: HList](projections: QueryProjections)(implicit
     toList: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
-      m: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjections, Flattened]) {
+      m: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjections, QueryProjectionUnwrapper.type, Flattened]) {
 
-    implicit lazy val queryUnionFlattener = new UnwrapAndFlattenHList[QueryUnion, HNil.type] {
+    implicit lazy val queryUnionFlattener = new UnwrapAndFlattenHList[QueryUnion, HNil.type, QueryUnionUnwrapper.type] {
       override type Out = HNil.type
       override def apply(t: HNil.type): HNil.type = HNil
     }
 
-    def from[B <: HList, Out1 <: HList, Out2 <: HList](path: QueryProjection[B])(implicit p1: Prepend.Aux[B, Flattened, Out1], un: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjection[B] :: HNil, Out2]) =
+    def from[B <: HList, Out1 <: HList, Out2 <: HList](path: QueryProjection[B])(implicit p1: Prepend.Aux[B, Flattened, Out1], un: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjection[B] :: HNil, QueryProjectionUnwrapper.type, Out2]) =
       QueryBuilder(path, projections, HNil)
   }
 
@@ -134,8 +133,8 @@ object sql {
       values: QueryProjections,
       unions: QueryUnions
   )(implicit
-    mv: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjections, QBFlattenedProjections],
-      mu: UnwrapAndFlattenHList.Aux[QueryUnion, QueryUnions, QBFlattenedUnions],
+    mv: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjections, QueryProjectionUnwrapper.type, QBFlattenedProjections],
+      mu: UnwrapAndFlattenHList.Aux[QueryUnion, QueryUnions, QueryUnionUnwrapper.type, QBFlattenedUnions],
       qp1: Prepend.Aux[Table, QBFlattenedProjections, QBOut1],
       qp2: Prepend.Aux[QBOut1, QBFlattenedUnions, Params],
       pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
@@ -161,7 +160,7 @@ object sql {
         implicit
         p1: Prepend.Aux[A, B, Out1],
         p2: Prepend.Aux[QueryUnions, QueryUnion[Out1] :: HNil, Out2],
-        mu2: UnwrapAndFlattenHList.Aux[QueryUnion, Out2, MappedUnions],
+        mu2: UnwrapAndFlattenHList.Aux[QueryUnion, Out2, QueryUnionUnwrapper.type, MappedUnions],
         p3: Prepend.Aux[QBOut1, MappedUnions, P],
         ul2: ToTraversable.Aux[Out2, List, QueryUnion[_ <: HList]]
       ) =
