@@ -1,6 +1,6 @@
 name := "dooqie"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 organization := "com.github.jacoby6000"
 
@@ -8,7 +8,7 @@ version := "0.0.2"
 
 
 libraryDependencies ++= Seq(
-  "com.chuusai" %% "shapeless" % "2.2.5",
+  "com.chuusai" %% "shapeless" % "2.3.0",
   "org.tpolecat" %% "doobie-core" % "0.3.0-M1",
   "org.tpolecat" %% "doobie-contrib-postgresql" % "0.3.0-M1"
 )
