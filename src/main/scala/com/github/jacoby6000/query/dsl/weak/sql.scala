@@ -81,9 +81,8 @@ object sql {
     def desc: QuerySortDesc = QuerySortDesc(f)
   }
 
-  val `*` = QueryProjectAll
-  val `?` = QueryParameter
-  val `null` = QueryNull
+  val `null`: QueryValue[HNil] = QueryNull
+  val `*`: QueryProjection[HNil] = QueryProjectAll
 
   object select extends ProductArgs {
     def applyProduct[A <: HList, Out1 <: HList](a: A)(implicit
