@@ -34,10 +34,10 @@ class SqlDSLSimpleSelectTest extends Specification { def is = s2"""
   def result =
     (
       select(
-        p"c.name" as "n",
-        p"c.code" as "c"
+        p"name",
+        p"code"
       ) from (
-        p"country" as "c"
+        p"country"
       )
     ).build
       .query[CountryCodePair]

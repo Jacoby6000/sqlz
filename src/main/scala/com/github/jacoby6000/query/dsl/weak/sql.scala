@@ -53,7 +53,7 @@ object sql {
   }
 
   implicit class StringContextExtensions(val c: StringContext) extends AnyVal {
-    def p(): QueryPath = {
+    def path(): QueryPath = {
       val -::- = scala.collection.immutable.::
       def go(remainingParts: List[String], queryPath: QueryPath): QueryPath = remainingParts match {
         case head -::- tail => go(tail, QueryPathCons(head, queryPath))
@@ -68,7 +68,9 @@ object sql {
       QueryRawExpression(c.standardInterpolator(identity, args))
     }
 
-    def func(): SqlQueryFunctionBuilder = SqlQueryFunctionBuilder(p())
+    def p(): QueryProjection[HNil] = QueryProjectOne(path(), None)
+
+    def func(): SqlQueryFunctionBuilder = SqlQueryFunctionBuilder(path())
   }
 
   implicit class QueryPathExtensions(val f: QueryPath) extends AnyVal {
@@ -186,6 +188,13 @@ object sql {
     def **[B <: HList, Out <: HList](b: QueryValue[B])(implicit p: Prepend.Aux[A, B, Out]): QueryValue[Out] = QueryMul(a, b)
 
     def as(alias: String): QueryProjection[A] = QueryProjectOne(a, Some(alias))
+  }
+
+  implicit class QueryProjectionExtensions[A <: HList](a: QueryProjection[A]) {
+    def as(alias: String): QueryProjection[A] = a match {
+      case _: QueryProjectAll.type => a: QueryProjection[A]
+      case QueryProjectOne(selection, _) => QueryProjectOne(selection,Some(alias))
+    }
   }
 
   implicit def toQueryValue[A](a: A)(implicit ev: A =:!= QueryParameter[_], ev2: A =:!= QueryComparison[_]): QueryValue[A :: HNil] = QueryParameter(a)
