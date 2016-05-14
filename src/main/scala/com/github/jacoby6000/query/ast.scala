@@ -4,7 +4,7 @@ import _root_.shapeless._
 import _root_.shapeless.ops.hlist.{ FlatMapper, Mapper, Prepend, ToTraversable }
 import com.github.jacoby6000.query.shapeless.KindConstraint.OfKindContainingHListTC._
 import com.github.jacoby6000.query.shapeless.Polys._
-import com.github.jacoby6000.query.shapeless.Typeclasses.{ HListUnwrapper, UnwrapAndFlattenHList }
+import com.github.jacoby6000.query.shapeless.Typeclasses.{ HListUnwrapper, UnwrapAndFlattenHList, UnwrapperPoly }
 import HListUnwrapper._
 
 /**
