@@ -47,6 +47,16 @@ object sql {
   // Select/Query DSL helpers
   case class SqlQueryFunctionBuilder(f: QueryPath) extends ProductArgs {
 
+    /**
+      * The below section is completely unnecessary for making scala happy.
+      * All it does is provide IDEs some assistence.
+      * Once IDEs have ProductArgs/applyProduct support, we can remove what's below.
+      *
+      * It'd be a shame to have to use a DSL that an IDE couldn't understand.
+      *
+      * Check out $PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
+      */
+
     def apply = applyProduct(HNil)
     def apply[A <: HList, Out <: HList](a: QueryValue[A])(implicit ev: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A]:: HNil, QueryValueUnwrapper.type, Out]) = applyProduct(a :: HNil)
     def apply[A <: HList, B <: HList, Out <: HList](a: QueryValue[A], b: QueryValue[B])(implicit ev: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A] :: QueryValue[B]:: HNil, QueryValueUnwrapper.type, Out]) = applyProduct(a :: b :: HNil)
@@ -115,6 +125,16 @@ object sql {
   val `*`: QueryProjection[HNil] = QueryProjectAll
 
   object select extends ProductArgs {
+
+    /**
+      * The below section is completely unnecessary for making scala happy.
+      * All it does is provide IDEs some assistence.
+      * Once IDEs have ProductArgs/applyProduct support, we can remove what's below.
+      *
+      * It'd be a shame to have to use a DSL that an IDE couldn't understand.
+      *
+      * Check out $PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
+      */
 
     def apply = applyProduct(HNil)
     def apply[A <: HList, Out <: HList](a: QueryProjection[A])(implicit ev: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjection[A]:: HNil, QueryProjectionUnwrapper.type, Out]) = applyProduct(a :: HNil)
