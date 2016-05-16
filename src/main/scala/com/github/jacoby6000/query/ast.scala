@@ -1,11 +1,10 @@
 package com.github.jacoby6000.query
-import doobie.imports._
+
 import _root_.shapeless._
 import _root_.shapeless.ops.hlist.{ FlatMapper, Mapper, Prepend, ToTraversable }
 import com.github.jacoby6000.query.shapeless.KindConstraint.OfKindContainingHListTC._
 import com.github.jacoby6000.query.shapeless.Polys._
 import com.github.jacoby6000.query.shapeless.Typeclasses.{ HListUnwrapper, UnwrapAndFlattenHList }
-import HListUnwrapper._
 
 /**
  * Created by jacob.barber on 2/2/16.

@@ -1,6 +1,5 @@
 package com.github.jacoby6000.query.shapeless
 
-import com.github.jacoby6000.query.ast._
 import shapeless.{ HList, Poly1 }
 
 /**

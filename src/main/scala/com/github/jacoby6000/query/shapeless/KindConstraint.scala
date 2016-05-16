@@ -1,6 +1,5 @@
 package com.github.jacoby6000.query.shapeless
 
-import com.github.jacoby6000.query.ast.{ QueryProjection, QueryUnion }
 import shapeless._
 import shapeless.ops.hlist.{ Mapper, ToTraversable }
 
@@ -33,6 +32,4 @@ object KindConstraint {
       type HL[L <: HList] = ConstrainedUnaryTCConstraintTC[L, TC]
     }
   }
-
-  import OfKindContainingHListTC._
 }

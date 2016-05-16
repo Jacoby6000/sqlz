@@ -2,7 +2,6 @@ package com.github.jacoby6000.query.dsl.weak
 
 import com.github.jacoby6000.query.ast._
 import com.github.jacoby6000.query.shapeless.KindConstraint.OfKindContainingHListTC
-import com.github.jacoby6000.query.shapeless.KindConstraint.OfKindContainingHListTC._
 import com.github.jacoby6000.query.shapeless.Typeclasses.UnwrapAndFlattenHList
 import doobie.imports.Param
 import shapeless.ops.hlist.{ FlatMapper, Mapper, Prepend, ToTraversable }
@@ -81,25 +80,25 @@ object sql {
       toList: ToTraversable.Aux[A, List, QueryValue[_ <: HList]]): QueryFunction[Out] = QueryFunction(f, a)
   }
 
-  implicit class StringContextExtensions(val c: StringContext) extends AnyVal {
-    def path(): QueryPath = {
+  implicit class StringContextExtensions(val ctx: StringContext) extends AnyVal {
+    def c(): QueryPath = {
       val -::- = scala.collection.immutable.::
       def go(remainingParts: List[String], queryPath: QueryPath): QueryPath = remainingParts match {
         case head -::- tail => go(tail, QueryPathCons(head, queryPath))
         case Nil => queryPath
       }
 
-      val parts = c.parts.mkString.split('.').toList.reverse
+      val parts = ctx.parts.mkString.split('.').toList.reverse
       go(parts.tail, QueryPathEnd(parts.head))
     }
 
     def expr(args: String*)(implicit ev0: RawExpressionHandler[String]): QueryRawExpression[String] = {
-      QueryRawExpression(c.standardInterpolator(identity, args))
+      QueryRawExpression(ctx.standardInterpolator(identity, args))
     }
 
-    def p(): QueryProjection[HNil] = QueryProjectOne(path(), None)
+    def p(): QueryProjection[HNil] = QueryProjectOne(c(), None)
 
-    def func(): SqlQueryFunctionBuilder = SqlQueryFunctionBuilder(path())
+    def func(): SqlQueryFunctionBuilder = SqlQueryFunctionBuilder(c())
   }
 
   implicit class QueryPathExtensions(val f: QueryPath) extends AnyVal {

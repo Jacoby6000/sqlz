@@ -1,11 +1,10 @@
 package com.github.jacoby6000.query.shapeless
 
-import _root_.shapeless._
 import com.github.jacoby6000.query.shapeless.KindConstraint.OfKindContainingHListTC.OfKindContainingHList
 import com.github.jacoby6000.query.shapeless.Polys._
+import _root_.shapeless._
 import _root_.shapeless.ops.hlist._
 import _root_.shapeless.poly._
-import com.github.jacoby6000.query.ast.QueryUnion
 
 /**
  * Created by jacob.barber on 5/13/16.

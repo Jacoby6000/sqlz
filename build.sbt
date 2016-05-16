@@ -10,7 +10,6 @@ version := "0.0.2"
 libraryDependencies ++= {
   val doobieVersion = "0.3.0-M1"
 
-
   Seq(
     "com.chuusai" %% "shapeless" % "2.2.5",
     "org.tpolecat" %% "doobie-core" % doobieVersion,
@@ -41,8 +40,8 @@ scalacOptions ++= Seq(
   "-Ywarn-dead-code",        // N.B. doesn’t work well with the ??? hole
   "-Ywarn-numeric-widen",
   "-Ywarn-value-discard",
-  "-Xfuture"
-//  "-Ywarn-unused-import"     // 2.11 only
+  "-Xfuture",
+  "-Ywarn-unused-import"     // 2.11 only
 )
 
 tutSettings
