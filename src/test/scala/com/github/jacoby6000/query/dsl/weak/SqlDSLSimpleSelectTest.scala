@@ -43,7 +43,6 @@ class SqlDSLSimpleSelectTest extends Specification {
       ) where (
         sql.not(c"c2.code" === "USA") and
         c"c1.lifeexpectancy" > 50
-
       )
     ).build
       .queryAndPrint[(Country, Country)](println _)

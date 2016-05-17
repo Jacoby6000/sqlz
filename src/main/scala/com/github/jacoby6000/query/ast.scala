@@ -1,7 +1,7 @@
 package com.github.jacoby6000.query
 
 import _root_.shapeless._
-import _root_.shapeless.ops.hlist.{ Mapper, Prepend, ToTraversable }
+import _root_.shapeless.ops.hlist.{Mapper, Prepend, ToTraversable}
 import com.github.jacoby6000.query.shapeless.Polys._
 import com.github.jacoby6000.query.shapeless.Typeclasses.{Combine4, UnwrapAndFlattenHList}
 
@@ -204,13 +204,20 @@ object ast {
   ) extends QueryExpression[Params] with QueryValue[Params]
 
   case class ModifyField[A <: HList](key: QueryPath, value: QueryValue[A]) { lazy val params: A = value.params }
-  //  case class QueryInsert[A <: HList : OfKindContainingHList[ModifyField]#HL, Out <: HList]
-  //                        (collection: QueryPath, values: A)
-  //                        (implicit m: Mapper.Aux[ModifyFieldUnwrapper.type, A, Out]) extends QueryExpression[Out] with QueryModify[Out] {
-  //    lazy val params: Out = m(values)
-  //  }
 
-  //  case class QueryUpdate[A <: HList : OfKind[ModifyField]#HL, B <: HList](collection: QueryPath, values: A, where: Option[B]) extends QueryExpression[B] with QueryModify[B]
-  //  case class QueryDelete[B <:(collection: QueryPath, where: QueryComparison) extends QueryExpression
+
+  object QueryInsert {
+    def apply[A <: HList, Out <: HList](collection: QueryPath, fields: A)(implicit unwrapAndFlattenHList: UnwrapAndFlattenHList.Aux[ModifyField, A, ModifyFieldUnwrapper.type, Out], toList: ToTraversable.Aux[A, List, ModifyField[_ <: HList]]): QueryInsert[Out] = QueryInsert(collection, toList(fields), unwrapAndFlattenHList(fields))
+  }
+
+  case class QueryInsert[A <: HList] private (collection: QueryPath, values: List[ModifyField[_ <: HList]], params: A) extends QueryExpression[A] with QueryModify[A]
+
+  object QueryUpdate {
+    def apply[A <: HList, B <: HList, Out1 <: HList, Out2 <: HList](collection: QueryPath, values: A, where: QueryComparison[B])(implicit un: UnwrapAndFlattenHList.Aux[ModifyField, A, ModifyFieldUnwrapper.type, Out1], p1: Prepend.Aux[Out1, B, Out2], toList: ToTraversable.Aux[A, List, ModifyField[_ <: HList]]): QueryUpdate[Out2] = QueryUpdate(collection, toList(values), where, p1(un(values), where.params))
+  }
+
+  case class QueryUpdate[A <: HList] private (collection: QueryPath, values: List[ModifyField[_ <: HList]], where: QueryComparison[_ <: HList], params: A) extends QueryExpression[A] with QueryModify[A]
+
+  case class QueryDelete[A <: HList](collection: QueryPath, where: QueryComparison[A]) extends QueryExpression[A] { lazy val params = where.params }
 
 }

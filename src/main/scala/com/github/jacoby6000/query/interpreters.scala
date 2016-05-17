@@ -115,26 +115,26 @@ object interpreters {
 
         s"SELECT $sqlProjections FROM $sqlTable $sqlUnions $sqlFilter $sqlSorts $sqlGroups $sqlLimit $sqlOffset".trim
 
-      //      case QueryInsert(table, values) =>
-      //        val sqlTable = reducePath(table)
-      //        val mappedSqlValuesKV = values.map(reduceInsertValues)
-      //        val sqlColumns = mappedSqlValuesKV.map(_._1).mkString(", ")
-      //        val sqlValues = mappedSqlValuesKV.map(_._2).mkString(", ")
-      //
-      //        s"INSERT INTO $sqlTable ($sqlColumns) VALUES ($sqlValues)"
+      case QueryInsert(table, values, _) =>
+        val sqlTable = reducePath(table)
+        val mappedSqlValuesKV = values.map(reduceInsertValues)
+        val sqlColumns = mappedSqlValuesKV.map(_._1).mkString(", ")
+        val sqlValues = mappedSqlValuesKV.map(_._2).mkString(", ")
 
-      //      case QueryUpdate(table, values, where) =>
-      //        val sqlTable = reducePath(table)
-      //        val mappedSqlValuesKV = values.map(reduceInsertValues).map(kv => kv._1 + "=" + kv._2).mkString(", ")
-      //        val sqlWhere = where.map("WHERE " + reduceComparison(_)).getOrElse("")
-      //
-      //        s"UPDATE $sqlTable SET $mappedSqlValuesKV $sqlWhere"
-      //
-      //      case QueryDelete(table, where) =>
-      //        val sqlTable = reducePath(table)
-      //        val sqlWhere = reduceComparison(where)
-      //
-      //        s"DELETE $sqlTable WHERE $sqlWhere"
+        s"INSERT INTO $sqlTable ($sqlColumns) VALUES ($sqlValues)"
+
+      case QueryUpdate(table, values, where, _) =>
+        val sqlTable = reducePath(table)
+        val mappedSqlValuesKV = values.map(reduceInsertValues).map(kv => kv._1 + "=" + kv._2).mkString(", ")
+        val sqlWhere = if(where == QueryComparisonNop) " " else "WHERE " + reduceComparison(where)
+
+        s"UPDATE $sqlTable SET $mappedSqlValuesKV $sqlWhere"
+
+      case QueryDelete(table, where) =>
+        val sqlTable = reducePath(table)
+        val sqlWhere = reduceComparison(where)
+
+        s"DELETE $sqlTable WHERE $sqlWhere"
     }
 
   }
