@@ -218,6 +218,6 @@ object ast {
 
   case class QueryUpdate[A <: HList] private (collection: QueryPath, values: List[ModifyField[_ <: HList]], where: QueryComparison[_ <: HList], params: A) extends QueryExpression[A] with QueryModify[A]
 
-  case class QueryDelete[A <: HList](collection: QueryPath, where: QueryComparison[A]) extends QueryExpression[A] { lazy val params = where.params }
+  case class QueryDelete[A <: HList](collection: QueryPath, where: QueryComparison[A]) extends QueryExpression[A] with QueryModify[A] { lazy val params = where.params }
 
 }
