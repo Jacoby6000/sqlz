@@ -3,7 +3,7 @@ package com.github.jacoby6000.query
 import com.github.jacoby6000.query.ast._
 import doobie.imports._
 import _root_.shapeless._
-import doobie.syntax.string.SqlInterpolator
+import doobie.syntax.string.{Builder, SqlInterpolator}
 
 /**
  * Created by jacob.barber on 3/3/16.
@@ -17,11 +17,20 @@ object interpreters {
       printer(sqlString)
       new SqlInterpolator(new StringContext(sqlString.split('?'): _*)).sql.applyProduct[A](ast.params).query[B]
     }
+
+    def builder[A <: HList: Param](ast: QuerySelect[A], printer: String => Unit = void): Builder[A] = {
+      val sqlString = genSql(ast)
+      printer(sqlString)
+      new SqlInterpolator(new StringContext(sqlString.split('?'): _*)).sql.applyProduct[A](ast.params)
+    }
   }
 
   implicit class QuerySelectExtensions[A <: HList: Param](expr: QuerySelect[A])(implicit sqlInterpreter: SqlInterpreter) {
     def queryAndPrint[B: Composite](printer: String => Unit = void): Query0[B] = sqlInterpreter.query[A, B](expr, printer)
     def query[B: Composite]: Query0[B] = sqlInterpreter.query[A, B](expr, void)
+
+    def builderAndPrint(printer: String => Unit): Builder[A] = sqlInterpreter.builder(expr, printer)
+    def builder: Builder[A] = sqlInterpreter.builder(expr, void)
   }
 
   object sqlDialects {
