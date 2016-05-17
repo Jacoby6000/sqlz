@@ -44,7 +44,7 @@ object ast {
       def interpret(a: A): String = f(a)
     }
   }
-  `
+
   object QueryParameter {
     def apply[T](value: T)(implicit ev: T =:!= HList): QueryParameter[T :: HNil] = QueryParameter(value :: HNil)
   }
