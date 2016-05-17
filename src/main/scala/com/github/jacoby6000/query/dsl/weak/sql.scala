@@ -219,45 +219,50 @@ object sql {
       pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
       ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_ <: HList]]) { builder =>
 
-    def leftOuterJoin[A <: HList, B <: HList, Out1 <: HList, Out2 <: HList, MappedUnions <: HList, P <: HList](tup: (QueryProjection[A], QueryComparison[B]))
+    def leftOuterJoin[A <: HList, B <: HList, Out1 <: HList, Out2 <: HList, Out3 <: HList, MappedUnions <: HList, P <: HList](tup: (QueryProjection[A], QueryComparison[B]))
                                                                                                               (implicit
                                                                                                                 p1: Prepend.Aux[A, B, Out1],
                                                                                                                 p2: Prepend.Aux[QueryUnions, QueryUnion[Out1] :: HNil, Out2],
                                                                                                                 mu2: UnwrapAndFlattenHList.Aux[QueryUnion, Out2, QueryUnionUnwrapper.type, MappedUnions],
-                                                                                                                p3: Prepend.Aux[QBOut1, MappedUnions, P],
-                                                                                                                ul2: ToTraversable.Aux[Out2, List, QueryUnion[_ <: HList]]) = builder.copy(unions = unions ::: leftJoiner.join(tup._1, tup._2) :: HNil)
+                                                                                                                p3: Prepend.Aux[QBOut1, MappedUnions, Out3],
+                                                                                                               p4: Prepend.Aux[Out3, ComparisonParameters, P],
+                                                                                                               ul2: ToTraversable.Aux[Out2, List, QueryUnion[_ <: HList]]) = builder.copy(unions = unions ::: leftJoiner.join(tup._1, tup._2) :: HNil)
 
-    def rightOuterJoin[A <: HList, B <: HList, Out1 <: HList, Out2 <: HList, MappedUnions <: HList, P <: HList](tup: (QueryProjection[A], QueryComparison[B]))
+    def rightOuterJoin[A <: HList, B <: HList, Out1 <: HList, Out2 <: HList, Out3 <: HList, MappedUnions <: HList, P <: HList](tup: (QueryProjection[A], QueryComparison[B]))
                                                                                                                (implicit
                                                                                                                 p1: Prepend.Aux[A, B, Out1],
                                                                                                                 p2: Prepend.Aux[QueryUnions, QueryUnion[Out1] :: HNil, Out2],
                                                                                                                 mu2: UnwrapAndFlattenHList.Aux[QueryUnion, Out2, QueryUnionUnwrapper.type, MappedUnions],
-                                                                                                                p3: Prepend.Aux[QBOut1, MappedUnions, P],
+                                                                                                                p3: Prepend.Aux[QBOut1, MappedUnions, Out3],
+                                                                                                                p4: Prepend.Aux[Out3, ComparisonParameters, P],
                                                                                                                 ul2: ToTraversable.Aux[Out2, List, QueryUnion[_ <: HList]]) = builder.copy(unions = unions ::: rightJoiner.join(tup._1, tup._2) :: HNil)
 
-    def innerJoin[A <: HList, B <: HList, Out1 <: HList, Out2 <: HList, MappedUnions <: HList, P <: HList](tup: (QueryProjection[A], QueryComparison[B]))
+    def innerJoin[A <: HList, B <: HList, Out1 <: HList, Out2 <: HList, Out3 <: HList, MappedUnions <: HList, P <: HList](tup: (QueryProjection[A], QueryComparison[B]))
                                                                                                           (implicit
                                                                                                            p1: Prepend.Aux[A, B, Out1],
                                                                                                            p2: Prepend.Aux[QueryUnions, QueryUnion[Out1] :: HNil, Out2],
                                                                                                            mu2: UnwrapAndFlattenHList.Aux[QueryUnion, Out2, QueryUnionUnwrapper.type, MappedUnions],
-                                                                                                           p3: Prepend.Aux[QBOut1, MappedUnions, P],
+                                                                                                           p3: Prepend.Aux[QBOut1, MappedUnions, Out3],
+                                                                                                           p4: Prepend.Aux[Out3, ComparisonParameters, P],
                                                                                                            ul2: ToTraversable.Aux[Out2, List, QueryUnion[_ <: HList]]) = builder.copy(unions = unions ::: innerJoiner.join(tup._1, tup._2) :: HNil)
 
 
-    def fullOuterJoin[A <: HList, B <: HList, Out1 <: HList, Out2 <: HList, MappedUnions <: HList, P <: HList](tup: (QueryProjection[A], QueryComparison[B]))
+    def fullOuterJoin[A <: HList, B <: HList, Out1 <: HList, Out2 <: HList, Out3 <: HList, MappedUnions <: HList, P <: HList](tup: (QueryProjection[A], QueryComparison[B]))
                                                                                                               (implicit
                                                                                                                p1: Prepend.Aux[A, B, Out1],
                                                                                                                p2: Prepend.Aux[QueryUnions, QueryUnion[Out1] :: HNil, Out2],
                                                                                                                mu2: UnwrapAndFlattenHList.Aux[QueryUnion, Out2, QueryUnionUnwrapper.type, MappedUnions],
-                                                                                                               p3: Prepend.Aux[QBOut1, MappedUnions, P],
+                                                                                                               p3: Prepend.Aux[QBOut1, MappedUnions, Out3],
+                                                                                                               p4: Prepend.Aux[Out3, ComparisonParameters, P],
                                                                                                                ul2: ToTraversable.Aux[Out2, List, QueryUnion[_ <: HList]]) = builder.copy(unions = unions ::: outerJoiner.join(tup._1, tup._2) :: HNil)
 
-    def crossJoin[A <: HList, B <: HList, Out1 <: HList, Out2 <: HList, MappedUnions <: HList, P <: HList](tup: (QueryProjection[A], QueryComparison[B]))
+    def crossJoin[A <: HList, B <: HList, Out1 <: HList, Out2 <: HList, Out3 <: HList, MappedUnions <: HList, P <: HList](tup: (QueryProjection[A], QueryComparison[B]))
                                                                                                           (implicit
                                                                                                            p1: Prepend.Aux[A, B, Out1],
                                                                                                            p2: Prepend.Aux[QueryUnions, QueryUnion[Out1] :: HNil, Out2],
                                                                                                            mu2: UnwrapAndFlattenHList.Aux[QueryUnion, Out2, QueryUnionUnwrapper.type, MappedUnions],
-                                                                                                           p3: Prepend.Aux[QBOut1, MappedUnions, P],
+                                                                                                           p3: Prepend.Aux[QBOut1, MappedUnions, Out3],
+                                                                                                           p4: Prepend.Aux[Out3, ComparisonParameters, P],
                                                                                                            ul2: ToTraversable.Aux[Out2, List, QueryUnion[_ <: HList]]) = builder.copy(unions = unions ::: crossJoiner.join(tup._1, tup._2) :: HNil)
 
     def where[A <: HList, Out <: HList, NewParams <: HList](queryComparison: QueryComparison[A])(implicit p1: Prepend.Aux[ComparisonParameters, A, Out], p2: Prepend.Aux[QBOut2, Out, NewParams]) = {
@@ -284,10 +289,10 @@ object sql {
     def !==[B <: HList, Out <: HList](b: QueryValue[B])(implicit p: Prepend.Aux[A, B, Out]): QueryComparison[Out] = QueryNotEqual(a, b)
     def <>[B <: HList, Out <: HList](b: QueryValue[B])(implicit p: Prepend.Aux[A, B, Out]): QueryComparison[Out] = !==(b)
 
-    def ++[B <: HList, Out <: HList](b: QueryValue[B])(implicit p: Prepend.Aux[A, B, Out]): QueryValue[Out] = QueryAdd(a, b)
-    def --[B <: HList, Out <: HList](b: QueryValue[B])(implicit p: Prepend.Aux[A, B, Out]): QueryValue[Out] = QuerySub(a, b)
+    def +[B <: HList, Out <: HList](b: QueryValue[B])(implicit p: Prepend.Aux[A, B, Out]): QueryValue[Out] = QueryAdd(a, b)
+    def -[B <: HList, Out <: HList](b: QueryValue[B])(implicit p: Prepend.Aux[A, B, Out]): QueryValue[Out] = QuerySub(a, b)
     def /[B <: HList, Out <: HList](b: QueryValue[B])(implicit p: Prepend.Aux[A, B, Out]): QueryValue[Out] = QueryDiv(a, b)
-    def **[B <: HList, Out <: HList](b: QueryValue[B])(implicit p: Prepend.Aux[A, B, Out]): QueryValue[Out] = QueryMul(a, b)
+    def *[B <: HList, Out <: HList](b: QueryValue[B])(implicit p: Prepend.Aux[A, B, Out]): QueryValue[Out] = QueryMul(a, b)
 
     //  def in()
 

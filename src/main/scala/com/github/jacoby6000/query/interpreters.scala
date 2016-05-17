@@ -34,8 +34,8 @@ object interpreters {
     def binOpReduction[A](op: String, left: A, right: A)(f: A => String) = f(left) + wrap(op, " ") + f(right)
 
     def reducePath(queryPath: QueryPath): String = queryPath match {
-      case QueryPathEnd(str) => wrap(str, "")
-      case QueryPathCons(head, tail) => wrap(head, "") + "." + reducePath(tail)
+      case QueryPathEnd(str) => wrap(str, "\"")
+      case QueryPathCons(head, tail) => wrap(head, "\"") + "." + reducePath(tail)
     }
 
     def reduceProjection(projection: QueryProjection[_]): String = projection match {

@@ -16,40 +16,48 @@ object Typeclasses {
   }
 
   trait Combine3[A <: HList, B <: HList, C <: HList] {
-    type Out <: HList
+    type AB <: HList
+    type ABC <: HList
+    type Out = ABC
     def combine(a: A, b: B, c: C): Out
   }
 
   object Combine3 {
     def apply[A <: HList, B <: HList, C <: HList](implicit prepend2: Combine3[A,B,C]): Aux[A,B,C,prepend2.Out] = prepend2
 
-    type Aux[A <: HList, B <: HList, C <: HList, Out0 <: HList] = Combine3[A,B,C] { type Out = Out0 }
+    type Aux[A <: HList, B <: HList, C <: HList, Out0 <: HList] = Combine3[A,B,C] { type ABC = Out0; type Out = Out0 }
+    type ExpandedAux[A <: HList, B <: HList, C <: HList, AB0 <: HList, ABC0 <: HList] = Combine3[A,B,C] { type AB = AB0; type ABC = ABC0 }
 
     implicit def buildPrepender[A <: HList, B <: HList, C <: HList, Out0 <: HList, Out1 <: HList](implicit p1: Prepend.Aux[A,B,Out0], p2: Prepend.Aux[Out0, C, Out1]) = new Combine3[A,B,C] {
-      type Out = Out1
+      type AB = Out0
+      type ABC = Out1
+
       def combine(a: A, b: B, c: C): Out1 = p2(p1(a, b), c)
     }
   }
 
   trait Combine4[A <: HList, B <: HList, C <: HList, D <: HList] {
-    type Out <: HList
+    type AB <: HList
+    type ABC <: HList
+    type ABCD <: HList
+
+    type Out = ABCD
     def combine(a: A, b: B, c: C, d: D): Out
   }
 
   object Combine4 {
     def apply[A <: HList, B <: HList, C <: HList, D <: HList](implicit prepend3: Combine4[A,B,C,D]): Aux[A,B,C,D,prepend3.Out] = prepend3
 
-    type Aux[A <: HList, B <: HList, C <: HList, D <: HList, Out0 <: HList] = Combine4[A,B,C,D] { type Out = Out0 }
+    type Aux[A <: HList, B <: HList, C <: HList, D <: HList, Out0 <: HList] = Combine4[A,B,C,D] { type ABCD = Out0; type Out = Out0 }
+    type ExpandedAux[A <: HList, B <: HList, C <: HList, D <: HList, AB0 <: HList, ABC0 <: HList, ABCD0 <: HList] = Combine4[A,B,C,D] { type AB = AB0; type ABC = ABC0; type ABCD = ABCD0 }
 
     implicit def buildPrepender[A <: HList, B <: HList, C <: HList, D <: HList, Out0 <: HList, Out1 <: HList, Out2 <: HList](implicit p1: Prepend.Aux[A,B,Out0], p2: Prepend.Aux[Out0, C, Out1], p3: Prepend.Aux[Out1, D, Out2]) = new Combine4[A,B,C,D] {
-      type Out = Out2
+      type AB = Out0
+      type ABC = Out1
+      type ABCD = Out2
+
       def combine(a: A, b: B, c: C, d: D): Out2 = p3(p2(p1(a, b), c), d)
     }
-
-//    implicit def buildPrepender2[A <: HList, B <: HList, C <: HList, D <: HList, Out0 <: HList, Out1 <: HList](implicit p1: Prepend2.Aux[A,B,C,Out0], p2: Prepend.Aux[Out0, D, Out1]) = new Prepend3[A,B,C,D] {
-//      type Out = Out1
-//      def combine(a: A, b: B, c: C, d: D): Out1 = p2(p1.combine(a, b, c), d)
-//    }
   }
 
 

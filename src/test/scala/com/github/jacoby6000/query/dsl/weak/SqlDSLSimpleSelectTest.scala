@@ -29,7 +29,7 @@ class SqlDSLSimpleSelectTest extends Specification {
     (
       select(
         p"c1.name",
-        (c"c1.gnp" ++ 5) as "c1gnp",
+        (c"c1.gnp" + 5) as "c1gnp",
         p"c1.code",
         p"c2.name",
         p"c2.gnp",
@@ -38,9 +38,12 @@ class SqlDSLSimpleSelectTest extends Specification {
         p"country" as "c1"
       ) innerJoin (
         p"country" as "c2" on (
-          c"c2.code" === func"reverse" (c"c1.code") and
-          sql.not(c"c2.code" === "USA")
+          c"c2.code" === func"reverse" (c"c1.code")
         )
+      ) where (
+        sql.not(c"c2.code" === "USA") and
+        c"c1.lifeexpectancy" > 50
+
       )
     ).build
       .queryAndPrint[(Country, Country)](println _)
@@ -50,6 +53,6 @@ class SqlDSLSimpleSelectTest extends Specification {
 
   def testResult = {
     println(result.mkString("\n"))
-    result must haveSize(12)
+    result must haveSize(10)
   }
 }
