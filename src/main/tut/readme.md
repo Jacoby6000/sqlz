@@ -89,13 +89,13 @@ val baseQuery =
   ) from p"country"
 ```
 
-And now lets run some basic queries (Note, instead of .queryAndPrint\[T\]\(printer\) you can use .query\[T\] if you do not care to see that sql being generated.) 
+And now lets run some basic queries (Note, instead of `.queryAndPrint[T](printer)` you can use `.query[T]` if you do not care to see that sql being generated.) 
 
 ```tut
 def biggerThan(n: Int) = {
   (baseQuery where c"population" > n)
     .build
-    .queryAndPrint[Country](sql => println("\n" + sql + "\n"))
+    .queryAndPrint[Country](sql => println("\n" + sql))
 }
 
 biggerThan(150000000).quick.unsafePerformSync
@@ -106,7 +106,7 @@ def populationIn(r: Range) = {
     c"population" >= r.min and
     c"population" <= r.max
   )).build
-    .queryAndPrint[Country](sql => println("\n" + sql + "\n"))
+    .queryAndPrint[Country](sql => println("\n" + sql))
 } 
 
 populationIn(150000000 to 200000000).quick.unsafePerformSync
@@ -133,7 +133,7 @@ def joined = {
     (c"c2.code" !== `null`) and
     (c"c2.name" !== c"c1.name")
   )).build
-    .queryAndPrint[ComplimentaryCountries](sql => println("\n" + sql + "\n"))
+    .queryAndPrint[ComplimentaryCountries](sql => println("\n" + sql))
 }
 
 joined.quick.unsafePerformSync
