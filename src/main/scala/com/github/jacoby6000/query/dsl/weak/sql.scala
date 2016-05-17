@@ -2,12 +2,8 @@ package com.github.jacoby6000.query.dsl.weak
 
 import com.github.jacoby6000.query.ast._
 import com.github.jacoby6000.query.shapeless.Typeclasses.UnwrapAndFlattenHList
-import doobie.imports.Param
-import shapeless.ops.hlist.{ FlatMapper, Mapper, Prepend, ToTraversable }
+import shapeless.ops.hlist.{ Prepend, ToTraversable }
 import shapeless._
-
-import scala.annotation.implicitNotFound
-import scala.util.matching.Regex
 
 /**
  * Created by jacob.barber on 3/4/16.

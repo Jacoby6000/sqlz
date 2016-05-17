@@ -1,9 +1,6 @@
 package com.github.jacoby6000.query.shapeless
 
 import shapeless._
-import shapeless.ops.hlist.{ Mapper, ToTraversable }
-
-import scala.collection.mutable
 
 /**
  * Created by jacob.barber on 5/10/16.

@@ -3,7 +3,6 @@ package com.github.jacoby6000.query
 import com.github.jacoby6000.query.ast._
 import doobie.imports._
 import _root_.shapeless._
-import _root_.shapeless.ops.hlist.ToTraversable
 
 /**
  * Created by jacob.barber on 3/3/16.
