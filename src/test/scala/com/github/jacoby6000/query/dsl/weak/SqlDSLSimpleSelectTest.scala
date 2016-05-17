@@ -11,7 +11,9 @@ import doobie.imports._
 /**
   * Created by jbarber on 5/14/16.
   */
-class SqlDSLSimpleSelectTest extends Specification { def is = s2"""
+class SqlDSLSimpleSelectTest extends Specification {
+  def is =
+    s2"""
 
   A simple query should
     return some results                               $testResult
@@ -21,30 +23,30 @@ class SqlDSLSimpleSelectTest extends Specification { def is = s2"""
     "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"
   )
 
-  // the below should compile.
-  case class CountryCodePair(gnp: Int, code: String)
+  case class Country(name: String, gnp: Int, code: String)
 
   lazy val result =
     (
       select(
-        (path"c1.gnp" ++ 5) as "c1name",
+        p"c1.name",
+        (c"c1.gnp" ++ 5) as "c1gnp",
         p"c1.code",
+        p"c2.name",
         p"c2.gnp",
-        p"c2.name"
+        p"c2.code"
       ) from (
         p"country" as "c1"
       ) innerJoin (
-        p"country" as "c2"
-      ) on (
-        path"c2.code" === func"reverse"(c"c1.code")
+        p"country" as "c2" on (
+          c"c2.code" === func"reverse" (c"c1.code") and
+          sql.not(c"c2.code" === "USA")
+        )
       )
     ).build
-      .query[(CountryCodePair, CountryCodePair)]
+      .queryAndPrint[(Country, Country)](println _)
       .list
       .transact(xa)
       .unsafePerformSync
-
-
 
   def testResult = {
     println(result.mkString("\n"))

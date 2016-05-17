@@ -2,7 +2,6 @@ package com.github.jacoby6000.query
 
 import _root_.shapeless._
 import _root_.shapeless.ops.hlist.{ FlatMapper, Mapper, Prepend, ToTraversable }
-import com.github.jacoby6000.query.shapeless.KindConstraint.OfKindContainingHListTC._
 import com.github.jacoby6000.query.shapeless.Polys._
 import com.github.jacoby6000.query.shapeless.Typeclasses.{ HListUnwrapper, UnwrapAndFlattenHList }
 
@@ -45,7 +44,7 @@ object ast {
       def interpret(a: A): String = f(a)
     }
   }
-
+  `
   object QueryParameter {
     def apply[T](value: T)(implicit ev: T =:!= HList): QueryParameter[T :: HNil] = QueryParameter(value :: HNil)
   }
@@ -105,7 +104,7 @@ object ast {
   }
 
   object QueryIn {
-    def apply[A <: HList, B <: HList: OfKindContainingHList[QueryValue]#HL, MappedValues <: HList, Out <: HList](left: QueryValue[A], rights: B)(implicit toList: ToTraversable.Aux[B, List, QueryValue[_ <: HList]], m: Mapper.Aux[QueryValueUnwrapper.type, B, MappedValues], p: Prepend.Aux[A, MappedValues, Out]): QueryIn[Out] = QueryIn[Out](left, toList(rights), left.params ::: m(rights))
+    def apply[A <: HList, B <: HList, MappedValues <: HList, Out <: HList](left: QueryValue[A], rights: B)(implicit toList: ToTraversable.Aux[B, List, QueryValue[_ <: HList]], m: Mapper.Aux[QueryValueUnwrapper.type, B, MappedValues], p: Prepend.Aux[A, MappedValues, Out]): QueryIn[Out] = QueryIn[Out](left, toList(rights), left.params ::: m(rights))
   }
 
   object QueryAnd {

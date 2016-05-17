@@ -20,7 +20,7 @@ object interpreters {
   }
 
   implicit class QuerySelectExtensions[A <: HList: Param](expr: QuerySelect[A])(implicit sqlInterpreter: SqlInterpreter) {
-    def query[B: Composite](printer: String => Unit = void): Query0[B] = sqlInterpreter.query[A, B](expr, printer)
+    def queryAndPrint[B: Composite](printer: String => Unit = void): Query0[B] = sqlInterpreter.query[A, B](expr, printer)
     def query[B: Composite]: Query0[B] = sqlInterpreter.query[A, B](expr, void)
   }
 
@@ -71,7 +71,7 @@ object interpreters {
       case QueryLessThanOrEqual(left, right, _) => binOpReduction("<=", left, right)(reduceValue)
       case QueryAnd(left, right, _) => binOpReduction(" AND ", left, right)(reduceComparison)
       case QueryOr(left, right, _) => binOpReduction(" OR ", left, right)(reduceComparison)
-      case QueryNot(v) => "!" + reduceComparison(v)
+      case QueryNot(v) => "not " + reduceComparison(v)
     }
 
     def reduceUnion(union: QueryUnion[_]): String = union match {

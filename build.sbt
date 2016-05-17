@@ -1,10 +1,10 @@
-name := "dooqie"
+name := "scoobie"
 
 scalaVersion := "2.11.7"
 
 organization := "com.github.jacoby6000"
 
-version := "0.0.2"
+version := "0.1.0"
 
 
 libraryDependencies ++= {

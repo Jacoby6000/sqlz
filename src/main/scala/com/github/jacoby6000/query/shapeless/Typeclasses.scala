@@ -1,6 +1,5 @@
 package com.github.jacoby6000.query.shapeless
 
-import com.github.jacoby6000.query.shapeless.KindConstraint.OfKindContainingHListTC.OfKindContainingHList
 import com.github.jacoby6000.query.shapeless.Polys._
 import _root_.shapeless._
 import _root_.shapeless.ops.hlist._
@@ -14,7 +13,7 @@ object Typeclasses {
   trait UnwrapAndFlattenHList[F[_ <: HList], A <: HList, HF <: UnwrapperPoly[F]] extends DepFn1[A] { type Out <: HList }
 
   object UnwrapAndFlattenHList {
-    def apply[F[_ <: HList], A <: HList : OfKindContainingHList[F]#HL, HF <: UnwrapperPoly[F]](implicit unwrapAndFlattenHList: UnwrapAndFlattenHList[F, A, HF]): Aux[F, A, HF, unwrapAndFlattenHList.Out] = unwrapAndFlattenHList
+    def apply[F[_ <: HList], A <: HList, HF <: UnwrapperPoly[F]](implicit unwrapAndFlattenHList: UnwrapAndFlattenHList[F, A, HF]): Aux[F, A, HF, unwrapAndFlattenHList.Out] = unwrapAndFlattenHList
 
     type Aux[F[_ <: HList], A <: HList, HF <: UnwrapperPoly[F], Out0] = UnwrapAndFlattenHList[F, A, HF] { type Out = Out0 }
 
@@ -23,9 +22,9 @@ object Typeclasses {
       def apply(t: HNil): Out = HNil
     }
 
-    implicit def buildHNilUnflattener2[F[_ <: HList], HF <: UnwrapperPoly[F]]: Aux[F, HNil.type , HF, HNil.type ] = new UnwrapAndFlattenHList[F, HNil.type , HF] {
+    implicit def buildHNilUnflattener2[F[_ <: HList], HF <: UnwrapperPoly[F]]: Aux[F, HNil.type, HF, HNil.type] = new UnwrapAndFlattenHList[F, HNil.type, HF] {
       type Out = HNil.type
-      def apply(t: HNil.type ): Out = HNil
+      def apply(t: HNil.type): Out = HNil
     }
 
     implicit def buildUnflattener[F[_ <: HList], A <: HList, HF <: UnwrapperPoly[F], Out0 <: HList, Out1 <: HList](implicit u: HListUnwrapper.Aux[F, A, HF, Out0], fm: FlatMapper.Aux[identity.type, Out0, Out1]): Aux[F, A, HF, Out1] = new UnwrapAndFlattenHList[F, A, HF] {
@@ -33,7 +32,6 @@ object Typeclasses {
       def apply(t: A): Out1 = fm(u(t))
     }
   }
-
 
   trait HListUnwrapper[F[_ <: HList], L <: HList, HF <: UnwrapperPoly[F]] extends DepFn1[L] { type Out <: HList }
 
