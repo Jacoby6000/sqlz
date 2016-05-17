@@ -214,12 +214,12 @@ object sql {
       ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_ <: HList]]) { builder =>
 
     def leftOuterJoin[A <: HList, B <: HList, Out1 <: HList, Out2 <: HList, MappedUnions <: HList, P <: HList](tup: (QueryProjection[A], QueryComparison[B]))
-                                                            (implicit
-                                                              p1: Prepend.Aux[A, B, Out1],
-                                                              p2: Prepend.Aux[QueryUnions, QueryUnion[Out1] :: HNil, Out2],
-                                                              mu2: UnwrapAndFlattenHList.Aux[QueryUnion, Out2, QueryUnionUnwrapper.type, MappedUnions],
-                                                              p3: Prepend.Aux[QBOut1, MappedUnions, P],
-                                                              ul2: ToTraversable.Aux[Out2, List, QueryUnion[_ <: HList]]) = builder.copy(unions = unions ::: leftJoiner.join(tup._1, tup._2) :: HNil)
+                                                                                                              (implicit
+                                                                                                                p1: Prepend.Aux[A, B, Out1],
+                                                                                                                p2: Prepend.Aux[QueryUnions, QueryUnion[Out1] :: HNil, Out2],
+                                                                                                                mu2: UnwrapAndFlattenHList.Aux[QueryUnion, Out2, QueryUnionUnwrapper.type, MappedUnions],
+                                                                                                                p3: Prepend.Aux[QBOut1, MappedUnions, P],
+                                                                                                                ul2: ToTraversable.Aux[Out2, List, QueryUnion[_ <: HList]]) = builder.copy(unions = unions ::: leftJoiner.join(tup._1, tup._2) :: HNil)
 
     def rightOuterJoin[A <: HList, B <: HList, Out1 <: HList, Out2 <: HList, MappedUnions <: HList, P <: HList](tup: (QueryProjection[A], QueryComparison[B]))
                                                                                                                (implicit
@@ -255,7 +255,7 @@ object sql {
                                                                                                            ul2: ToTraversable.Aux[Out2, List, QueryUnion[_ <: HList]]) = builder.copy(unions = unions ::: crossJoiner.join(tup._1, tup._2) :: HNil)
 
 
-    def build: QuerySelect[Params] = QuerySelect(table, values, unions, List.empty, List.empty, None, None)
+    def build: QuerySelect[Params] = QuerySelect(table, values, unions, QueryComparisonNop, List.empty, List.empty, None, None)
 
     /*    def where[A <: HList](comparison: QueryComparison[A]) = builder.copy(filter = QueryAnd(comparison, builder.filter))
     def orderBy(sorts: QuerySort*) = builder.copy(sorts = builder.sorts ::: sorts.toList)

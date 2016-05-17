@@ -10,34 +10,6 @@ import _root_.shapeless.poly._
  */
 object Typeclasses {
 
-//  mu: UnwrapAndFlattenHList.Aux[QueryUnion, QueryUnions, QueryUnionUnwrapper.type, QBFlattenedUnions],
-//  qp1: Prepend.Aux[Table, QBFlattenedProjections, QBOut1],
-//  qp2: Prepend.Aux[QBOut1, QBFlattenedUnions, Params],
-//  pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
-//
-//  trait UnwrapFlattenPrependAndToList[F[_ <: HList], A <: HList, HF <: UnwrapperPoly[F], AppendTo <: HList] extends DepFn1[A] {
-//    type Out <: HList
-//    def toList(a: A): List[A]
-//    def params: Out
-//  }
-//
-//  object UnwrapFlattenPrependAndToList {
-//    def apply[F[_ <: HList], A <: HList, HF <: UnwrapperPoly[F], AppendTo <: HList](implicit unwrapFlattenPrependAndToList: UnwrapFlattenPrependAndToList[F, A, HF, AppendTo]): Aux[F, A, HF, AppendTo, unwrapAndFlattenHList.Out] = unwrapAndFlattenHList
-//
-//    type Aux[F[_ <: HList], A <: HList, HF <: UnwrapperPoly[F], AppendTo <: HList, Out0] = UnwrapAndFlattenHList[F, A, HF] { type Out = Out0 }
-//
-//    implicit def buildHNilUnflattener1[F[_ <: HList], HF <: UnwrapperPoly[F], Z <: HList]: Aux[F, HNil, HF, Z, Z] = new UnwrapFlattenPrependAndToList[F, HNil, HF, Z] {
-//      type Out = Z
-//      def apply(t: HNil): Out = Z
-//    }
-//
-//    implicit def buildUnflattener[F[_ <: HList], A <: HList, HF <: UnwrapperPoly[F], Out0 <: HList, Out1 <: HList](implicit u: HListUnwrapper.Aux[F, A, HF, Out0], fm: FlatMapper.Aux[identity.type, Out0, Out1]): Aux[F, A, HF, Out1] = new UnwrapAndFlattenHList[F, A, HF] {
-//      type Out = Out1
-//      def apply(t: A): Out1 = fm(u(t))
-//    }
-//  }
-//
-
   trait UnwrapAndFlattenHList[F[_ <: HList], A <: HList, HF <: UnwrapperPoly[F]] extends DepFn1[A] { type Out <: HList }
 
   object UnwrapAndFlattenHList {

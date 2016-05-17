@@ -71,6 +71,7 @@ object interpreters {
       case QueryAnd(left, right, _) => binOpReduction(" AND ", left, right)(reduceComparison)
       case QueryOr(left, right, _) => binOpReduction(" OR ", left, right)(reduceComparison)
       case QueryNot(v) => "not " + reduceComparison(v)
+      case QueryComparisonNop => ""
     }
 
     def reduceUnion(union: QueryUnion[_]): String = union match {
@@ -92,8 +93,9 @@ object interpreters {
     expr match {
       case QuerySelect(table, values, unions, filters, sorts, groups, offset, limit, _) =>
         val sqlProjections = values.map(reduceProjection).mkString(", ")
-        val sqlFilter = filters.map("WHERE " + reduceComparison(_)).getOrElse(" ")
+        val sqlFilter = if(filters == QueryComparisonNop) " " else "WHERE " + reduceComparison(filters)
         val sqlUnions = unions.map(reduceUnion).mkString(" ")
+
         val sqlSorts =
           if (sorts.isEmpty) ""
           else "ORDER BY " + sorts.map(reduceSort).mkString(", ")

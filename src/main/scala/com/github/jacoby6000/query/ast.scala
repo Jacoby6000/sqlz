@@ -116,6 +116,7 @@ object ast {
   }
 
   sealed trait QueryComparison[L <: HList] { def params: L }
+  case object QueryComparisonNop extends QueryComparison[HNil] { def params: HNil = HNil }
   case class QueryEqual[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryComparison[A]
   case class QueryNotEqual[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryComparison[A]
   case class QueryGreaterThan[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryComparison[A]
@@ -188,24 +189,7 @@ object ast {
       p3: Prepend.Aux[Out2, ComparisonParameters, Params],
       pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
       ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_ <: HList]]): QuerySelect[Params] =
-      QuerySelect[Params](table, pl(values), ul(unions), Some(filter), sorts, groupings, offset, limit, p3(p2(p1(table.params, mv(values)), mu(unions)), filter.params))
-
-    def apply[Table <: HList, QueryProjections <: HList, QueryUnions <: HList, MappedProjections <: HList, MappedUnions <: HList, Out1 <: HList, Params <: HList](
-      table: QueryProjection[Table],
-      values: QueryProjections,
-      unions: QueryUnions,
-      sorts: List[QuerySort],
-      groupings: List[QuerySort],
-      offset: Option[Int],
-      limit: Option[Int]
-    )(implicit
-      mv: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjections, QueryProjectionUnwrapper.type, MappedProjections],
-      mu: UnwrapAndFlattenHList.Aux[QueryUnion, QueryUnions, QueryUnionUnwrapper.type, MappedUnions],
-      p1: Prepend.Aux[Table, MappedProjections, Out1],
-      p2: Prepend.Aux[Out1, MappedUnions, Params],
-      pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
-      ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_ <: HList]]): QuerySelect[Params] =
-      QuerySelect[Params](table, pl(values), ul(unions), None, sorts, groupings, offset, limit, p2(p1(table.params, mv(values)), mu(unions)))
+        QuerySelect[Params](table, pl(values), ul(unions), filter, sorts, groupings, offset, limit, p3(p2(p1(table.params, mv(values)), mu(unions)), filter.params))
 
   }
 
@@ -213,7 +197,7 @@ object ast {
     table: QueryProjection[_ <: HList],
     values: List[QueryProjection[_ <: HList]],
     unions: List[QueryUnion[_ <: HList]],
-    filter: Option[QueryComparison[_ <: HList]],
+    filter: QueryComparison[_ <: HList],
     sorts: List[QuerySort],
     groupings: List[QuerySort],
     offset: Option[Int],
