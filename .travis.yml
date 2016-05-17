@@ -14,3 +14,6 @@ before_script:
   - psql -q -c '\i world.sql' -d world -U postgres
   - psql -d world -c "create extension postgis" -U postgres
   - psql -d world -c "create type myenum as enum ('foo', 'bar')" -U postgres
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
