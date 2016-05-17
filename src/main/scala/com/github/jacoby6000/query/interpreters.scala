@@ -3,6 +3,7 @@ package com.github.jacoby6000.query
 import com.github.jacoby6000.query.ast._
 import doobie.imports._
 import _root_.shapeless._
+import doobie.syntax.string.SqlInterpolator
 
 /**
  * Created by jacob.barber on 3/3/16.
@@ -12,9 +13,9 @@ object interpreters {
 
   case class SqlInterpreter(genSql: QueryExpression[_] => String) {
     def query[A <: HList: Param, B: Composite](ast: QuerySelect[A], printer: String => Unit = void): Query0[B] = {
-      val sql = genSql(ast)
-      printer(sql)
-      Query[A, B](sql, None)(implicitly[Param[A]].composite, implicitly[Composite[B]]).toQuery0(ast.params)
+      val sqlString = genSql(ast)
+      printer(sqlString)
+      new SqlInterpolator(new StringContext(sqlString.split('?'): _*)).sql.applyProduct[A](ast.params).query[B]
     }
   }
 
