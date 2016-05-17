@@ -68,7 +68,11 @@ object interpreters {
       case QueryIn(left, rights, _) => reduceValue(left) + " IN " + rights.map(reduceValue).mkString("(", ", ", ")")
       case QueryLessThan(left, right, _) => binOpReduction("<", left, right)(reduceValue)
       case QueryLessThanOrEqual(left, right, _) => binOpReduction("<=", left, right)(reduceValue)
+      case QueryAnd(_: QueryComparisonNop.type, right, _) => reduceComparison(right)
+      case QueryAnd(left , _: QueryComparisonNop.type, _) => reduceComparison(left)
       case QueryAnd(left, right, _) => binOpReduction(" AND ", left, right)(reduceComparison)
+      case QueryOr(_: QueryComparisonNop.type, right, _) => reduceComparison(right)
+      case QueryOr(left , _: QueryComparisonNop.type, _) => reduceComparison(left)
       case QueryOr(left, right, _) => binOpReduction(" OR ", left, right)(reduceComparison)
       case QueryNot(v) => "not " + reduceComparison(v)
       case QueryComparisonNop => ""

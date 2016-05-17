@@ -3,7 +3,7 @@ package com.github.jacoby6000.query
 import _root_.shapeless._
 import _root_.shapeless.ops.hlist.{ Mapper, Prepend, ToTraversable }
 import com.github.jacoby6000.query.shapeless.Polys._
-import com.github.jacoby6000.query.shapeless.Typeclasses.UnwrapAndFlattenHList
+import com.github.jacoby6000.query.shapeless.Typeclasses.{Combine4, UnwrapAndFlattenHList}
 
 /**
  * Created by jacob.barber on 2/2/16.
@@ -172,7 +172,7 @@ object ast {
   sealed trait QueryModify[A <: HList] extends QueryExpression[A]
 
   object QuerySelect {
-    def apply[Table <: HList, QueryProjections <: HList, QueryUnions <: HList, ComparisonParameters <: HList, MappedProjections <: HList, MappedUnions <: HList, Out1 <: HList, Out2 <: HList, Params <: HList](
+    def apply[Table <: HList, QueryProjections <: HList, QueryUnions <: HList, ComparisonParameters <: HList, MappedProjections <: HList, MappedUnions <: HList, Params <: HList](
       table: QueryProjection[Table],
       values: QueryProjections,
       unions: QueryUnions,
@@ -184,12 +184,10 @@ object ast {
     )(implicit
       mv: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjections, QueryProjectionUnwrapper.type, MappedProjections],
       mu: UnwrapAndFlattenHList.Aux[QueryUnion, QueryUnions, QueryUnionUnwrapper.type, MappedUnions],
-      p1: Prepend.Aux[Table, MappedProjections, Out1],
-      p2: Prepend.Aux[Out1, MappedUnions, Out2],
-      p3: Prepend.Aux[Out2, ComparisonParameters, Params],
+      p: Combine4.Aux[Table, MappedProjections, MappedUnions, ComparisonParameters, Params],
       pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
       ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_ <: HList]]): QuerySelect[Params] =
-        QuerySelect[Params](table, pl(values), ul(unions), filter, sorts, groupings, offset, limit, p3(p2(p1(table.params, mv(values)), mu(unions)), filter.params))
+        QuerySelect[Params](table, pl(values), ul(unions), filter, sorts, groupings, offset, limit, p.combine(table.params, mv(values), mu(unions), filter.params))
 
   }
 

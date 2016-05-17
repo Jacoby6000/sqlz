@@ -174,7 +174,7 @@ object sql {
     }
 
     def from[B <: HList, Out1 <: HList, Out2 <: HList](path: QueryProjection[B])(implicit p1: Prepend.Aux[B, Flattened, Out1], un: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjection[B] :: HNil, QueryProjectionUnwrapper.type, Out2]) =
-      QueryBuilder(path, projections, HNil)
+      QueryBuilder(path, projections, HNil, QueryComparisonNop, List.empty, List.empty, None, None)
   }
 
   trait Joiner[F[_ <: HList]] {
@@ -201,15 +201,21 @@ object sql {
     def join[A <: HList, B <: HList, Out <: HList](a: QueryProjection[A], b: QueryComparison[B])(implicit prepender: Prepend.Aux[A, B, Out]): QueryUnion[Out] = QueryInnerJoin(a, b)
   }
 
-  case class QueryBuilder[Table <: HList, QueryProjections <: HList, QueryUnions <: HList, QBFlattenedProjections <: HList, QBFlattenedUnions <: HList, QBOut1 <: HList, Params <: HList](
+  case class QueryBuilder[Table <: HList, QueryProjections <: HList, QueryUnions <: HList, QBFlattenedProjections <: HList, QBFlattenedUnions <: HList, ComparisonParameters <: HList, QBOut1 <: HList, QBOut2 <: HList, Params <: HList](
       table: QueryProjection[Table],
       values: QueryProjections,
-      unions: QueryUnions
+      unions: QueryUnions,
+      filter: QueryComparison[ComparisonParameters],
+      sorts: List[QuerySort],
+      groupings: List[QuerySort],
+      offset: Option[Int],
+      limit: Option[Int]
   )(implicit
     mv: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjections, QueryProjectionUnwrapper.type, QBFlattenedProjections],
       mu: UnwrapAndFlattenHList.Aux[QueryUnion, QueryUnions, QueryUnionUnwrapper.type, QBFlattenedUnions],
       qp1: Prepend.Aux[Table, QBFlattenedProjections, QBOut1],
-      qp2: Prepend.Aux[QBOut1, QBFlattenedUnions, Params],
+      qp2: Prepend.Aux[QBOut1, QBFlattenedUnions, QBOut2],
+      qp3: Prepend.Aux[QBOut2, ComparisonParameters, Params],
       pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
       ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_ <: HList]]) { builder =>
 
@@ -254,15 +260,17 @@ object sql {
                                                                                                            p3: Prepend.Aux[QBOut1, MappedUnions, P],
                                                                                                            ul2: ToTraversable.Aux[Out2, List, QueryUnion[_ <: HList]]) = builder.copy(unions = unions ::: crossJoiner.join(tup._1, tup._2) :: HNil)
 
+    def where[A <: HList, Out <: HList, NewParams <: HList](queryComparison: QueryComparison[A])(implicit p1: Prepend.Aux[ComparisonParameters, A, Out], p2: Prepend.Aux[QBOut2, Out, NewParams]) = {
+      builder.copy(filter = QueryAnd(filter,queryComparison)): QueryBuilder[Table, QueryProjections, QueryUnions, QBFlattenedProjections, QBFlattenedUnions, Out, QBOut1, QBOut2, NewParams]
+    }
 
-    def build: QuerySelect[Params] = QuerySelect(table, values, unions, QueryComparisonNop, List.empty, List.empty, None, None)
+    def build: QuerySelect[Params] = QuerySelect(table, values, unions, filter, List.empty, List.empty, None, None)
 
-    /*    def where[A <: HList](comparison: QueryComparison[A]) = builder.copy(filter = QueryAnd(comparison, builder.filter))
     def orderBy(sorts: QuerySort*) = builder.copy(sorts = builder.sorts ::: sorts.toList)
     def groupBy(groups: QuerySort*) = builder.copy(groupings = builder.groupings ::: groups.toList)
 
     def offset(n: Int) = builder.copy(offset = Some(n))
-    def limit(n: Int) = builder.copy(limit = Some(n))*/
+    def limit(n: Int): QueryBuilder[Table, QueryProjections, QueryUnions, QBFlattenedProjections, QBFlattenedUnions, ComparisonParameters, QBOut1, QBOut2, Params] = builder.copy(limit = Some(n))
 
   }
 
