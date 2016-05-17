@@ -1,6 +1,6 @@
 name := "scoobie"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 organization := "com.github.jacoby6000"
 
@@ -11,7 +11,7 @@ libraryDependencies ++= {
   val doobieVersion = "0.3.0-M1"
 
   Seq(
-    "com.chuusai" %% "shapeless" % "2.2.5",
+    "com.chuusai" %% "shapeless" % "2.3.1",
     "org.tpolecat" %% "doobie-core" % doobieVersion,
     "org.tpolecat" %% "doobie-contrib-postgresql" % doobieVersion,
 
