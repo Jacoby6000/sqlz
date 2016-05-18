@@ -58,6 +58,7 @@ makeProductApply("QueryValue", List("HList"), List.empty, List(
   }
 )).mkString("\n")
 
+"Update"
 // Update
 makeProductApply("ModifyField", List("HList"), List.empty, List(
   { case ApplyArguments(idx, typeList) =>
@@ -67,7 +68,8 @@ makeProductApply("ModifyField", List("HList"), List.empty, List(
       List(
         s"""p1: Prepend.Aux[Values, $appendTypes, Appended]""",
         s"""un: UnwrapAndFlattenHList.Aux[ModifyField, Appended, ModifyFieldUnwrapper.type, Unwrapped0]""",
-        s"""p2: Prepend.Aux[Unwrapped0, ComparisonParams, POut]""")
+        s"""p2: Prepend.Aux[Unwrapped0, ComparisonParams, POut]""",
+        s"""toList: ToTraversable.Aux[Appended, List, ModifyField[_ <: HList]]""")
     )
   }
 )).mkString("\n")

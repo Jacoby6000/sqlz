@@ -45,8 +45,8 @@ object interpreters {
   }
 
   implicit class QueryModifyExtensions[A <: HList: Param](expr: QueryModify[A])(implicit sqlInterpreter: SqlInterpreter) {
-    def updateAndPrint[B: Composite](printer: String => Unit = void): Update0 = sqlInterpreter.update[A](expr, printer)
-    def update[B: Composite]: Update0 = sqlInterpreter.update[A](expr, void)
+    def updateAndPrint(printer: String => Unit = void): Update0 = sqlInterpreter.update[A](expr, printer)
+    def update: Update0 = sqlInterpreter.update[A](expr, void)
   }
 
   object sqlDialects {
@@ -160,7 +160,7 @@ object interpreters {
         val sqlTable = reducePath(table)
         val sqlWhere = reduceComparison(where)
 
-        s"DELETE $sqlTable WHERE $sqlWhere"
+        s"DELETE FROM $sqlTable WHERE $sqlWhere"
     }
 
   }

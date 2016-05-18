@@ -15,17 +15,19 @@ import scalaz.NonEmptyList
   * Created by jbarber on 5/14/16.
   */
 class SqlDSLSimpleSelectTest extends Specification {
+
+  val xa = DriverManagerTransactor[Task](
+    "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"
+  )
+
   def is =
     s2"""
 
   Building queries should work properly
     semi-complex select                               $semiComplexSelectResult
     where in select                                   $selectWhereInResult
+    record life-cycle                                 ${endToEndTest.transact(xa).unsafePerformSync}
                                                       """
-
-  val xa = DriverManagerTransactor[Task](
-    "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"
-  )
 
   case class Country(name: String, gnp: Int, code: String)
 
@@ -65,6 +67,55 @@ class SqlDSLSimpleSelectTest extends Specification {
       .transact(xa)
       .unsafePerformSync
   }
+
+  lazy val endToEndTest = {
+    for {
+      inserted <- (insertInto(c"city") values(
+                    c"id" ==> 4080,
+                    c"name" ==> "test",
+                    c"countrycode" ==> "SHT",
+                    c"district" ==> "District of unlawful testing",
+                    c"population" ==> 1
+                  )).updateAndPrint(println).run
+
+      select1 <- (select(p"district") from p"city" where (c"id" === 4080))
+                    .build
+                    .queryAndPrint[String](println)
+                    .option
+
+      updated <- (update(c"city") set (c"population" ==> 10) where (c"id" === 4080))
+                    .build
+                    .updateAndPrint(println)
+                    .run
+
+      select2 <- (select(p"population") from p"city" where (c"id" === 4080))
+                    .build
+                    .queryAndPrint[Int](println)
+                    .option
+
+      deleted <- (deleteFrom(c"city") where (c"id" === 4080))
+                    .updateAndPrint(println)
+                    .run
+
+      select3 <- (select(p"population") from p"city" where (c"id" === 4080))
+                    .build
+                    .queryAndPrint[Int](println)
+                    .option
+    } yield {
+      inserted must beEqualTo(1)
+      select1  must beEqualTo(Some("District of unlawful testing"))
+      updated  must beEqualTo(1)
+      select2  must beEqualTo(Some(10))
+      deleted  must beEqualTo(1)
+      select3  must beEqualTo(None)
+    }
+  }
+
+//    id integer NO
+//    name varchar
+//    countrycode c
+//    district varc
+//    population in
 
   def semiComplexSelectResult = {
     semiComplexSelect must haveSize(10)
