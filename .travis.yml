@@ -3,12 +3,13 @@ scala:
   - 2.11.8
 
 script:
-  - sbt test
+  - sbt clean coverage test
   - sbt tut
   - cmp readme.md target/scala-2.11/tut/readme.md
 
 addons:
   postgresql: "9.3"
+
 
 before_script:
   - psql -c 'create database world;' -U postgres
