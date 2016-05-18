@@ -39,6 +39,7 @@ def makeProductApply(argKind: String, subTypeOf: List[String], contextBounds: Li
   }.toList
 }
 
+// Select
 makeProductApply("QueryProjection", List("HList"), List.empty, List(
   { case ApplyArguments(idx, typeList) =>
       ApplyImplicits(
@@ -57,19 +58,40 @@ makeProductApply("QueryValue", List("HList"), List.empty, List(
   }
 )).mkString("\n")
 
+// Update
 makeProductApply("ModifyField", List("HList"), List.empty, List(
   { case ApplyArguments(idx, typeList) =>
-      val appendTypes = typeList.map(s"ModifyField[" + _ + "]").mkString("", " :: ", ":: HNil")
-      ApplyImplicits(
-        List("Appended <: HList", "Unwrapped0 <: HList", "POut <: HList"),
-        List(
-          s"""p1: Prepend.Aux[Values, $appendTypes, Appended]""",
-          s"""un: UnwrapAndFlattenHList.Aux[ModifyField, Appended, ModifyFieldUnwrapper.type, Unwrapped0]""",
-          s"""p2: Prepend.Aux[Unwrapped0, ComparisonParams, POut]""")
-      )
+    val appendTypes = typeList.map(s"ModifyField[" + _ + "]").mkString("", " :: ", ":: HNil")
+    ApplyImplicits(
+      List("Appended <: HList", "Unwrapped0 <: HList", "POut <: HList"),
+      List(
+        s"""p1: Prepend.Aux[Values, $appendTypes, Appended]""",
+        s"""un: UnwrapAndFlattenHList.Aux[ModifyField, Appended, ModifyFieldUnwrapper.type, Unwrapped0]""",
+        s"""p2: Prepend.Aux[Unwrapped0, ComparisonParams, POut]""")
+    )
   }
 )).mkString("\n")
 
+// Insert
+makeProductApply("ModifyField", List("HList"), List.empty, List(
+  { case ApplyArguments(idx, typeList) =>
+    val appendTypes = typeList.map(s"ModifyField[" + _ + "]").mkString("", " :: ", ":: HNil")
+    ApplyImplicits(
+      List("Unwrapped0 <: HList"),
+      List(s"""un: UnwrapAndFlattenHList.Aux[ModifyField, $appendTypes, ModifyFieldUnwrapper.type, Unwrapped0]""")
+    )
+  }
+)).mkString("\n")
 
-
-
+// In
+makeProductApply("QueryValue", List("HList"), List.empty, List(
+  { case ApplyArguments(idx, typeList) =>
+    ApplyImplicits(
+      List(s"Unwrapped0 <: HList, Prepended0 <: HList"),
+      List(
+        s"""ev0: UnwrapAndFlattenHList.Aux[QueryValue, ${typeList.map(s"QueryValue[" + _ + "]").mkString("", " :: ", ":: HNil")}, QueryValueUnwrapper.type, Unwrapped0]""",
+        s"""ev1: Prepend.Aux[LeftType, Unwrapped0, Prepended0]"""
+      )
+    )
+  }
+)).mkString("\n")

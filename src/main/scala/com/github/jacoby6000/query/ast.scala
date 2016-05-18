@@ -104,7 +104,7 @@ object ast {
   }
 
   object QueryIn {
-    def apply[A <: HList, B <: HList, MappedValues <: HList, Out <: HList](left: QueryValue[A], rights: B)(implicit toList: ToTraversable.Aux[B, List, QueryValue[_ <: HList]], m: Mapper.Aux[QueryValueUnwrapper.type, B, MappedValues], p: Prepend.Aux[A, MappedValues, Out]): QueryIn[Out] = QueryIn[Out](left, toList(rights), left.params ::: m(rights))
+    def apply[A <: HList, B <: HList, MappedValues <: HList, Out <: HList](left: QueryValue[A], args: B)(implicit toList: ToTraversable.Aux[B, List, QueryValue[_ <: HList]], un: UnwrapAndFlattenHList.Aux[QueryValue, B, QueryValueUnwrapper.type, MappedValues], p: Prepend.Aux[A, MappedValues, Out]): QueryIn[Out] = QueryIn[Out](left, toList(args), left.params ::: un(args))
   }
 
   object QueryAnd {
