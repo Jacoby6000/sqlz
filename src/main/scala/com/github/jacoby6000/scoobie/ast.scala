@@ -1,9 +1,9 @@
-package com.github.jacoby6000.query
+package com.github.jacoby6000.scoobie
 
 import _root_.shapeless._
 import _root_.shapeless.ops.hlist.{Mapper, Prepend, ToTraversable}
-import com.github.jacoby6000.query.shapeless.Polys._
-import com.github.jacoby6000.query.shapeless.Typeclasses.{Combine4, UnwrapAndFlattenHList}
+import com.github.jacoby6000.scoobie.shapeless.Polys._
+import com.github.jacoby6000.scoobie.shapeless.Typeclasses.{Combine4, UnwrapAndFlattenHList}
 
 /**
  * Created by jacob.barber on 2/2/16.

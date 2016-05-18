@@ -1,6 +1,6 @@
-package com.github.jacoby6000.query.shapeless
+package com.github.jacoby6000.scoobie.shapeless
 
-import com.github.jacoby6000.query.shapeless.Polys._
+import com.github.jacoby6000.scoobie.shapeless.Polys._
 import _root_.shapeless._
 import _root_.shapeless.ops.hlist._
 import _root_.shapeless.poly._

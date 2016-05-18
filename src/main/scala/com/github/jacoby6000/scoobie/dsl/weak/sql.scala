@@ -1,7 +1,7 @@
-package com.github.jacoby6000.query.dsl.weak
+package com.github.jacoby6000.scoobie.dsl.weak
 
-import com.github.jacoby6000.query.ast._
-import com.github.jacoby6000.query.shapeless.Typeclasses.UnwrapAndFlattenHList
+import com.github.jacoby6000.scoobie.ast._
+import com.github.jacoby6000.scoobie.shapeless.Typeclasses.UnwrapAndFlattenHList
 import shapeless.ops.hlist.{ Prepend, ToTraversable }
 import shapeless._
 

@@ -1,4 +1,4 @@
-package com.github.jacoby6000.query.shapeless
+package com.github.jacoby6000.scoobie.shapeless
 
 import shapeless.{ HList, Poly1 }
 
