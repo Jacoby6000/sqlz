@@ -48,7 +48,6 @@ makeProductApply("QueryProjection", List("HList"), List.empty, List(
   }
 )).mkString("\n")
 
-
 makeProductApply("QueryValue", List("HList"), List.empty, List(
   { case ApplyArguments(idx, typeList) =>
       ApplyImplicits(
@@ -62,11 +61,15 @@ makeProductApply("ModifyField", List("HList"), List.empty, List(
   { case ApplyArguments(idx, typeList) =>
       val appendTypes = typeList.map(s"ModifyField[" + _ + "]").mkString("", " :: ", ":: HNil")
       ApplyImplicits(
-        List("Appended <: HList", "Unwrapped0 <: HList", "P <: HList"),
+        List("Appended <: HList", "Unwrapped0 <: HList", "POut <: HList"),
         List(
           s"""p1: Prepend.Aux[Values, $appendTypes, Appended]""",
           s"""un: UnwrapAndFlattenHList.Aux[ModifyField, Appended, ModifyFieldUnwrapper.type, Unwrapped0]""",
-          s"""p2: Prepend.Aux[Unwrapped0, ComparisonParams, P]""")
+          s"""p2: Prepend.Aux[Unwrapped0, ComparisonParams, POut]""")
       )
   }
 )).mkString("\n")
+
+
+
+
