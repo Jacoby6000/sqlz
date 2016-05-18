@@ -7,6 +7,9 @@ import com.github.jacoby6000.query.interpreters._
 import com.github.jacoby6000.query.interpreters.sqlDialects.postgres
 import com.github.jacoby6000.query.dsl.weak.sql._
 import doobie.imports._
+import shapeless.syntax.singleton._
+
+import scalaz.NonEmptyList
 
 /**
   * Created by jbarber on 5/14/16.
@@ -15,8 +18,9 @@ class SqlDSLSimpleSelectTest extends Specification {
   def is =
     s2"""
 
-  A simple query should
-    return some results                               $testResult
+  Building queries should work properly
+    semi-complex select                               $semiComplexSelectResult
+    where in select                                   $selectWhereInResult
                                                       """
 
   val xa = DriverManagerTransactor[Task](
@@ -25,7 +29,7 @@ class SqlDSLSimpleSelectTest extends Specification {
 
   case class Country(name: String, gnp: Int, code: String)
 
-  lazy val result =
+  lazy val semiComplexSelect =
     (
       select(
         p"c1.name",
@@ -50,8 +54,23 @@ class SqlDSLSimpleSelectTest extends Specification {
       .transact(xa)
       .unsafePerformSync
 
-  def testResult = {
-    println(result.mkString("\n"))
-    result must haveSize(10)
+  lazy val selectWhereIn = {
+    val codes = NonEmptyList("TUV", "YUG")
+    implicit val codesParam = Param.many(codes)
+    (
+      select(p"name") from p"country" where (c"code" in ("USA", "BRA", codes.narrow))
+    ).build
+      .queryAndPrint[String](println _)
+      .list
+      .transact(xa)
+      .unsafePerformSync
+  }
+
+  def semiComplexSelectResult = {
+    semiComplexSelect must haveSize(10)
+  }
+
+  def selectWhereInResult = {
+    selectWhereIn must haveSize(4)
   }
 }
