@@ -75,7 +75,7 @@ object sql {
     object values extends ProductArgs {
       def applyProduct[A <: HList, Out <: HList](values: A)(implicit
                                                             un: UnwrapAndFlattenHList.Aux[ModifyField, A, ModifyFieldUnwrapper.type, Out],
-                                                            toList: ToTraversable[A, List, ModifyField[_ <: HList]]): QueryInsert[Out] = QueryInsert(table, values)
+                                                            toList: ToTraversable.Aux[A, List, ModifyField[_ <: HList]]): QueryInsert[Out] = QueryInsert(table, values)
 
 //      def apply[A, Out <: HList](a: ModifyField[A])(implicit un: UnwrapAndFlattenHList.Aux[ModifyField, ModifyField[A] :: HNil, ModifyFieldUnwrapper.type, Out]) = applyProduct[ModifyField[A] :: HNil, Out](a :: HNil)
 
@@ -100,7 +100,7 @@ object sql {
      */
 
     def apply = applyProduct(HNil)
-    def apply[A <: HList, Out_0 <: HList](a: QueryValue[A])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A]:: HNil, QueryValueUnwrapper.type, Out_0]) = applyProduct(a :: HNil)
+    def apply[A <: HList, Out_0 <: HList](a: QueryValue[A])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A] :: HNil, QueryValueUnwrapper.type, Out_0]) = applyProduct(a :: HNil)
     def apply[A <: HList, B <: HList, Out_0 <: HList](a: QueryValue[A], b: QueryValue[B])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A] :: QueryValue[B]:: HNil, QueryValueUnwrapper.type, Out_0]) = applyProduct(a :: b :: HNil)
     def apply[A <: HList, B <: HList, C <: HList, Out_0 <: HList](a: QueryValue[A], b: QueryValue[B], c: QueryValue[C])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A] :: QueryValue[B] :: QueryValue[C]:: HNil, QueryValueUnwrapper.type, Out_0]) = applyProduct(a :: b :: c :: HNil)
     def apply[A <: HList, B <: HList, C <: HList, D <: HList, Out_0 <: HList](a: QueryValue[A], b: QueryValue[B], c: QueryValue[C], d: QueryValue[D])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A] :: QueryValue[B] :: QueryValue[C] :: QueryValue[D]:: HNil, QueryValueUnwrapper.type, Out_0]) = applyProduct(a :: b :: c :: d :: HNil)
