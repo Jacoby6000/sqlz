@@ -1,6 +1,6 @@
-package com.github.jacoby6000.query
+package com.github.jacoby6000.scoobie
 
-import com.github.jacoby6000.query.ast._
+import com.github.jacoby6000.scoobie.ast._
 import doobie.imports._
 import _root_.shapeless._
 import doobie.syntax.string.{Builder, SqlInterpolator}

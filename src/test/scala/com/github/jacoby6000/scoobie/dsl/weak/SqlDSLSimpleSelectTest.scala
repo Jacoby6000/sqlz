@@ -1,11 +1,11 @@
-package com.github.jacoby6000.query.dsl.weak
+package com.github.jacoby6000.scoobie.dsl.weak
 
 import org.specs2._
 
 import scalaz.concurrent.Task
-import com.github.jacoby6000.query.interpreters._
-import com.github.jacoby6000.query.interpreters.sqlDialects.postgres
-import com.github.jacoby6000.query.dsl.weak.sql._
+import com.github.jacoby6000.scoobie.interpreters._
+import com.github.jacoby6000.scoobie.interpreters.sqlDialects.postgres
+import com.github.jacoby6000.scoobie.dsl.weak.sql._
 import doobie.imports._
 import shapeless.syntax.singleton._
 
