@@ -13,35 +13,36 @@ As it stands now, there is a quick 'n dirty SQL DSL, implemented with a lightwei
 Below is a sample query that somebody may want to write. The query below is perfectly valid; try it out!
 
 ```tut:silent
-import com.github.jacoby6000.query.ast._
 import com.github.jacoby6000.query.interpreters.sqlDialects.postgres
 import com.github.jacoby6000.query.dsl.weak.sql._
 
 val q =
   select (
-    p"foo" ++ 10 as "woozle",
+    c"foo" + 10 as "woozle",
     `*`
-  ) from p"bar" leftOuterJoin (
-    p"baz" as "b" 
-  ) on (
-    p"bar.id" === p"baz.barId"
+  ) from ( 
+    p"bar" 
+  ) leftOuterJoin (
+    c"baz" as "b" on (
+      c"bar.id" === c"baz.barId"
+    )
   ) innerJoin (
-    p"biz" as "c" 
-  ) on (
-    p"biz.id" === p"bar.bizId"
+    c"biz" as "c" on (
+      c"biz.id" === c"bar.bizId"
+    ) 
   ) where (
-    p"biz.name" === "LightSaber" and
-    p"biz.age" > 27
-  ) orderBy p"biz.age".desc groupBy p"baz.worth".asc
+    c"biz.name" === "LightSaber" and
+    c"biz.age" > 27
+  ) orderBy c"biz.age".desc groupBy c"baz.worth".asc
 
-postgres.interpret(q.query) // Print the Postgres sql string that would be created by this query
+postgres.genSql(q.build) // Print the Postgres sql string that would be created by this query
 ```
 
 The formatted output of this is
 
 ```sql
 SELECT
-    "foo" + 10 AS woozle,
+    "foo" + ? AS woozle,
     * 
 FROM
     "bar" 
@@ -52,8 +53,8 @@ INNER JOIN
     "biz" AS c 
         ON "biz"."id" = "bar"."bizId" 
 WHERE
-    "biz"."name" = 'LightSaber'  
-    AND  "biz"."age" > 27 
+    "biz"."name" = ?
+    AND  "biz"."age" > ? 
 ORDER BY
     "biz"."age" DESC 
 GROUP BY
@@ -65,13 +66,11 @@ As a proof of concept, here are some examples translated over from the book of d
 First, lets set up a repl session with our imports, plus what we need to run doobie.
 
 ```tut:silent
-import com.github.jacoby6000.query.ast._
-import com.github.jacoby6000.query.doobie._
-import com.github.jacoby6000.query.interpreters.sqlDialects.postgres
-import com.github.jacoby6000.query.dsl.weak.sql._
-import doobie.imports._
-import shapeless.HNil
-import scalaz.concurrent.Task
+import com.github.jacoby6000.query.interpreters._ // Import the interpreters
+import com.github.jacoby6000.query.interpreters.sqlDialects.postgres // Use postgres
+import com.github.jacoby6000.query.dsl.weak.sql._ // Import the Sql-like weakly typed DSL.
+import doobie.imports._ // Import doobie
+import scalaz.concurrent.Task 
 
 val xa = DriverManagerTransactor[Task](
   "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"
@@ -90,27 +89,27 @@ val baseQuery =
   ) from p"country"
 ```
 
-And now lets run some basic queries
+And now lets run some basic queries (Note, instead of `.queryAndPrint[T](printer)` you can use `.query[T]` if you do not care to see that sql being generated.) 
 
 ```tut
 def biggerThan(n: Int) = {
-  (baseQuery where p"population" > `?`)
-    .prepare(n)
-    .query[Country]
+  (baseQuery where c"population" > n)
+    .build
+    .queryAndPrint[Country](sql => println("\n" + sql))
 }
 
-biggerThan(150000000).quick.run
+biggerThan(150000000).quick.unsafePerformSync
 
 
 def populationIn(r: Range) = {
   (baseQuery where (
-    p"population" >= `?` and
-    p"population" <= `?`
-  )).prepare(r.min, r.max)
-    .query[Country]
+    c"population" >= r.min and
+    c"population" <= r.max
+  )).build
+    .queryAndPrint[Country](sql => println("\n" + sql))
 } 
 
-populationIn(150000000 to 200000000).quick.run
+populationIn(150000000 to 200000000).quick.unsafePerformSync
 ```
 
 And a more complicated example
@@ -125,17 +124,17 @@ def joined = {
     p"c2.code",
     p"c2.name"
   ) from (
-    p"country" as "c1"
+    c"country" as "c1"
   ) leftOuterJoin (
-    p"country" as "c2"
-  ) on (
-    func"reverse"(p"c1.code") === p"c2.code"
+    c"country" as "c2" on (
+      func"reverse"(c"c1.code") === c"c2.code"
+    )
   ) where (
-    (p"c2.code" !== `null`) and
-    (p"c2.name" !== p"c1.name")
-  )).prepare
-    .query[ComplimentaryCountries] 
+    (c"c2.code" !== `null`) and
+    (c"c2.name" !== c"c1.name")
+  )).build
+    .queryAndPrint[ComplimentaryCountries](sql => println("\n" + sql))
 }
 
-joined.quick.run
+joined.quick.unsafePerformSync
 ```

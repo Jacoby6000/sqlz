@@ -1,0 +1,20 @@
+language: scala
+scala:
+  - 2.11.8
+
+script:
+  - sbt test
+  - sbt tut
+  - cmp readme.md target/scala-2.11/tut/readme.md
+
+addons:
+  postgresql: "9.3"
+
+before_script:
+  - psql -c 'create database world;' -U postgres
+  - psql -q -c '\i world.sql' -d world -U postgres
+  - psql -d world -c "create extension postgis" -U postgres
+  - psql -d world -c "create type myenum as enum ('foo', 'bar')" -U postgres
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

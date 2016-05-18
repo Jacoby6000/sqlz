@@ -1,17 +1,25 @@
-name := "dooqie"
+name := "scoobie"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 organization := "com.github.jacoby6000"
 
-version := "0.0.2"
+version := "0.1.0"
 
 
-libraryDependencies ++= Seq(
-  "com.chuusai" %% "shapeless" % "2.2.5",
-  "org.tpolecat" %% "doobie-core" % "0.3.0-M1",
-  "org.tpolecat" %% "doobie-contrib-postgresql" % "0.3.0-M1"
-)
+libraryDependencies ++= {
+  val doobieVersion = "0.3.0-M1"
+
+  Seq(
+    "com.chuusai" %% "shapeless" % "2.3.1",
+    "org.tpolecat" %% "doobie-core" % doobieVersion,
+    "org.tpolecat" %% "doobie-contrib-postgresql" % doobieVersion,
+
+    "org.specs2" %% "specs2-core" % "3.8" % "test"
+  )
+}
+
+scalacOptions in Test ++= Seq("-Yrangepos")
 
 resolvers += Resolver.sonatypeRepo("releases")
 
