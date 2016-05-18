@@ -1,4 +1,10 @@
-import scalaz._, Scalaz._
+import com.github.jacoby6000.query.ast.{ModifyField, ModifyFieldUnwrapper}
+import com.github.jacoby6000.query.shapeless.Typeclasses.UnwrapAndFlattenHList
+import shapeless.{::, HList, HNil}
+import shapeless.ops.hlist.Prepend
+
+import scalaz._
+import Scalaz._
 
 val types = 'A' to 'Z'
 val paramLists = types.scanLeft(List.empty[Char]){ case (a,b) => b :: a} map (_.reverse)
@@ -32,11 +38,35 @@ def makeProductApply(argKind: String, subTypeOf: List[String], contextBounds: Li
       s"""def apply[${typesWithBounds.mkString(", ")}, ${additionalTypes.mkString(", ")}](${args.mkString(", ")})(implicit ${evidenceList.mkString(", ")}) = applyProduct(${argNames.mkString("", " :: ", " :: HNil")})""".stripMargin
   }.toList
 }
+
 makeProductApply("QueryProjection", List("HList"), List.empty, List(
   { case ApplyArguments(idx, typeList) =>
       ApplyImplicits(
         List(s"Out_$idx <: HList"),
         List(s"""ev$idx: UnwrapAndFlattenHList.Aux[QueryProjection, ${typeList.map(s"QueryProjection[" + _ + "]").mkString("", " :: ", ":: HNil")}, QueryProjectionUnwrapper.type, Out_$idx]""")
+      )
+  }
+)).mkString("\n")
+
+
+makeProductApply("QueryValue", List("HList"), List.empty, List(
+  { case ApplyArguments(idx, typeList) =>
+      ApplyImplicits(
+        List(s"Out_0 <: HList"),
+        List(s"""ev0: UnwrapAndFlattenHList.Aux[QueryValue, ${typeList.map(s"QueryValue[" + _ + "]").mkString("", " :: ", ":: HNil")}, QueryValueUnwrapper.type, Out_0]""")
+      )
+  }
+)).mkString("\n")
+
+makeProductApply("ModifyField", List("HList"), List.empty, List(
+  { case ApplyArguments(idx, typeList) =>
+      val appendTypes = typeList.map(s"ModifyField[" + _ + "]").mkString("", " :: ", ":: HNil")
+      ApplyImplicits(
+        List("Appended <: HList", "Unwrapped0 <: HList", "P <: HList"),
+        List(
+          s"""p1: Prepend.Aux[Values, $appendTypes, Appended]""",
+          s"""un: UnwrapAndFlattenHList.Aux[ModifyField, Appended, ModifyFieldUnwrapper.type, Unwrapped0]""",
+          s"""p2: Prepend.Aux[Unwrapped0, ComparisonParams, P]""")
       )
   }
 )).mkString("\n")
