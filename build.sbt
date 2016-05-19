@@ -6,9 +6,6 @@ import UnidocKeys._
 import ReleaseTransformations._
 import OsgiKeys._
 
-name := "scoobie"
-
-
 lazy val buildSettings = Seq(
   scalaVersion := "2.11.8",
   organization := "com.github.jacoby6000",
