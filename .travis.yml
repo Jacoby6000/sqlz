@@ -3,7 +3,7 @@ scala:
   - 2.11.8
 
 script:
-  - sbt clean coverage test
+  - sbt clean postgres/coverage postgres/test
   - sbt tut
   - cmp readme.md doc/target/scala-2.11/tut/readme.md
   - sbt coverageReport
