@@ -8,7 +8,19 @@ The goal of this project is to produce an alternative to writing SQL queries for
 
 As it stands now, there is a quick 'n dirty SQL DSL, implemented with a lightweight AST. Other DSLs may be created in the future.
 
-### The Sql DSL
+### Getting Started
+
+Add the sonatype snapshot resolver
+```scala
+  resolvers += Resolver.sonatypeRepo("snapshots")
+```
+
+Add this project as a dependency.
+```scala
+  libraryDependencies += "com.github.jacoby6000" %% "scoobie" % "0.1.0-SNAPSHOT",
+```
+
+### Using the SQL DSL
 
 Below is a sample query that somebody may want to write. The query below is perfectly valid; try it out!
 

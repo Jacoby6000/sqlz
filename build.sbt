@@ -99,6 +99,7 @@ lazy val scoobie =
   project.in(file("core"))
     .enablePlugins(SbtOsgi)
     .settings(name := "scoobie")
+    .settings(version := "0.1.0-SNAPSHOT")
     .settings(description := "AST for making convenient DSLs in Scala.")
     .settings(scoobieSettings ++ publishSettings)
     .settings(
