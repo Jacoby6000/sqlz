@@ -3,10 +3,7 @@ scala:
   - 2.11.8
 
 script:
-  - sbt clean
-  - sbt coverage
-  - sbt test
-  - sbt coverageReport
+  - sbt clean coverage test coverageReport
   - sbt tut
   - cmp readme.md doc/target/scala-2.11/tut/readme.md
 
@@ -18,6 +15,19 @@ before_script:
   - psql -q -c '\i world.sql' -d world -U postgres
   - psql -d world -c "create extension postgis" -U postgres
   - psql -d world -c "create type myenum as enum ('foo', 'bar')" -U postgres
+
+cache:
+  directories:
+  - $HOME/.sbt/0.13/dependency
+  - $HOME/.sbt/boot/scala*
+  - $HOME/.sbt/launchers
+  - $HOME/.ivy2/cache
+
+before_cache:
+  - du -h -d 1 $HOME/.ivy2/cache
+  - du -h -d 2 $HOME/.sbt/
+  - find $HOME/.sbt -name “*.lock” -type f -delete
+  - find $HOME/.ivy2/cache -name “ivydata-*.properties” -type f -delete
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
