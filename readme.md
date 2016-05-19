@@ -32,8 +32,8 @@ val q =
   select (
     c"foo" + 10 as "woozle",
     `*`
-  ) from (
-    p"bar"
+  ) from ( 
+    p"bar" 
   ) leftOuterJoin (
     c"baz" as "b" on (
       c"bar.id" === c"baz.barId"
@@ -41,7 +41,7 @@ val q =
   ) innerJoin (
     c"biz" as "c" on (
       c"biz.id" === c"bar.bizId"
-    )
+    ) 
   ) where (
     c"biz.name" === "LightSaber" and
     c"biz.age" > 27
@@ -55,20 +55,20 @@ The formatted output of this is
 ```sql
 SELECT
     "foo" + ? AS woozle,
-    *
+    * 
 FROM
-    "bar"
+    "bar" 
 LEFT OUTER JOIN
-    "baz" AS b
-        ON "bar"."id" = "baz"."barId"
+    "baz" AS b 
+        ON "bar"."id" = "baz"."barId" 
 INNER JOIN
-    "biz" AS c
-        ON "biz"."id" = "bar"."bizId"
+    "biz" AS c 
+        ON "biz"."id" = "bar"."bizId" 
 WHERE
     "biz"."name" = ?
-    AND  "biz"."age" > ?
+    AND  "biz"."age" > ? 
 ORDER BY
-    "biz"."age" DESC
+    "biz"."age" DESC 
 GROUP BY
     "baz"."worth" ASC
 ```
@@ -82,7 +82,7 @@ import com.github.jacoby6000.scoobie.interpreters._ // Import the interpreters
 import com.github.jacoby6000.scoobie.interpreters.sqlDialects.postgres // Use postgres
 import com.github.jacoby6000.scoobie.dsl.weak.sql._ // Import the Sql-like weakly typed DSL.
 import doobie.imports._ // Import doobie
-import scalaz.concurrent.Task
+import scalaz.concurrent.Task 
 
 val xa = DriverManagerTransactor[Task](
   "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"
@@ -101,7 +101,7 @@ val baseQuery =
   ) from p"country"
 ```
 
-And now lets run some basic queries (Note, instead of `.queryAndPrint[T](printer)` you can use `.query[T]` if you do not care to see that sql being generated.)
+And now lets run some basic queries (Note, instead of `.queryAndPrint[T](printer)` you can use `.query[T]` if you do not care to see that sql being generated.) 
 
 ```scala
 scala> def biggerThan(n: Int) = {
@@ -127,7 +127,7 @@ scala> def populationIn(r: Range) = {
      |     c"population" <= r.max
      |   )).build
      |     .queryAndPrint[Country](sql => println("\n" + sql))
-     | }
+     | } 
 populationIn: (r: Range)doobie.imports.Query0[Country]
 
 scala> populationIn(150000000 to 200000000).quick.unsafePerformSync
