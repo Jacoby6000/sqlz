@@ -41,7 +41,7 @@ lazy val commonSettings = Seq(
 )
 
 lazy val publishSettings = osgiSettings ++ Seq(
-  exportPackage := Seq("com.github.jacoby6000.scoobie.*"),
+  exportPackage := Seq("scoobie.*"),
   privatePackage := Seq(),
   dynamicImportPackage := Seq("*"),
   publishMavenStyle := true,
@@ -94,8 +94,8 @@ lazy val root =
     .settings(noPublishSettings)
     .settings(unidocSettings)
     .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(docs))
-    .dependsOn(scoobie, docs)
-    .aggregate(scoobie, docs)
+    .dependsOn(scoobie, postgres, docs)
+    .aggregate(scoobie, postgres, docs)
 
 lazy val scoobie =
   project.in(file("core"))
@@ -104,7 +104,7 @@ lazy val scoobie =
     .settings(description := "AST for making convenient DSLs in Scala.")
     .settings(scoobieSettings ++ publishSettings)
     .settings(
-      libraryDependencies ++= Seq(shapeless, doobieCore, doobiePGDriver % "test")
+      libraryDependencies ++= Seq(shapeless, doobieCore)
     )
     .settings(
       sourceGenerators in Compile += Def.task {
@@ -114,7 +114,7 @@ lazy val scoobie =
         val v = version.value
         val t = System.currentTimeMillis
         IO.write(outFile,
-          s"""|package com.github.jacoby6000.scoobie
+          s"""|package scoobie
               |
               |/** Auto-generated build information. */
               |object buildinfo {
@@ -132,9 +132,6 @@ lazy val docs =
   project.in(file("doc"))
     .settings(scoobieSettings)
     .settings(noPublishSettings)
-    .settings(
-      libraryDependencies ++= Seq(shapeless, doobieCore, doobiePGDriver)
-    )
     .settings(tutSettings)
     .settings(
       ctut := {
@@ -150,6 +147,15 @@ lazy val docs =
           IO.copy(map, overwrite = true, preserveLastModified = false)
         }
       }
+    )
+    .dependsOn(scoobie, postgres)
+
+lazy val postgres =
+  project.in(file("postgres"))
+    .settings(scoobieSettings)
+    .settings(noPublishSettings)
+    .settings(
+      libraryDependencies ++= Seq(shapeless, doobieCore, doobiePGDriver)
     )
     .dependsOn(scoobie)
 

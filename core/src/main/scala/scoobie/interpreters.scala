@@ -1,9 +1,9 @@
-package com.github.jacoby6000.scoobie
+package scoobie
 
-import com.github.jacoby6000.scoobie.ast._
 import doobie.imports._
-import _root_.shapeless._
 import doobie.syntax.string.{Builder, SqlInterpolator}
+import scoobie.ast._
+import _root_.shapeless._
 
 /**
  * Created by jacob.barber on 3/3/16.
