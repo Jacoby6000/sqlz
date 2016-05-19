@@ -61,7 +61,7 @@ The formatted output of this is
 ```sql
 SELECT
     "foo" + ? AS woozle,
-    
+    * 
 FROM
     "bar" 
 LEFT OUTER JOIN
