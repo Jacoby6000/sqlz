@@ -1,5 +1,3 @@
-
-
 [![Join the chat at https://gitter.im/Jacoby6000/Scala-SQL-AST](https://badges.gitter.im/Jacoby6000/Scala-SQL-AST.svg)](https://gitter.im/Jacoby6000/Scala-SQL-AST?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/Jacoby6000/scoobie.svg?branch=master)](https://travis-ci.org/Jacoby6000/scoobie)
 
 ### Querying with [Doobie](https://github.com/tpolecat/doobie), without raw sql
@@ -25,29 +23,37 @@ Add this project as a dependency.
 Below is a sample query that somebody may want to write. The query below is perfectly valid; try it out!
 
 ```scala
+scala> import com.github.jacoby6000.scoobie.interpreters._
+import com.github.jacoby6000.scoobie.interpreters._
+
+scala> import com.github.jacoby6000.scoobie.interpreters.sqlDialects.postgres
 import com.github.jacoby6000.scoobie.interpreters.sqlDialects.postgres
+
+scala> import com.github.jacoby6000.scoobie.dsl.weak.sql._
 import com.github.jacoby6000.scoobie.dsl.weak.sql._
 
-val q =
-  select (
-    p"foo" + 10 as "woozle",
-    `*`
-  ) from ( 
-    p"bar" 
-  ) leftOuterJoin (
-    p"baz" as "b" on (
-      p"bar.id" === p"baz.barId"
-    )
-  ) innerJoin (
-    p"biz" as "p" on (
-      p"biz.id" === p"bar.bizId"
-    ) 
-  ) where (
-    p"biz.name" === "LightSaber" and
-    p"biz.age" > 27
-  ) orderBy p"biz.age".desc groupBy p"baz.worth".asc
+scala> val q =
+     |   select (
+     |     p"foo" + 10 as "woozle",
+     |     `*`
+     |   ) from ( 
+     |     p"bar" 
+     |   ) leftOuterJoin (
+     |     p"baz" as "b" on (
+     |       p"bar.id" === p"b.barId"
+     |     )
+     |   ) innerJoin (
+     |     p"biz" as "c" on (
+     |       p"c.id" === p"bar.bizId"
+     |     ) 
+     |   ) where (
+     |     p"c.name" === "LightSaber" and
+     |     p"c.age" > 27
+     |   ) orderBy p"c.age".desc groupBy p"b.worth".asc
+q: com.github.jacoby6000.scoobie.dsl.weak.sql.QueryBuilder[shapeless.HNil,shapeless.::[com.github.jacoby6000.scoobie.ast.QueryProjection[shapeless.::[Int,shapeless.HNil]],shapeless.::[com.github.jacoby6000.scoobie.ast.QueryProjection[shapeless.HNil],shapeless.HNil]],shapeless.::[com.github.jacoby6000.scoobie.ast.QueryUnion[shapeless.HNil],shapeless.::[com.github.jacoby6000.scoobie.ast.QueryUnion[shapeless.HNil],shapeless.HNil]],shapeless.::[Int,shapeless.HNil],shapeless.HNil,this.Out,shapeless.::[Int,shapeless.HNil],shapeless.::[Int,shapeless.HNil],this.Out] = QueryBuilder(QueryProjectOne(QueryPathEnd(bar),None),QueryProjectOne(QueryAdd(QueryPathEnd(foo),QueryParameter(10 :: HNil),10 :: HNil),Some(woozle)) :: QueryProjectAll :: HNil,QueryLeftOuterJoin(QueryProjectOne(QueryPathEnd(baz),S...
 
-postgres.genSql(q.build) // Print the Postgres sql string that would be created by this query
+scala> val sql = q.build.genSql // Generate the sql associated with this query
+sql: String = SELECT "foo" + ? AS woozle, * FROM "bar" LEFT OUTER JOIN "baz" AS b ON "bar"."id" = "b"."barId" INNER JOIN "biz" AS c ON "c"."id" = "bar"."bizId" WHERE "c"."name" = ?  AND  "c"."age" > ? ORDER BY "c"."age" DESC GROUP BY "b"."worth" ASC
 ```
 
 The formatted output of this is
@@ -55,22 +61,22 @@ The formatted output of this is
 ```sql
 SELECT
     "foo" + ? AS woozle,
-    * 
+    
 FROM
     "bar" 
 LEFT OUTER JOIN
     "baz" AS b 
-        ON "bar"."id" = "baz"."barId" 
+        ON "bar"."id" = "b"."barId" 
 INNER JOIN
     "biz" AS c 
-        ON "biz"."id" = "bar"."bizId" 
+        ON "c"."id" = "bar"."bizId" 
 WHERE
-    "biz"."name" = ?
-    AND  "biz"."age" > ? 
+    "c"."name" = ?
+    AND  "c"."age" > ? 
 ORDER BY
-    "biz"."age" DESC 
+    "c"."age" DESC 
 GROUP BY
-    "baz"."worth" ASC
+    "b"."worth" ASC
 ```
 
 As a proof of concept, here are some examples translated over from the book of doobie

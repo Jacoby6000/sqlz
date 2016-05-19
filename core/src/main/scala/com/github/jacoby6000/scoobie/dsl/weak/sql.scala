@@ -346,7 +346,7 @@ object sql {
       builder.copy(filter = QueryAnd(filter,queryComparison)): QueryBuilder[Table, QueryProjections, QueryUnions, QBFlattenedProjections, QBFlattenedUnions, Out, QBOut1, QBOut2, NewParams]
     }
 
-    def build: QuerySelect[Params] = QuerySelect(table, values, unions, filter, List.empty, List.empty, None, None)
+    def build: QuerySelect[Params] = QuerySelect(table, values, unions, filter, sorts, groupings, offset, limit)
 
     def orderBy(sorts: QuerySort*) = builder.copy(sorts = builder.sorts ::: sorts.toList)
     def groupBy(groups: QuerySort*) = builder.copy(groupings = builder.groupings ::: groups.toList)
