@@ -3,7 +3,10 @@ scala:
   - 2.11.8
 
 script:
-  - sbt clean coverage test coverageReport
+  - sbt clean
+  - sbt coverage
+  - sbt test
+  - sbt coverageReport
   - sbt tut
   - cmp readme.md doc/target/scala-2.11/tut/readme.md
 
