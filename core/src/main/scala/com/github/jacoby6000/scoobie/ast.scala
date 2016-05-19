@@ -205,7 +205,6 @@ object ast {
 
   case class ModifyField[A <: HList](key: QueryPath, value: QueryValue[A]) { lazy val params: A = value.params }
 
-
   object QueryInsert {
     def apply[A <: HList, Out <: HList](collection: QueryPath, fields: A)(implicit unwrapAndFlattenHList: UnwrapAndFlattenHList.Aux[ModifyField, A, ModifyFieldUnwrapper.type, Out], toList: ToTraversable.Aux[A, List, ModifyField[_ <: HList]]): QueryInsert[Out] = QueryInsert(collection, toList(fields), unwrapAndFlattenHList(fields))
   }

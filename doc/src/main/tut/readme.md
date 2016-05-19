@@ -30,22 +30,22 @@ import com.github.jacoby6000.scoobie.dsl.weak.sql._
 
 val q =
   select (
-    c"foo" + 10 as "woozle",
+    p"foo" + 10 as "woozle",
     `*`
   ) from ( 
     p"bar" 
   ) leftOuterJoin (
-    c"baz" as "b" on (
-      c"bar.id" === c"baz.barId"
+    p"baz" as "b" on (
+      p"bar.id" === p"baz.barId"
     )
   ) innerJoin (
-    c"biz" as "c" on (
-      c"biz.id" === c"bar.bizId"
+    p"biz" as "p" on (
+      p"biz.id" === p"bar.bizId"
     ) 
   ) where (
-    c"biz.name" === "LightSaber" and
-    c"biz.age" > 27
-  ) orderBy c"biz.age".desc groupBy c"baz.worth".asc
+    p"biz.name" === "LightSaber" and
+    p"biz.age" > 27
+  ) orderBy p"biz.age".desc groupBy p"baz.worth".asc
 
 postgres.genSql(q.build) // Print the Postgres sql string that would be created by this query
 ```
@@ -105,7 +105,7 @@ And now lets run some basic queries (Note, instead of `.queryAndPrint[T](printer
 
 ```tut
 def biggerThan(n: Int) = {
-  (baseQuery where c"population" > n)
+  (baseQuery where p"population" > n)
     .build
     .queryAndPrint[Country](sql => println("\n" + sql))
 }
@@ -115,8 +115,8 @@ biggerThan(150000000).quick.unsafePerformSync
 
 def populationIn(r: Range) = {
   (baseQuery where (
-    c"population" >= r.min and
-    c"population" <= r.max
+    p"population" >= r.min and
+    p"population" <= r.max
   )).build
     .queryAndPrint[Country](sql => println("\n" + sql))
 } 
@@ -136,14 +136,14 @@ def joined = {
     p"c2.code",
     p"c2.name"
   ) from (
-    c"country" as "c1"
+    p"country" as "c1"
   ) leftOuterJoin (
-    c"country" as "c2" on (
-      func"reverse"(c"c1.code") === c"c2.code"
+    p"country" as "c2" on (
+      func"reverse"(p"c1.code") === p"c2.code"
     )
   ) where (
-    (c"c2.code" !== `null`) and
-    (c"c2.name" !== c"c1.name")
+    (p"c2.code" !== `null`) and
+    (p"c2.name" !== p"c1.name")
   )).build
     .queryAndPrint[ComplimentaryCountries](sql => println("\n" + sql))
 }

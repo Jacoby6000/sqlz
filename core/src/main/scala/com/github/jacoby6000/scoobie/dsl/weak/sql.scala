@@ -2,8 +2,8 @@ package com.github.jacoby6000.scoobie.dsl.weak
 
 import com.github.jacoby6000.scoobie.ast._
 import com.github.jacoby6000.scoobie.shapeless.Typeclasses.UnwrapAndFlattenHList
-import shapeless.ops.hlist.{ Prepend, ToTraversable }
 import shapeless._
+import shapeless.ops.hlist.{Prepend, ToTraversable}
 
 /**
  * Created by jacob.barber on 3/4/16.
@@ -165,7 +165,7 @@ object sql {
   }
 
   implicit class StringContextExtensions(val ctx: StringContext) extends AnyVal {
-    def c(): QueryPath = {
+    def p(): QueryPath = {
       val -::- = scala.collection.immutable.::
       def go(remainingParts: List[String], queryPath: QueryPath): QueryPath = remainingParts match {
         case head -::- tail => go(tail, QueryPathCons(head, queryPath))
@@ -180,9 +180,7 @@ object sql {
       QueryRawExpression(ctx.standardInterpolator(identity, args))
     }
 
-    def p(): QueryProjection[HNil] = QueryProjectOne(c(), None)
-
-    def func(): SqlQueryFunctionBuilder = SqlQueryFunctionBuilder(c())
+    def func(): SqlQueryFunctionBuilder = SqlQueryFunctionBuilder(p())
   }
 
   implicit class QueryPathExtensions(val f: QueryPath) extends AnyVal {

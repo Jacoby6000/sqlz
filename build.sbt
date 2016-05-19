@@ -15,7 +15,8 @@ lazy val buildSettings = Seq(
 
 lazy val commonSettings = Seq(
   scalacOptions ++= Seq(
-    "-encoding", "UTF-8", // 2 args
+    "-encoding",
+    "UTF-8", // 2 args
     "-feature",
     "-language:existentials",
     "-language:higherKinds",
@@ -25,7 +26,8 @@ lazy val commonSettings = Seq(
     "-Xlint",
     "-Yno-adapted-args",
     "-Ywarn-dead-code",
-    "-Ywarn-value-discard"
+    "-Ywarn-value-discard",
+    "-Xmax-classfile-name", "128"
   ),
   scalacOptions in (Compile, doc) ++= Seq(
     "-groups",
