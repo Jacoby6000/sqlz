@@ -1,47 +1,170 @@
+/**
+  * Large portions of this build are based on @tpolecat's (Rob Norris) build file for doobie. Any genius found here is courtesy of him.
+  */
+
+import UnidocKeys._
+import ReleaseTransformations._
+import OsgiKeys._
+
 name := "scoobie"
 
-scalaVersion := "2.11.8"
 
-organization := "com.github.jacoby6000"
-
-version := "0.1.0"
-
-
-libraryDependencies ++= {
-  val doobieVersion = "0.3.0-M1"
-
-  Seq(
-    "com.chuusai" %% "shapeless" % "2.3.1",
-    "org.tpolecat" %% "doobie-core" % doobieVersion,
-    "org.tpolecat" %% "doobie-contrib-postgresql" % doobieVersion,
-
-    "org.specs2" %% "specs2-core" % "3.8" % "test"
-  )
-}
-
-scalacOptions in Test ++= Seq("-Yrangepos")
-
-resolvers += Resolver.sonatypeRepo("releases")
-
-addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.7.1")
-
-scalacOptions ++= Seq(
-//  "-Yno-predef",   // no automatic import of Predef (removes irritating implicits)
-  "-deprecation",
-  "-encoding", "UTF-8",       // yes, this is 2 args
-  "-feature",
-  "-language:existentials",
-  "-language:higherKinds",
-  "-language:implicitConversions",
-  "-unchecked",
-  "-Xfatal-warnings",
-  "-Xlint",
-  "-Yno-adapted-args",
-  "-Ywarn-dead-code",        // N.B. doesn’t work well with the ??? hole
-  "-Ywarn-numeric-widen",
-  "-Ywarn-value-discard",
-  "-Xfuture"
-//  "-Ywarn-unused-import"     // 2.11 only
+lazy val buildSettings = Seq(
+  scalaVersion := "2.11.8",
+  organization := "com.github.jacoby6000",
+  licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
+  crossScalaVersions := Seq("2.10.5", scalaVersion.value)
 )
 
-tutSettings
+lazy val commonSettings = Seq(
+  scalacOptions ++= Seq(
+    "-encoding", "UTF-8", // 2 args
+    "-feature",
+    "-language:existentials",
+    "-language:higherKinds",
+    "-language:implicitConversions",
+    "-language:experimental.macros",
+    "-unchecked",
+    "-Xlint",
+    "-Yno-adapted-args",
+    "-Ywarn-dead-code",
+    "-Ywarn-value-discard"
+  ),
+  scalacOptions in (Compile, doc) ++= Seq(
+    "-groups",
+    "-sourcepath", (baseDirectory in LocalRootProject).value.getAbsolutePath,
+    "-doc-source-url", "https://github.com/jacoby6000/scoobie/tree/v" + version.value + "€{FILE_PATH}.scala"
+  ),
+  libraryDependencies ++= Seq(
+    "org.specs2" %% "specs2-core" % "3.8" % "test"
+  ),
+  addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.7.1")
+)
+
+lazy val publishSettings = osgiSettings ++ Seq(
+  exportPackage := Seq("com.github.jacoby6000.scoobie.*"),
+  privatePackage := Seq(),
+  dynamicImportPackage := Seq("*"),
+  publishMavenStyle := true,
+  publishTo := {
+    val nexus = "https://oss.sonatype.org/"
+    if (isSnapshot.value)
+      Some("snapshots" at nexus + "content/repositories/snapshots")
+    else
+      Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+  },
+  publishArtifact in Test := false,
+  homepage := Some(url("https://github.com/jacoby6000/scoobie")),
+  pomIncludeRepository := Function.const(false),
+  pomExtra :=
+  <scm>
+    <url>git@github.com:Jacoby6000/scoobie.git</url>
+    <connection>scm:git:git@github.com:Jacoby6000/scoobie.git</connection>
+  </scm>
+  <developers>
+    <developer>
+      <id>Jacoby6000</id>
+      <name>Jacob Barber</name>
+      <url>http://jacoby6000.github.com/</url>
+    </developer>
+  </developers>,
+  releaseCrossBuild := true,
+  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+  releaseProcess := Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    inquireVersions,
+    runClean,
+    ReleaseStep(action = Command.process("package", _)),
+    setReleaseVersion,
+    commitReleaseVersion,
+    tagRelease,
+    ReleaseStep(action = Command.process("publishSigned", _)),
+    setNextVersion,
+    commitNextVersion,
+    ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+    pushChanges
+  )
+)
+
+lazy val scoobieSettings = buildSettings ++ commonSettings
+
+lazy val root =
+  project.in(file("."))
+    .settings(name := "root")
+    .settings(scoobieSettings)
+    .settings(noPublishSettings)
+    .settings(unidocSettings)
+    .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(docs))
+    .dependsOn(scoobie, docs)
+    .aggregate(scoobie, docs)
+
+lazy val scoobie =
+  project.in(file("core"))
+    .enablePlugins(SbtOsgi)
+    .settings(name := "scoobie")
+    .settings(description := "AST for making convenient DSLs in Scala.")
+    .settings(scoobieSettings ++ publishSettings)
+    .settings(
+      libraryDependencies ++= Seq(shapeless, doobieCore, doobiePGDriver % "test")
+    )
+    .settings(
+      sourceGenerators in Compile += Def.task {
+        val outDir = (sourceManaged in Compile).value / "scoobie"
+        val outFile = new File(outDir, "buildinfo.scala")
+        outDir.mkdirs
+        val v = version.value
+        val t = System.currentTimeMillis
+        IO.write(outFile,
+          s"""|package com.github.jacoby6000.scoobie
+              |
+              |/** Auto-generated build information. */
+              |object buildinfo {
+              |  /** Current version of scoobie ($v). */
+              |  val version = "$v"
+              |  /** Build date (${new java.util.Date(t)}). */
+              |  val date    = new java.util.Date(${t}L)
+              |}
+              |""".stripMargin)
+        Seq(outFile)
+      }.taskValue
+    )
+
+lazy val docs =
+  project.in(file("doc"))
+    .settings(scoobieSettings)
+    .settings(noPublishSettings)
+    .settings(
+      libraryDependencies ++= Seq(shapeless, doobieCore, doobiePGDriver)
+    )
+    .settings(tutSettings)
+    .settings(
+      ctut := {
+        val src = crossTarget.value / "tut"
+        val dst = file("../jacoby6000.github.io/_scoobie-" + version.value + "/")
+        if (!src.isDirectory) {
+          println("Input directory " + src + " not found.")
+        } else if (!dst.isDirectory) {
+          println("Output directory " + dst + " not found.")
+        } else {
+          println("Copying to " + dst.getPath)
+          val map = src.listFiles.filter(_.getName.endsWith(".md")).map(f => (f, new File(dst, f.getName)))
+          IO.copy(map, overwrite = true, preserveLastModified = false)
+        }
+      }
+    )
+    .dependsOn(scoobie)
+
+
+lazy val doobieVersion = "0.3.0-M1"
+lazy val shapeless = "com.chuusai" %% "shapeless" % "2.3.1"
+lazy val doobieCore = "org.tpolecat" %% "doobie-core" % doobieVersion
+lazy val doobiePGDriver = "org.tpolecat" %% "doobie-contrib-postgresql" % doobieVersion
+
+lazy val ctut = taskKey[Unit]("Copy tut output to blog repo nearby.")
+
+lazy val noPublishSettings = Seq(
+  publish := (),
+  publishLocal := (),
+  publishArtifact := false
+)
+

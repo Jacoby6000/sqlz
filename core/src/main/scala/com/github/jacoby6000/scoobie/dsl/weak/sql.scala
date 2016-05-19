@@ -30,7 +30,7 @@ object sql {
         *
         * It'd be a shame to have to use a DSL that an IDE couldn't understand.
         *
-        * Check out $PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
+        * Check out PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
         */
 
       def apply = applyProduct(HNil)
@@ -85,7 +85,7 @@ object sql {
         *
         * It'd be a shame to have to use a DSL that an IDE couldn't understand.
         *
-        * Check out $PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
+        * Check out PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
         */
 
       def apply = applyProduct(HNil)
@@ -132,7 +132,7 @@ object sql {
      *
      * It'd be a shame to have to use a DSL that an IDE couldn't understand.
      *
-     * Check out $PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
+     * Check out PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
      */
 
     def apply = applyProduct(HNil)
@@ -211,7 +211,7 @@ object sql {
      *
      * It'd be a shame to have to use a DSL that an IDE couldn't understand.
      *
-     * Check out $PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
+     * Check out PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
      */
 
     def apply = applyProduct(HNil)
@@ -383,7 +383,7 @@ object sql {
         *
         * It'd be a shame to have to use a DSL that an IDE couldn't understand.
         *
-        * Check out $PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
+        * Check out PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
         */
 
       def apply = applyProduct(HNil)
