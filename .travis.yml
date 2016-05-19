@@ -3,20 +3,18 @@ scala:
   - 2.11.8
 
 script:
-  - sbt clean coverage test
+  - sbt clean coverage test coverageReport
   - sbt tut
   - cmp readme.md doc/target/scala-2.11/tut/readme.md
-  - sbt coverageReport
-  - codecov
 
 addons:
   postgresql: "9.3"
-
-install:
-  - pip install --user codecov
 
 before_script:
   - psql -c 'create database world;' -U postgres
   - psql -q -c '\i world.sql' -d world -U postgres
   - psql -d world -c "create extension postgis" -U postgres
   - psql -d world -c "create type myenum as enum ('foo', 'bar')" -U postgres
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
