@@ -35,7 +35,10 @@ lazy val commonSettings = Seq(
     "-doc-source-url", "https://github.com/jacoby6000/scoobie/tree/v" + version.value + "€{FILE_PATH}.scala"
   ),
   libraryDependencies ++= Seq(
-    "org.specs2" %% "specs2-core" % "3.8" % "test"
+    "org.specs2" %% "specs2-core" % "3.8" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.13.0" % "test",
+    "org.typelevel" %% "shapeless-scalacheck" % "0.4",
+    "org.typelevel" %% "shapeless-scalaz" % "0.4"
   ),
   addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.7.1")
 )
@@ -164,6 +167,7 @@ lazy val doobieVersion = "0.3.0-M1"
 lazy val shapeless = "com.chuusai" %% "shapeless" % "2.3.1"
 lazy val doobieCore = "org.tpolecat" %% "doobie-core" % doobieVersion
 lazy val doobiePGDriver = "org.tpolecat" %% "doobie-contrib-postgresql" % doobieVersion
+
 
 lazy val ctut = taskKey[Unit]("Copy tut output to blog repo nearby.")
 
