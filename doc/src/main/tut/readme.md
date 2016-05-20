@@ -23,9 +23,9 @@ Add this project as a dependency.
 Below is a sample query that somebody may want to write. The query below is perfectly valid; try it out!
 
 ```tut
-import com.github.jacoby6000.scoobie.interpreters._
-import com.github.jacoby6000.scoobie.interpreters.sqlDialects.postgres
-import com.github.jacoby6000.scoobie.dsl.weak.sql._
+import scoobie.interpreters._
+import scoobie.interpreters.sqlDialects.postgres
+import scoobie.dsl.weak.sql._
 
 val q =
   select (
@@ -77,9 +77,9 @@ As a proof of concept, here are some examples translated over from the book of d
 First, lets set up a repl session with our imports, plus what we need to run doobie.
 
 ```tut:silent
-import com.github.jacoby6000.scoobie.interpreters._ // Import the interpreters
-import com.github.jacoby6000.scoobie.interpreters.sqlDialects.postgres // Use postgres
-import com.github.jacoby6000.scoobie.dsl.weak.sql._ // Import the Sql-like weakly typed DSL.
+import scoobie.interpreters._ // Import the interpreters
+import scoobie.interpreters.sqlDialects.postgres // Use postgres
+import scoobie.dsl.weak.sql._ // Import the Sql-like weakly typed DSL.
 import doobie.imports._ // Import doobie
 import scalaz.concurrent.Task 
 

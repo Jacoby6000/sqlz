@@ -3,17 +3,12 @@ scala:
   - 2.11.8
 
 script:
-  - sbt clean coverage test
+  - sbt clean coverage test coverageReport
   - sbt tut
   - cmp readme.md doc/target/scala-2.11/tut/readme.md
-  - sbt coverageReport
-  - codecov
 
 addons:
   postgresql: "9.3"
-
-install:
-  - pip install --user codecov
 
 before_script:
   - psql -c 'create database world;' -U postgres
@@ -33,3 +28,6 @@ before_cache:
   - du -h -d 2 $HOME/.sbt/
   - find $HOME/.sbt -name “*.lock” -type f -delete
   - find $HOME/.ivy2/cache -name “ivydata-*.properties” -type f -delete
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

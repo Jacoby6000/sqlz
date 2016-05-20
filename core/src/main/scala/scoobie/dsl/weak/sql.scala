@@ -1,9 +1,9 @@
-package com.github.jacoby6000.scoobie.dsl.weak
+package scoobie.dsl.weak
 
-import com.github.jacoby6000.scoobie.ast._
-import com.github.jacoby6000.scoobie.shapeless.Typeclasses.UnwrapAndFlattenHList
-import shapeless._
-import shapeless.ops.hlist.{Prepend, ToTraversable}
+import scoobie.ast._
+import scoobie.shapeless.Typeclasses.UnwrapAndFlattenHList
+import _root_.shapeless._
+import _root_.shapeless.ops.hlist.{Prepend, ToTraversable}
 
 /**
  * Created by jacob.barber on 3/4/16.

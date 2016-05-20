@@ -23,14 +23,14 @@ Add this project as a dependency.
 Below is a sample query that somebody may want to write. The query below is perfectly valid; try it out!
 
 ```scala
-scala> import com.github.jacoby6000.scoobie.interpreters._
-import com.github.jacoby6000.scoobie.interpreters._
+scala> import scoobie.interpreters._
+import scoobie.interpreters._
 
-scala> import com.github.jacoby6000.scoobie.interpreters.sqlDialects.postgres
-import com.github.jacoby6000.scoobie.interpreters.sqlDialects.postgres
+scala> import scoobie.interpreters.sqlDialects.postgres
+import scoobie.interpreters.sqlDialects.postgres
 
-scala> import com.github.jacoby6000.scoobie.dsl.weak.sql._
-import com.github.jacoby6000.scoobie.dsl.weak.sql._
+scala> import scoobie.dsl.weak.sql._
+import scoobie.dsl.weak.sql._
 
 scala> val q =
      |   select (
@@ -50,7 +50,7 @@ scala> val q =
      |     p"c.name" === "LightSaber" and
      |     p"c.age" > 27
      |   ) orderBy p"c.age".desc groupBy p"b.worth".asc
-q: com.github.jacoby6000.scoobie.dsl.weak.sql.QueryBuilder[shapeless.HNil,shapeless.::[com.github.jacoby6000.scoobie.ast.QueryProjection[shapeless.::[Int,shapeless.HNil]],shapeless.::[com.github.jacoby6000.scoobie.ast.QueryProjection[shapeless.HNil],shapeless.HNil]],shapeless.::[com.github.jacoby6000.scoobie.ast.QueryUnion[shapeless.HNil],shapeless.::[com.github.jacoby6000.scoobie.ast.QueryUnion[shapeless.HNil],shapeless.HNil]],shapeless.::[Int,shapeless.HNil],shapeless.HNil,this.Out,shapeless.::[Int,shapeless.HNil],shapeless.::[Int,shapeless.HNil],this.Out] = QueryBuilder(QueryProjectOne(QueryPathEnd(bar),None),QueryProjectOne(QueryAdd(QueryPathEnd(foo),QueryParameter(10 :: HNil),10 :: HNil),Some(woozle)) :: QueryProjectAll :: HNil,QueryLeftOuterJoin(QueryProjectOne(QueryPathEnd(baz),S...
+q: scoobie.dsl.weak.sql.QueryBuilder[shapeless.HNil,shapeless.::[scoobie.ast.QueryProjection[shapeless.::[Int,shapeless.HNil]],shapeless.::[scoobie.ast.QueryProjection[shapeless.HNil],shapeless.HNil]],shapeless.::[scoobie.ast.QueryUnion[shapeless.HNil],shapeless.::[scoobie.ast.QueryUnion[shapeless.HNil],shapeless.HNil]],shapeless.::[Int,shapeless.HNil],shapeless.HNil,this.Out,shapeless.::[Int,shapeless.HNil],shapeless.::[Int,shapeless.HNil],this.Out] = QueryBuilder(QueryProjectOne(QueryPathEnd(bar),None),QueryProjectOne(QueryAdd(QueryPathEnd(foo),QueryParameter(10 :: HNil),10 :: HNil),Some(woozle)) :: QueryProjectAll :: HNil,QueryLeftOuterJoin(QueryProjectOne(QueryPathEnd(baz),Some(b)),QueryEqual(QueryPathCons(bar,QueryPathEnd(id)),QueryPathCons(b,QueryPathEnd(barId)),HNil),HNil) :: Que...
 
 scala> val sql = q.build.genSql // Generate the sql associated with this query
 sql: String = SELECT "foo" + ? AS woozle, * FROM "bar" LEFT OUTER JOIN "baz" AS b ON "bar"."id" = "b"."barId" INNER JOIN "biz" AS c ON "c"."id" = "bar"."bizId" WHERE "c"."name" = ?  AND  "c"."age" > ? ORDER BY "c"."age" DESC GROUP BY "b"."worth" ASC
@@ -84,9 +84,9 @@ As a proof of concept, here are some examples translated over from the book of d
 First, lets set up a repl session with our imports, plus what we need to run doobie.
 
 ```scala
-import com.github.jacoby6000.scoobie.interpreters._ // Import the interpreters
-import com.github.jacoby6000.scoobie.interpreters.sqlDialects.postgres // Use postgres
-import com.github.jacoby6000.scoobie.dsl.weak.sql._ // Import the Sql-like weakly typed DSL.
+import scoobie.interpreters._ // Import the interpreters
+import scoobie.interpreters.sqlDialects.postgres // Use postgres
+import scoobie.dsl.weak.sql._ // Import the Sql-like weakly typed DSL.
 import doobie.imports._ // Import doobie
 import scalaz.concurrent.Task 
 

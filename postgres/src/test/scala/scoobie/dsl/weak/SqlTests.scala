@@ -1,21 +1,22 @@
-package com.github.jacoby6000.scoobie.dsl.weak
+package scoobie.dsl.weak
 
-import sql._
-import org.specs2._
-import scalaz.concurrent.Task
+import scoobie.dsl.weak.sql._
+import scoobie.interpreters._
+import scoobie.interpreters.sqlDialects.postgres
+
 import doobie.imports._
+import org.specs2._
 import shapeless.syntax.singleton._
-import scalaz.NonEmptyList
 
-import com.github.jacoby6000.scoobie.interpreters._
-import com.github.jacoby6000.scoobie.interpreters.sqlDialects.postgres
+import scalaz.NonEmptyList
+import scalaz.concurrent.Task
 
 
 
 /**
   * Created by jbarber on 5/14/16.
   */
-class InitialTests extends Specification {
+class SqlTests extends Specification {
 
   val xa = DriverManagerTransactor[Task](
     "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"
