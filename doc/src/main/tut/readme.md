@@ -8,14 +8,14 @@ As it stands now, there is a quick 'n dirty SQL DSL, implemented with a lightwei
 
 ### Getting Started
 
-Add the sonatype snapshot resolver
+Add the sonatype releases resolver
 ```scala
-  resolvers += Resolver.sonatypeRepo("snapshots")
+  resolvers += Resolver.sonatypeRepo("releases")
 ```
 
 Add this project as a dependency.
 ```scala
-  libraryDependencies += "com.github.jacoby6000" %% "scoobie" % "0.1.0-SNAPSHOT",
+  libraryDependencies += "com.github.jacoby6000" %% "scoobie" % "0.1.0",
 ```
 
 ### Using the SQL DSL

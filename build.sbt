@@ -88,7 +88,7 @@ lazy val publishSettings = osgiSettings ++ Seq(
   )
 )
 
-lazy val scoobieSettings = buildSettings ++ commonSettings
+lazy val scoobieSettings = buildSettings ++ commonSettings ++ tutSettings
 
 lazy val root =
   project.in(file("."))
@@ -99,6 +99,19 @@ lazy val root =
     .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(docs))
     .dependsOn(scoobie, postgres, docs)
     .aggregate(scoobie, postgres, docs)
+    .settings(
+      tutcp <<= tut andFinally {
+          val src = file(".") / "doc" / "target" / "scala-2.11" / "tut" / "readme.md"
+          val dst = file(".") / "readme.md"
+
+          println("Moving " + src + " to " + dst)
+
+          if (src.exists())
+            IO.copy(List(src -> dst), overwrite = true, preserveLastModified = true)
+          else
+            println("No tut output found at" + src.toString)
+      }
+    )
 
 lazy val scoobie =
   project.in(file("core"))
@@ -135,7 +148,6 @@ lazy val docs =
   project.in(file("doc"))
     .settings(scoobieSettings)
     .settings(noPublishSettings)
-    .settings(tutSettings)
     .settings(
       ctut := {
         val src = crossTarget.value / "tut"
@@ -177,3 +189,4 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
+lazy val tutcp = taskKey[Seq[(sbt.File, String)]]("Copy tut readme output to projroot/readme.md")
