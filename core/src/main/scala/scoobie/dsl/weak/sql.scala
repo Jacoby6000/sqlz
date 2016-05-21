@@ -363,7 +363,7 @@ object sql {
     def <=[RightType <: HList, Out <: HList](b: QueryValue[RightType])(implicit p: Prepend.Aux[LeftType, RightType, Out]): QueryComparison[Out] = QueryLessThanOrEqual(a, b)
 
     def ===[RightType <: HList, Out <: HList](b: QueryValue[RightType])(implicit p: Prepend.Aux[LeftType, RightType, Out]): QueryComparison[Out] = QueryEqual(a, b)
-    def !==[RightType <: HList, Out <: HList](b: QueryValue[RightType])(implicit p: Prepend.Aux[LeftType, RightType, Out]): QueryComparison[Out] = QueryNotEqual(a, b)
+    def !==[RightType <: HList, Out <: HList](b: QueryValue[RightType])(implicit p: Prepend.Aux[LeftType, RightType, Out]): QueryComparison[Out] = QueryNot(QueryEqual(a, b))
     def <>[RightType <: HList, Out <: HList](b: QueryValue[RightType])(implicit p: Prepend.Aux[LeftType, RightType, Out]): QueryComparison[Out] = !==(b)
 
     def +[RightType <: HList, Out <: HList](b: QueryValue[RightType])(implicit p: Prepend.Aux[LeftType, RightType, Out]): QueryValue[Out] = QueryAdd(a, b)

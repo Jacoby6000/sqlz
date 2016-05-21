@@ -27,7 +27,9 @@ lazy val commonSettings = Seq(
     "-Yno-adapted-args",
     "-Ywarn-dead-code",
     "-Ywarn-value-discard",
-    "-Xmax-classfile-name", "128"
+    "-Xmax-classfile-name", "128",
+    "-Ypatmat-exhaust-depth", "80"
+
   ),
   scalacOptions in (Compile, doc) ++= Seq(
     "-groups",

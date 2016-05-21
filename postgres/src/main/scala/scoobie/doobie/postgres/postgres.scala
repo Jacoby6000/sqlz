@@ -42,9 +42,11 @@ package object postgres {
     def reduceComparison(value: QueryComparison[_]): String = value match {
       case QueryLit(v) => reduceValue(v)
       case QueryEqual(left, QueryNull, _) => reduceValue(left) + " IS NULL"
+      case QueryEqual(QueryNull, right, _) => reduceValue(right) + " IS NULL"
       case QueryEqual(left, right, _) => binOpReduction("=", left, right)(reduceValue)
-      case QueryNotEqual(left, QueryNull, _) => reduceValue(left) + " IS NOT NULL"
-      case QueryNotEqual(left, right, _) => binOpReduction("<>", left, right)(reduceValue)
+      case QueryNot(QueryEqual(left, QueryNull, _)) => reduceValue(left) + " IS NOT NULL"
+      case QueryNot(QueryEqual(QueryNull, right, _)) => reduceValue(right) + " IS NOT NULL"
+      case QueryNot(QueryEqual(left, right, _)) => binOpReduction("<>", left, right)(reduceValue)
       case QueryGreaterThan(left, right, _) => binOpReduction(">", left, right)(reduceValue)
       case QueryGreaterThanOrEqual(left, right, _) => binOpReduction(">=", left, right)(reduceValue)
       case QueryIn(left, rights, _) => reduceValue(left) + " IN " + rights.map(reduceValue).mkString("(", ", ", ")")

@@ -83,10 +83,6 @@ object ast {
     def apply[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A, B, Out]): QueryEqual[Out] = QueryEqual(left, right, left.params ::: right.params)
   }
 
-  object QueryNotEqual {
-    def apply[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A, B, Out]): QueryNotEqual[Out] = QueryNotEqual(left, right, left.params ::: right.params)
-  }
-
   object QueryGreaterThan {
     def apply[A <: HList, B <: HList, Out <: HList](left: QueryValue[A], right: QueryValue[B])(implicit p: Prepend.Aux[A, B, Out]): QueryGreaterThan[Out] = QueryGreaterThan(left, right, left.params ::: right.params)
   }
