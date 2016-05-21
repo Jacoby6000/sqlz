@@ -168,7 +168,6 @@ lazy val shapeless = "com.chuusai" %% "shapeless" % "2.3.1"
 lazy val doobieCore = "org.tpolecat" %% "doobie-core" % doobieVersion
 lazy val doobiePGDriver = "org.tpolecat" %% "doobie-contrib-postgresql" % doobieVersion
 
-
 lazy val ctut = taskKey[Unit]("Copy tut output to blog repo nearby.")
 
 lazy val noPublishSettings = Seq(

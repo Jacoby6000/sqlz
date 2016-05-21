@@ -5,7 +5,6 @@ scala:
 script:
   - sbt clean coverage test coverageReport
   - sbt tut
-  - cmp readme.md doc/target/scala-2.11/tut/readme.md
 
 addons:
   postgresql: "9.3"
