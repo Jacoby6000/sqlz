@@ -1,13 +1,8 @@
 package scoobie
 
-import _root_.shapeless._
-import _root_.shapeless.contrib.scalacheck._
 import org.specs2._
+import _root_.shapeless._
 import scoobie.ast._
-import org.scalacheck._
-import org.scalacheck.Properties
-import org.scalacheck.Prop.forAll
-
 
 /**
   * Created by jbarber on 5/19/16.

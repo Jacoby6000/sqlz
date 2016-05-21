@@ -1,13 +1,12 @@
-package scoobie.dsl.weak
+package scoobie.interpreters
 
+import scoobie.dsl.weak.sql
 import scoobie.dsl.weak.sql._
 import scoobie.interpreters._
-import scoobie.interpreters.sqlDialects.postgres
-
+import scoobie.interpreters.postgres.interpreter
 import doobie.imports._
 import org.specs2._
-import shapeless.syntax.singleton._
-
+import _root_.shapeless.syntax.singleton._
 import scalaz.NonEmptyList
 import scalaz.concurrent.Task
 
@@ -16,7 +15,7 @@ import scalaz.concurrent.Task
 /**
   * Created by jbarber on 5/14/16.
   */
-class SqlTests extends Specification {
+class PostgresTest extends Specification {
 
   val xa = DriverManagerTransactor[Task](
     "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"

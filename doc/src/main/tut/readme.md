@@ -24,7 +24,7 @@ Below is a sample query that somebody may want to write. The query below is perf
 
 ```tut
 import scoobie.interpreters._
-import scoobie.interpreters.sqlDialects.postgres
+import scoobie.interpreters.postgres.interpreter
 import scoobie.dsl.weak.sql._
 
 val q =
@@ -78,7 +78,7 @@ First, lets set up a repl session with our imports, plus what we need to run doo
 
 ```tut:silent
 import scoobie.interpreters._ // Import the interpreters
-import scoobie.interpreters.sqlDialects.postgres // Use postgres
+import scoobie.interpreters.postgres.interpreter // Use postgres
 import scoobie.dsl.weak.sql._ // Import the Sql-like weakly typed DSL.
 import doobie.imports._ // Import doobie
 import scalaz.concurrent.Task 

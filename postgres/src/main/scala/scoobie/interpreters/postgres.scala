@@ -1,57 +1,13 @@
-package scoobie
+package scoobie.interpreters
 
-import doobie.imports._
-import doobie.syntax.string.{Builder, SqlInterpolator}
 import scoobie.ast._
-import _root_.shapeless._
 
 /**
- * Created by jacob.barber on 3/3/16.
- */
-object interpreters {
-  def void[A](a: A): Unit = ()
+  * Created by jbarber on 5/20/16.
+  */
+object postgres {
 
-  case class SqlInterpreter(genSql: QueryExpression[_] => String) {
-    def query[A <: HList: Param, B: Composite](ast: QuerySelect[A], printer: String => Unit): Query0[B] =
-      builderFromSql(genAndPrintSql(ast, printer), ast.params).query[B]
-
-    def update[A <: HList: Param](ast: QueryModify[A], printer: String => Unit): Update0 =
-      builderFromSql(genAndPrintSql(ast, printer), ast.params).update
-
-    def builder[A <: HList: Param](ast: QueryExpression[A], printer: String => Unit): Builder[A] =
-      builderFromSql(genAndPrintSql(ast, printer), ast.params)
-
-    def builderFromSql[A <: HList : Param](sqlString: String, params: A) =
-      new SqlInterpolator(new StringContext(sqlString.split('?'): _*)).sql.applyProduct[A](params)
-
-    def genAndPrintSql[A <: HList](ast: QueryExpression[A], printer: String => Unit): String = {
-      val sqlString = genSql(ast)
-      printer(sqlString)
-      sqlString
-    }
-  }
-
-  implicit class QueryExpressionExtensions[A <: HList: Param](expr: QueryExpression[A])(implicit sqlInterpreter: SqlInterpreter) {
-    def builderAndPrint(printer: String => Unit): Builder[A] = sqlInterpreter.builder(expr, printer)
-    def builder: Builder[A] = sqlInterpreter.builder(expr, void)
-
-    def genAndPrintSql(printer: String => Unit): String = sqlInterpreter.genAndPrintSql(expr, printer)
-    def genSql: String = sqlInterpreter.genAndPrintSql(expr, void)
-  }
-
-  implicit class QuerySelectExtensions[A <: HList: Param](expr: QuerySelect[A])(implicit sqlInterpreter: SqlInterpreter) {
-    def queryAndPrint[B: Composite](printer: String => Unit = void): Query0[B] = sqlInterpreter.query[A, B](expr, printer)
-    def query[B: Composite]: Query0[B] = sqlInterpreter.query[A, B](expr, void)
-  }
-
-  implicit class QueryModifyExtensions[A <: HList: Param](expr: QueryModify[A])(implicit sqlInterpreter: SqlInterpreter) {
-    def updateAndPrint(printer: String => Unit = void): Update0 = sqlInterpreter.update[A](expr, printer)
-    def update: Update0 = sqlInterpreter.update[A](expr, void)
-  }
-
-  object sqlDialects {
-    implicit val postgres = SqlInterpreter(interpretPSql _)
-  }
+  implicit val interpreter = SqlInterpreter(interpretPSql _)
 
   def interpretPSql(expr: QueryExpression[_]): String = {
     val singleQuote = '"'.toString
