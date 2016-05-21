@@ -1,16 +1,14 @@
-package scoobie.interpreters
+package scoobie.doobie.postgres
 
+import _root_.shapeless.syntax.singleton._
+import org.specs2._
 import scoobie.dsl.weak.sql
 import scoobie.dsl.weak.sql._
-import scoobie.interpreters._
-import scoobie.interpreters.postgres.interpreter
-import doobie.imports._
-import org.specs2._
-import _root_.shapeless.syntax.singleton._
+import scoobie.doobie._
+import _root_.doobie.imports._
+
 import scalaz.NonEmptyList
 import scalaz.concurrent.Task
-
-
 
 /**
   * Created by jbarber on 5/14/16.

@@ -15,7 +15,14 @@ Add the sonatype releases resolver
 
 Add this project as a dependency.
 ```scala
-  libraryDependencies += "com.github.jacoby6000" %% "scoobie" % "0.1.0",
+  libraryDependencies ++= {
+    val scoobieVersion = "0.1.0"
+
+    Seq(
+      "com.github.jacoby6000" %% "scoobie-core" % scoobieVersion,
+      "com.github.jacoby6000" %% "scoobie-contrib-postgres" % scoobieVersion
+    )
+  }
 ```
 
 ### Using the SQL DSL
@@ -23,8 +30,8 @@ Add this project as a dependency.
 Below is a sample query that somebody may want to write. The query below is perfectly valid; try it out!
 
 ```tut
-import scoobie.interpreters._
-import scoobie.interpreters.postgres.interpreter
+import scoobie.doobie._
+import scoobie.doobie.postgres.interpreter
 import scoobie.dsl.weak.sql._
 
 val q =
@@ -77,8 +84,8 @@ As a proof of concept, here are some examples translated over from the book of d
 First, lets set up a repl session with our imports, plus what we need to run doobie.
 
 ```tut:silent
-import scoobie.interpreters._ // Import the interpreters
-import scoobie.interpreters.postgres.interpreter // Use postgres
+import scoobie.doobie._ // Import doobie support
+import scoobie.doobie.postgres.interpreter // Use postgres
 import scoobie.dsl.weak.sql._ // Import the Sql-like weakly typed DSL.
 import doobie.imports._ // Import doobie
 import scalaz.concurrent.Task 

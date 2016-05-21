@@ -97,8 +97,8 @@ lazy val root =
     .settings(noPublishSettings)
     .settings(unidocSettings)
     .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(docs))
-    .dependsOn(scoobie, postgres, docs)
-    .aggregate(scoobie, postgres, docs)
+    .dependsOn(core, postgres, docs)
+    .aggregate(core, postgres, docs)
     .settings(
       tutcp <<= tut andFinally {
           val src = file(".") / "doc" / "target" / "scala-2.11" / "tut" / "readme.md"
@@ -113,36 +113,14 @@ lazy val root =
       }
     )
 
-lazy val scoobie =
+lazy val core =
   project.in(file("core"))
     .enablePlugins(SbtOsgi)
-    .settings(name := "scoobie")
-    .settings(description := "AST for making convenient DSLs in Scala.")
+    .settings(name := "scoobie-core")
+    .settings(description := "AST for making convenient SQL DSLs in Scala.")
     .settings(scoobieSettings ++ publishSettings)
-    .settings(
-      libraryDependencies ++= Seq(shapeless, doobieCore)
-    )
-    .settings(
-      sourceGenerators in Compile += Def.task {
-        val outDir = (sourceManaged in Compile).value / "scoobie"
-        val outFile = new File(outDir, "buildinfo.scala")
-        outDir.mkdirs
-        val v = version.value
-        val t = System.currentTimeMillis
-        IO.write(outFile,
-          s"""|package scoobie
-              |
-              |/** Auto-generated build information. */
-              |object buildinfo {
-              |  /** Current version of scoobie ($v). */
-              |  val version = "$v"
-              |  /** Build date (${new java.util.Date(t)}). */
-              |  val date    = new java.util.Date(${t}L)
-              |}
-              |""".stripMargin)
-        Seq(outFile)
-      }.taskValue
-    )
+    .settings(libraryDependencies += shapeless)
+    .settings(packageInfoGenerator("scoobie", "scoobie-core"))
 
 lazy val docs =
   project.in(file("doc"))
@@ -163,16 +141,26 @@ lazy val docs =
         }
       }
     )
-    .dependsOn(scoobie, postgres)
+    .dependsOn(core, postgres)
+
+lazy val doobieSupport =
+  project.in(file("doobie-support"))
+    .settings(scoobieSettings)
+    .settings(noPublishSettings)
+    .settings(
+      libraryDependencies += doobieCore
+    )
+    .dependsOn(core)
 
 lazy val postgres =
   project.in(file("postgres"))
     .settings(scoobieSettings)
     .settings(noPublishSettings)
-    .settings(
-      libraryDependencies ++= Seq(shapeless, doobieCore, doobiePGDriver)
-    )
-    .dependsOn(scoobie)
+    .settings(name := "scoobie-contrib-postgres")
+    .settings(description := "Introduces doobie support to scoobie with postgres.")
+    .settings(libraryDependencies += doobiePGDriver)
+    .settings(packageInfoGenerator("scoobie.doobie.postgres", "scoobie-contrib-postgres"))
+    .dependsOn(core, doobieSupport)
 
 
 lazy val doobieVersion = "0.3.0-M1"
@@ -190,3 +178,24 @@ lazy val noPublishSettings = Seq(
 )
 
 lazy val tutcp = taskKey[Seq[(sbt.File, String)]]("Copy tut readme output to projroot/readme.md")
+
+def packageInfoGenerator(packageName: String, artifactName: String) =
+  sourceGenerators in Compile += Def.task {
+    val outDir = (sourceManaged in Compile).value / artifactName
+    val outFile = new File(outDir, "buildinfo.scala")
+    outDir.mkdirs
+    val v = version.value
+    val t = System.currentTimeMillis
+    IO.write(outFile,
+      s"""|package $packageName
+          |
+          |/** Auto-generated build information. */
+          |object buildinfo {
+          |  /** Current version of $artifactName ($v). */
+          |  val version = "$v"
+          |  /** Build date (${new java.util.Date(t)}). */
+          |  val date    = new java.util.Date(${t}L)
+          |}
+          |""".stripMargin)
+    Seq(outFile)
+  }.taskValue

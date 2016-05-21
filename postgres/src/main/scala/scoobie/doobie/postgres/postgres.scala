@@ -1,11 +1,11 @@
-package scoobie.interpreters
+package scoobie.doobie
 
 import scoobie.ast._
 
 /**
   * Created by jbarber on 5/20/16.
   */
-object postgres {
+package object postgres {
 
   implicit val interpreter = SqlInterpreter(interpretPSql _)
 
