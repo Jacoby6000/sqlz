@@ -27,13 +27,6 @@ s2"""
 
 """
 
-//  sealed trait QueryValue[+L <: HList] { def params: L }
-//  case class QueryAdd[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryValue[A]
-//  case class QuerySub[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryValue[A]
-//  case class QueryDiv[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryValue[A]
-//  case class QueryMul[A <: HList] private (left: QueryValue[_ <: HList], right: QueryValue[_ <: HList], params: A) extends QueryValue[A]
-//  case object QueryNull extends QueryValue[HNil] { lazy val params: HNil = HNil }
-
   implicit val stringExpr = RawExpressionHandler[String](identity)
 
   implicit class AExtensions[A](val a: A) extends AnyVal {
