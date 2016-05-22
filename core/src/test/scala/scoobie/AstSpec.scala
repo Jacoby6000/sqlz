@@ -30,7 +30,6 @@ s2"""
       Query Greater Than Or Equal $simpleGreaterThanOrEqual
       Query Less Than             $simpleLessThan
       Query Less Than Or Equal    $simpleLessThanOrEqual
-
 """
 
   implicit val stringExpr = RawExpressionHandler[String](identity)
@@ -60,6 +59,7 @@ s2"""
     case QueryRawExpression(expr) =>
       expr mustEqual "some expr"
       stringExpr.interpret(expr) mustEqual "some expr"
+      rawStringExpression.params mustEqual HNil
   }
 
   lazy val queryFunctionTest = queryFunction.compare(columnPathEnd, List("a".asParam, "b".asParam, 5.asParam), "a" :: "b" :: 5 :: HNil)
