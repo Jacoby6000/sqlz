@@ -23,8 +23,13 @@ s2"""
       Query Null              $queryNullParamsTest
 
     QueryComparisons
-      Query Equals            $simpleEqual
-      Query And               $simpleAnd
+      Query Equals                $simpleEqual
+      Query And                   $simpleAnd
+      Query Or                    $simpleOr
+      Query Greater Than          $simpleGreaterThan
+      Query Greater Than Or Equal $simpleGreaterThanOrEqual
+      Query Less Than             $simpleLessThan
+      Query Less Than Or Equal    $simpleLessThanOrEqual
 
 """
 
@@ -65,10 +70,21 @@ s2"""
   lazy val queryNullParamsTest = QueryNull.params mustEqual HNil
 
   val equal = QueryEqual(fooParam, columnPathEnd)
+  val lessThan = QueryLessThan(fooParam, columnPathEnd)
+  val lessThanOrEqual = QueryLessThanOrEqual(fooParam, columnPathEnd)
+  val greaterThan = QueryGreaterThan(fooParam, columnPathEnd)
+  val greaterThanOrEqual = QueryGreaterThanOrEqual(fooParam, columnPathEnd)
   val and = QueryAnd(equal, equal)
+  val or = QueryOr(equal, equal)
 
   lazy val simpleEqual = equal.compare(fooParam, columnPathEnd, "foo" :: HNil)
+  lazy val simpleLessThan = lessThan.compare(fooParam, columnPathEnd, "foo" :: HNil)
+  lazy val simpleLessThanOrEqual = lessThanOrEqual.compare(fooParam, columnPathEnd, "foo" :: HNil)
+  lazy val simpleGreaterThan = greaterThan.compare(fooParam, columnPathEnd, "foo" :: HNil)
+  lazy val simpleGreaterThanOrEqual = greaterThanOrEqual.compare(fooParam, columnPathEnd, "foo" :: HNil)
+
   lazy val simpleAnd = and.compare(equal, equal, "foo" :: "foo" :: HNil)
+  lazy val simpleOr  = or.compare(equal, equal, "foo" :: "foo" :: HNil)
 
   implicit val queryAddBinaryExtractor = new BinaryExtractor[QueryAdd, QueryValue[_ <: HList]] {
     def extract[A <: HList](f: QueryAdd[A]) = (f.left, f.right, f.params)
@@ -94,6 +110,22 @@ s2"""
     def extract[A <: HList](f: QueryEqual[A]) = (f.left, f.right, f.params)
   }
 
+  implicit val queryGreaterThanBinaryExtractor = new BinaryExtractor[QueryGreaterThan, QueryValue[_ <: HList]] {
+    def extract[A <: HList](f: QueryGreaterThan[A]) = (f.left, f.right, f.params)
+  }
+
+  implicit val queryGreaterThanOrEqualBinaryExtractor = new BinaryExtractor[QueryGreaterThanOrEqual, QueryValue[_ <: HList]] {
+    def extract[A <: HList](f: QueryGreaterThanOrEqual[A]) = (f.left, f.right, f.params)
+  }
+
+  implicit val queryLessThanBinaryExtractor = new BinaryExtractor[QueryLessThan, QueryValue[_ <: HList]] {
+    def extract[A <: HList](f: QueryLessThan[A]) = (f.left, f.right, f.params)
+  }
+  
+  implicit val queryLessThanOrEqualBinaryExtractor = new BinaryExtractor[QueryLessThanOrEqual, QueryValue[_ <: HList]] {
+    def extract[A <: HList](f: QueryLessThanOrEqual[A]) = (f.left, f.right, f.params)
+  }
+  
   implicit val queryAndBinaryExtractor = new BinaryExtractor[QueryAnd, QueryComparison[_ <: HList]] {
     def extract[A <: HList](f: QueryAnd[A]) = (f.left, f.right, f.params)
   }
