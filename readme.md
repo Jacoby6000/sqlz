@@ -164,13 +164,12 @@ scala> def joined = {
      |     p"c2.name"
      |   ) from (
      |     p"country" as "c1"
-     |   ) leftOuterJoin (
+     |   ) innerJoin (
      |     p"country" as "c2" on (
      |       func"reverse"(p"c1.code") === p"c2.code"
      |     )
      |   ) where (
-     |     (p"c2.code" !== `null`) and
-     |     (p"c2.name" !== p"c1.name")
+     |     p"c2.name" !== p"c1.name"
      |   )).build
      |     .queryAndPrint[ComplimentaryCountries](sql => println("\n" + sql))
      | }
@@ -178,7 +177,7 @@ joined: doobie.imports.Query0[ComplimentaryCountries]
 
 scala> joined.quick.unsafePerformSync
 
-SELECT "c1"."code", "c1"."name", "c2"."code", "c2"."name" FROM "country" AS c1 LEFT OUTER JOIN "country" AS c2 ON "reverse"("c1"."code") = "c2"."code" WHERE "c2"."code" IS NOT NULL  AND  "c2"."name" <> "c1"."name"
+SELECT "c1"."code", "c1"."name", "c2"."code", "c2"."name" FROM "country" AS c1 INNER JOIN "country" AS c2 ON "reverse"("c1"."code") = "c2"."code" WHERE "c2"."name" <> "c1"."name"
   ComplimentaryCountries(PSE,Palestine,ESP,Spain)
   ComplimentaryCountries(YUG,Yugoslavia,GUY,Guyana)
   ComplimentaryCountries(ESP,Spain,PSE,Palestine)

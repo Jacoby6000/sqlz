@@ -143,13 +143,12 @@ def joined = {
     p"c2.name"
   ) from (
     p"country" as "c1"
-  ) leftOuterJoin (
+  ) innerJoin (
     p"country" as "c2" on (
       func"reverse"(p"c1.code") === p"c2.code"
     )
   ) where (
-    (p"c2.code" !== `null`) and
-    (p"c2.name" !== p"c1.name")
+    p"c2.name" !== p"c1.name"
   )).build
     .queryAndPrint[ComplimentaryCountries](sql => println("\n" + sql))
 }
