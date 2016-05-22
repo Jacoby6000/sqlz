@@ -51,7 +51,9 @@ s2"""
   }
 
   lazy val rawExpression = rawStringExpression match {
-    case QueryRawExpression(expr) => expr mustEqual "some expr"
+    case QueryRawExpression(expr) =>
+      expr mustEqual "some expr"
+      stringExpr.interpret(expr) mustEqual "some expr"
   }
 
   lazy val queryFunctionTest = queryFunction.compare(columnPathEnd, List("a".asParam, "b".asParam, 5.asParam), "a" :: "b" :: 5 :: HNil)
