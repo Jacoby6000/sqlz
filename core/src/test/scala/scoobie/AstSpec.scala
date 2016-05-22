@@ -20,6 +20,7 @@ s2"""
       Query Sub               $querySubTest
       Query Div               $queryDivTest
       Query Mul               $queryMulTest
+      Query Null              $queryNullParamsTest
 
     QueryComparisons
       Query Equals            $simpleEqual
@@ -61,6 +62,7 @@ s2"""
   lazy val querySubTest = querySub.compare(fooParam, columnPathEnd, "foo" :: HNil)
   lazy val queryDivTest = queryDiv.compare(fooParam, columnPathEnd, "foo" :: HNil)
   lazy val queryMulTest = queryMul.compare(fooParam, columnPathEnd, "foo" :: HNil)
+  lazy val queryNullParamsTest = QueryNull.params mustEqual HNil
 
   val equal = QueryEqual(fooParam, columnPathEnd)
   val and = QueryAnd(equal, equal)
