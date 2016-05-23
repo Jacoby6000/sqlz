@@ -190,7 +190,7 @@ def packageInfoGenerator(packageName: String, artifactName: String) =
     val t = System.currentTimeMillis
     IO.write(outFile,
       s"""|package $packageName
-          |if so
+          |
           |/** Auto-generated build information. */
           |object buildinfo {
           |  /** Current version of $artifactName ($v). */
