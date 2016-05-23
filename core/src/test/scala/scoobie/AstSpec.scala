@@ -7,7 +7,7 @@ import scoobie.ast._
 /**
   * Created by jbarber on 5/19/16.
   */
-object AstSpec extends Specification {
+object AstSpec extends Specification with PathTests with ParamTests with ProjectionTests with ComparisonTests {
   def is =
 s2"""
   Ast Construction
@@ -35,23 +35,22 @@ s2"""
       Query And                   $simpleAnd
       Query Or                    $simpleOr
       Query In                    $simpleIn
+      Query NOP                   $queryComparisonNop
 
     Query Projections
       Project All                 $queryProjectAllTest
       Project One                 $queryProjectOneTest
 """
+}
 
-  implicit val stringExpr = RawExpressionHandler[String](identity)
 
-  implicit class AExtensions[A](val a: A) extends AnyVal {
-    def asParam: QueryValue[A :: HNil] = QueryParameter(a)
-  }
 
+trait PathTests extends SpecificationLike {
   val columnPathEnd = QueryPathEnd("column")
   val columnPathCons = QueryPathCons("foo", QueryPathEnd("bar"))
 
   lazy val pathEnd = {
-    columnPathEnd.path   mustEqual "column"
+    columnPathEnd.path mustEqual "column"
     columnPathEnd.params mustEqual HNil
   }
 
@@ -60,65 +59,13 @@ s2"""
     columnPathCons.queryPath mustEqual QueryPathEnd("bar")
     columnPathCons.params mustEqual HNil
   }
+}
 
-  val fooParam = QueryParameter("foo")
-  val rawStringExpression = QueryRawExpression("some expr")
-  val queryFunction = QueryFunction(columnPathEnd, "a".asParam :: "b".asParam :: 5.asParam :: HNil)
-  val queryAdd = QueryAdd(fooParam, columnPathEnd)
-  val querySub = QuerySub(fooParam, columnPathEnd)
-  val queryDiv = QueryDiv(fooParam, columnPathEnd)
-  val queryMul = QueryMul(fooParam, columnPathEnd)
+trait ParamTests extends SpecificationLike with TestHelpers with PathTests {
 
-  val projection = QueryProjectOne(fooParam, None)
-
-  lazy val param = {
-    fooParam.value mustEqual ("foo" :: HNil)
-    fooParam.params mustEqual fooParam.value
-  }
-
-  lazy val rawExpression = {
-    rawStringExpression.t mustEqual "some expr"
-    stringExpr.interpret(rawStringExpression.t) mustEqual "some expr"
-    rawStringExpression.params mustEqual HNil
-  }
-
-
-  lazy val queryFunctionTest = queryFunction.compare(columnPathEnd, List("a".asParam, "b".asParam, 5.asParam), "a" :: "b" :: 5 :: HNil)
-  lazy val queryAddTest = queryAdd.compare(fooParam, columnPathEnd, "foo" :: HNil)
-  lazy val querySubTest = querySub.compare(fooParam, columnPathEnd, "foo" :: HNil)
-  lazy val queryDivTest = queryDiv.compare(fooParam, columnPathEnd, "foo" :: HNil)
-  lazy val queryMulTest = queryMul.compare(fooParam, columnPathEnd, "foo" :: HNil)
-  lazy val queryNullParamsTest = QueryNull.params mustEqual HNil
-
-  val equal = QueryEqual(fooParam, columnPathEnd)
-  val lessThan = QueryLessThan(fooParam, columnPathEnd)
-  val lessThanOrEqual = QueryLessThanOrEqual(fooParam, columnPathEnd)
-  val greaterThan = QueryGreaterThan(fooParam, columnPathEnd)
-  val greaterThanOrEqual = QueryGreaterThanOrEqual(fooParam, columnPathEnd)
-  val and = QueryAnd(equal, equal)
-  val or = QueryOr(equal, equal)
-  val queryLit = QueryLit(fooParam)
-  val queryIn = QueryIn(columnPathEnd, "a".asParam :: "b".asParam :: 5.asParam :: HNil)
-
-  lazy val simpleEqual = equal.compare(fooParam, columnPathEnd, "foo" :: HNil)
-  lazy val simpleLessThan = lessThan.compare(fooParam, columnPathEnd, "foo" :: HNil)
-  lazy val simpleLessThanOrEqual = lessThanOrEqual.compare(fooParam, columnPathEnd, "foo" :: HNil)
-  lazy val simpleGreaterThan = greaterThan.compare(fooParam, columnPathEnd, "foo" :: HNil)
-  lazy val simpleGreaterThanOrEqual = greaterThanOrEqual.compare(fooParam, columnPathEnd, "foo" :: HNil)
-
-  lazy val simpleAnd = and.compare(equal, equal, "foo" :: "foo" :: HNil)
-  lazy val simpleOr  = or.compare(equal, equal, "foo" :: "foo" :: HNil)
-  lazy val simpleIn = queryIn.compare(columnPathEnd, List("a".asParam, "b".asParam, 5.asParam), "a" :: "b" :: 5 :: HNil)
-  lazy val queryLitTest  =  {
-    queryLit.value mustEqual fooParam
-    queryLit.params mustEqual fooParam.params
-  }
-
-  lazy val queryProjectAllTest = QueryProjectAll.params mustEqual HNil
-  lazy val queryProjectOneTest = {
-    projection.alias mustEqual None
-    projection.params mustEqual ("foo" :: HNil)
-    projection.selection mustEqual fooParam
+  implicit class BinaryExtractorExtensions[F[_ <: HList], A <: HList, B, C](f: F[A])(implicit binaryExtractor: BinaryExtractor2[F, B, C]) {
+    def extract = binaryExtractor.extract(f)
+    def compare[AA <: B, AB <: C](left: AA, right: AB, params: A) = binaryExtractor.compare(f)(left, right, params)
   }
 
   implicit val queryAddBinaryExtractor = new BinaryExtractor[QueryAdd, QueryValue[_ <: HList]] {
@@ -141,6 +88,47 @@ s2"""
     def extract[A <: HList](f: QueryFunction[A]) = (f.path, f.args, f.params)
   }
 
+  implicit val stringExpr = RawExpressionHandler[String](identity)
+
+  val fooParam = QueryParameter("foo")
+  val rawStringExpression = QueryRawExpression("some expr")
+  val queryFunction = QueryFunction(columnPathEnd, "a".asParam :: "b".asParam :: 5.asParam :: HNil)
+  val queryAdd = QueryAdd(fooParam, columnPathEnd)
+  val querySub = QuerySub(fooParam, columnPathEnd)
+  val queryDiv = QueryDiv(fooParam, columnPathEnd)
+  val queryMul = QueryMul(fooParam, columnPathEnd)
+
+  val projection = QueryProjectOne(fooParam, None)
+
+  lazy val param = {
+    fooParam.value mustEqual ("foo" :: HNil)
+    fooParam.params mustEqual fooParam.value
+  }
+
+  lazy val rawExpression = {
+    rawStringExpression.t mustEqual "some expr"
+    stringExpr.interpret(rawStringExpression.t) mustEqual "some expr"
+    rawStringExpression.params mustEqual HNil
+  }
+
+  lazy val queryFunctionTest = queryFunction.compare(columnPathEnd, List("a".asParam, "b".asParam, 5.asParam), "a" :: "b" :: 5 :: HNil)
+  lazy val queryAddTest = queryAdd.compare(fooParam, columnPathEnd, "foo" :: HNil)
+  lazy val querySubTest = querySub.compare(fooParam, columnPathEnd, "foo" :: HNil)
+  lazy val queryDivTest = queryDiv.compare(fooParam, columnPathEnd, "foo" :: HNil)
+  lazy val queryMulTest = queryMul.compare(fooParam, columnPathEnd, "foo" :: HNil)
+  lazy val queryNullParamsTest = QueryNull.params mustEqual HNil
+}
+
+trait ProjectionTests extends SpecificationLike with ParamTests {
+  lazy val queryProjectAllTest = QueryProjectAll.params mustEqual HNil
+  lazy val queryProjectOneTest = {
+    projection.alias mustEqual None
+    projection.params mustEqual ("foo" :: HNil)
+    projection.selection mustEqual fooParam
+  }
+}
+
+trait ComparisonTests extends SpecificationLike with TestHelpers with PathTests with ParamTests {
   implicit val queryInBinaryExtractor = new BinaryExtractor2[QueryIn, QueryValue[_ <: HList], List[QueryValue[_ <: HList]]] {
     def extract[A <: HList](f: QueryIn[A]) = (f.left, f.rights, f.params)
   }
@@ -160,11 +148,11 @@ s2"""
   implicit val queryLessThanBinaryExtractor = new BinaryExtractor[QueryLessThan, QueryValue[_ <: HList]] {
     def extract[A <: HList](f: QueryLessThan[A]) = (f.left, f.right, f.params)
   }
-  
+
   implicit val queryLessThanOrEqualBinaryExtractor = new BinaryExtractor[QueryLessThanOrEqual, QueryValue[_ <: HList]] {
     def extract[A <: HList](f: QueryLessThanOrEqual[A]) = (f.left, f.right, f.params)
   }
-  
+
   implicit val queryAndBinaryExtractor = new BinaryExtractor[QueryAnd, QueryComparison[_ <: HList]] {
     def extract[A <: HList](f: QueryAnd[A]) = (f.left, f.right, f.params)
   }
@@ -173,21 +161,48 @@ s2"""
     def extract[A <: HList](f: QueryOr[A]) = (f.left, f.right, f.params)
   }
 
-  implicit class BinaryExtractorExtensions[F[_ <: HList], A <: HList, B,C](f: F[A])(implicit binaryExtractor: BinaryExtractor2[F,B,C]) {
-    def extract = binaryExtractor.extract(f)
-    def compare[AA <: B, AB <: C](left: AA, right: AB, params: A) = binaryExtractor.compare(f)(left, right, params)
-  }
+  val equal = QueryEqual(fooParam, columnPathEnd)
+  val lessThan = QueryLessThan(fooParam, columnPathEnd)
+  val lessThanOrEqual = QueryLessThanOrEqual(fooParam, columnPathEnd)
+  val greaterThan = QueryGreaterThan(fooParam, columnPathEnd)
+  val greaterThanOrEqual = QueryGreaterThanOrEqual(fooParam, columnPathEnd)
+  val and = QueryAnd(equal, equal)
+  val or = QueryOr(equal, equal)
+  val queryLit = QueryLit(fooParam)
+  val queryIn = QueryIn(columnPathEnd, "a".asParam :: "b".asParam :: 5.asParam :: HNil)
 
-  trait BinaryExtractor[F[_ <: HList], C] extends BinaryExtractor2[F,C,C]
+  lazy val queryComparisonNop = QueryComparisonNop.params mustEqual HNil
+  lazy val simpleEqual = equal.compare(fooParam, columnPathEnd, "foo" :: HNil)
+  lazy val simpleLessThan = lessThan.compare(fooParam, columnPathEnd, "foo" :: HNil)
+  lazy val simpleLessThanOrEqual = lessThanOrEqual.compare(fooParam, columnPathEnd, "foo" :: HNil)
+  lazy val simpleGreaterThan = greaterThan.compare(fooParam, columnPathEnd, "foo" :: HNil)
+  lazy val simpleGreaterThanOrEqual = greaterThanOrEqual.compare(fooParam, columnPathEnd, "foo" :: HNil)
+
+  lazy val simpleAnd = and.compare(equal, equal, "foo" :: "foo" :: HNil)
+  lazy val simpleOr = or.compare(equal, equal, "foo" :: "foo" :: HNil)
+  lazy val simpleIn = queryIn.compare(columnPathEnd, List("a".asParam, "b".asParam, 5.asParam), "a" :: "b" :: 5 :: HNil)
+  lazy val queryLitTest = {
+    queryLit.value mustEqual fooParam
+    queryLit.params mustEqual fooParam.params
+  }
+}
+
+trait TestHelpers extends SpecificationLike {
+  implicit class AExtensions[A](a: A) {
+    def asParam: QueryValue[A :: HNil] = QueryParameter(a)
+  }
 
   trait BinaryExtractor2[F[_ <: HList], LeftT, RightT] {
     def extract[A <: HList](f: F[A]): (_ <: LeftT, _ <: RightT, A)
 
-    def compare[A <: HList,AA <: LeftT,AB <: RightT](f: F[A])(left: AA, right: AB, params: A) = {
+    def compare[A <: HList, AA <: LeftT, AB <: RightT](f: F[A])(left: AA, right: AB, params: A) = {
       val (actualLeft, actualRight, p) = extract(f)
-      actualLeft  mustEqual left
+      actualLeft mustEqual left
       actualRight mustEqual right
-      p           mustEqual params
+      p mustEqual params
     }
   }
+
+  trait BinaryExtractor[F[_ <: HList], C] extends BinaryExtractor2[F, C, C]
 }
+
