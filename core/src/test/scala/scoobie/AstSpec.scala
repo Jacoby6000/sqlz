@@ -11,9 +11,12 @@ object AstSpec extends Specification {
   def is =
 s2"""
   Ast Construction
+    Query Path
+      Query Path Cons         $pathCons
+      Query Path End          $pathEnd
+
     Query Values
       Query Parameter         $param
-      Query Path End          $pathEnd
       Raw String Expression   $rawExpression
       Query Function          $queryFunctionTest
       Query Add               $queryAddTest
@@ -22,15 +25,20 @@ s2"""
       Query Mul               $queryMulTest
       Query Null              $queryNullParamsTest
 
-    QueryComparisons
+    Query Comparisons
       Query Literal               $queryLitTest
       Query Equals                $simpleEqual
-      Query And                   $simpleAnd
-      Query Or                    $simpleOr
       Query Greater Than          $simpleGreaterThan
       Query Greater Than Or Equal $simpleGreaterThanOrEqual
       Query Less Than             $simpleLessThan
       Query Less Than Or Equal    $simpleLessThanOrEqual
+      Query And                   $simpleAnd
+      Query Or                    $simpleOr
+      Query In                    $simpleIn
+
+    Query Projections
+      Project All                 $queryProjectAllTest
+      Project One                 $queryProjectOneTest
 """
 
   implicit val stringExpr = RawExpressionHandler[String](identity)
@@ -39,8 +47,10 @@ s2"""
     def asParam: QueryValue[A :: HNil] = QueryParameter(a)
   }
 
-  val fooParam = QueryParameter("foo")
   val columnPathEnd = QueryPathEnd("column")
+  val columnPathCons = QueryPathCons("foo", QueryPathEnd("bar"))
+
+  val fooParam = QueryParameter("foo")
   val rawStringExpression = QueryRawExpression("some expr")
   val queryFunction = QueryFunction(columnPathEnd, "a".asParam :: "b".asParam :: 5.asParam :: HNil)
   val queryAdd = QueryAdd(fooParam, columnPathEnd)
@@ -48,13 +58,23 @@ s2"""
   val queryDiv = QueryDiv(fooParam, columnPathEnd)
   val queryMul = QueryMul(fooParam, columnPathEnd)
 
+  val projection = QueryProjectOne(fooParam, None)
+
   lazy val param = fooParam match {
     case QueryParameter(value) => value mustEqual ("foo" :: HNil)
   }
 
-  lazy val pathEnd = columnPathEnd match {
-    case QueryPathEnd(p) => p mustEqual "column"
+  lazy val pathEnd = {
+    columnPathEnd.path   mustEqual "column"
+    columnPathEnd.params mustEqual HNil
   }
+
+  lazy val pathCons = {
+    columnPathCons.path mustEqual "foo"
+    columnPathCons.queryPath mustEqual QueryPathEnd("bar")
+    columnPathCons.params mustEqual HNil
+  }
+
 
   lazy val rawExpression = rawStringExpression match {
     case QueryRawExpression(expr) =>
@@ -78,6 +98,7 @@ s2"""
   val and = QueryAnd(equal, equal)
   val or = QueryOr(equal, equal)
   val queryLit = QueryLit(fooParam)
+  val queryIn = QueryIn(columnPathEnd, "a".asParam :: "b".asParam :: 5.asParam :: HNil)
 
   lazy val simpleEqual = equal.compare(fooParam, columnPathEnd, "foo" :: HNil)
   lazy val simpleLessThan = lessThan.compare(fooParam, columnPathEnd, "foo" :: HNil)
@@ -87,9 +108,17 @@ s2"""
 
   lazy val simpleAnd = and.compare(equal, equal, "foo" :: "foo" :: HNil)
   lazy val simpleOr  = or.compare(equal, equal, "foo" :: "foo" :: HNil)
+  lazy val simpleIn = queryIn.compare(columnPathEnd, List("a".asParam, "b".asParam, 5.asParam), "a" :: "b" :: 5 :: HNil)
   lazy val queryLitTest  =  {
     queryLit.value mustEqual fooParam
     queryLit.params mustEqual fooParam.params
+  }
+
+  lazy val queryProjectAllTest = QueryProjectAll.params mustEqual HNil
+  lazy val queryProjectOneTest = {
+    projection.alias mustEqual None
+    projection.params mustEqual ("foo" :: HNil)
+    projection.selection mustEqual fooParam
   }
 
   implicit val queryAddBinaryExtractor = new BinaryExtractor[QueryAdd, QueryValue[_ <: HList]] {
@@ -110,6 +139,10 @@ s2"""
 
   implicit val queryFunctionBinaryExtractor = new BinaryExtractor2[QueryFunction, QueryPath, List[QueryValue[_ <: HList]]] {
     def extract[A <: HList](f: QueryFunction[A]) = (f.path, f.args, f.params)
+  }
+
+  implicit val queryInBinaryExtractor = new BinaryExtractor2[QueryIn, QueryValue[_ <: HList], List[QueryValue[_ <: HList]]] {
+    def extract[A <: HList](f: QueryIn[A]) = (f.left, f.rights, f.params)
   }
 
   implicit val queryEqualBinaryExtractor = new BinaryExtractor[QueryEqual, QueryValue[_ <: HList]] {
