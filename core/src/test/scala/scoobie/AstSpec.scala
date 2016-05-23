@@ -23,6 +23,7 @@ s2"""
       Query Null              $queryNullParamsTest
 
     QueryComparisons
+      Query Literal               $queryLitTest
       Query Equals                $simpleEqual
       Query And                   $simpleAnd
       Query Or                    $simpleOr
@@ -76,6 +77,7 @@ s2"""
   val greaterThanOrEqual = QueryGreaterThanOrEqual(fooParam, columnPathEnd)
   val and = QueryAnd(equal, equal)
   val or = QueryOr(equal, equal)
+  val queryLit = QueryLit(fooParam)
 
   lazy val simpleEqual = equal.compare(fooParam, columnPathEnd, "foo" :: HNil)
   lazy val simpleLessThan = lessThan.compare(fooParam, columnPathEnd, "foo" :: HNil)
@@ -85,6 +87,10 @@ s2"""
 
   lazy val simpleAnd = and.compare(equal, equal, "foo" :: "foo" :: HNil)
   lazy val simpleOr  = or.compare(equal, equal, "foo" :: "foo" :: HNil)
+  lazy val queryLitTest  =  {
+    queryLit.value mustEqual fooParam
+    queryLit.params mustEqual fooParam.params
+  }
 
   implicit val queryAddBinaryExtractor = new BinaryExtractor[QueryAdd, QueryValue[_ <: HList]] {
     def extract[A <: HList](f: QueryAdd[A]) = (f.left, f.right, f.params)
