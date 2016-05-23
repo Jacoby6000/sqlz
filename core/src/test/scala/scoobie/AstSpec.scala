@@ -50,20 +50,6 @@ s2"""
   val columnPathEnd = QueryPathEnd("column")
   val columnPathCons = QueryPathCons("foo", QueryPathEnd("bar"))
 
-  val fooParam = QueryParameter("foo")
-  val rawStringExpression = QueryRawExpression("some expr")
-  val queryFunction = QueryFunction(columnPathEnd, "a".asParam :: "b".asParam :: 5.asParam :: HNil)
-  val queryAdd = QueryAdd(fooParam, columnPathEnd)
-  val querySub = QuerySub(fooParam, columnPathEnd)
-  val queryDiv = QueryDiv(fooParam, columnPathEnd)
-  val queryMul = QueryMul(fooParam, columnPathEnd)
-
-  val projection = QueryProjectOne(fooParam, None)
-
-  lazy val param = fooParam match {
-    case QueryParameter(value) => value mustEqual ("foo" :: HNil)
-  }
-
   lazy val pathEnd = {
     columnPathEnd.path   mustEqual "column"
     columnPathEnd.params mustEqual HNil
@@ -75,6 +61,20 @@ s2"""
     columnPathCons.params mustEqual HNil
   }
 
+  val fooParam = QueryParameter("foo")
+  val rawStringExpression = QueryRawExpression("some expr")
+  val queryFunction = QueryFunction(columnPathEnd, "a".asParam :: "b".asParam :: 5.asParam :: HNil)
+  val queryAdd = QueryAdd(fooParam, columnPathEnd)
+  val querySub = QuerySub(fooParam, columnPathEnd)
+  val queryDiv = QueryDiv(fooParam, columnPathEnd)
+  val queryMul = QueryMul(fooParam, columnPathEnd)
+
+  val projection = QueryProjectOne(fooParam, None)
+
+  lazy val param = {
+    fooParam.value mustEqual ("foo" :: HNil)
+    fooParam.params mustEqual fooParam.value
+  }
 
   lazy val rawExpression = rawStringExpression match {
     case QueryRawExpression(expr) =>
