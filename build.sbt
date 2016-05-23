@@ -90,9 +90,9 @@ lazy val publishSettings = osgiSettings ++ Seq(
 
 lazy val scoobieSettings = buildSettings ++ commonSettings ++ tutSettings
 
-lazy val root =
+lazy val scoobie =
   project.in(file("."))
-    .settings(name := "root")
+    .settings(name := "scoobie")
     .settings(scoobieSettings)
     .settings(noPublishSettings)
     .settings(unidocSettings)
@@ -145,17 +145,20 @@ lazy val docs =
 
 lazy val doobieSupport =
   project.in(file("doobie-support"))
+    .enablePlugins(SbtOsgi)
     .settings(scoobieSettings)
-    .settings(noPublishSettings)
-    .settings(
-      libraryDependencies += doobieCore
-    )
+    .settings(publishSettings)
+    .settings(name := "scoobie-doobie-support")
+    .settings(description := "Introduces doobie support to scoobie.")
+    .settings(libraryDependencies += doobieCore)
+    .settings(packageInfoGenerator("scoobie.doobie", "scoobie-doobie-support"))
     .dependsOn(core)
 
 lazy val postgres =
   project.in(file("postgres"))
+    .enablePlugins(SbtOsgi)
     .settings(scoobieSettings)
-    .settings(noPublishSettings)
+    .settings(publishSettings)
     .settings(name := "scoobie-contrib-postgres")
     .settings(description := "Introduces doobie support to scoobie with postgres.")
     .settings(libraryDependencies += doobiePGDriver)
@@ -187,7 +190,7 @@ def packageInfoGenerator(packageName: String, artifactName: String) =
     val t = System.currentTimeMillis
     IO.write(outFile,
       s"""|package $packageName
-          |
+          |if so
           |/** Auto-generated build information. */
           |object buildinfo {
           |  /** Current version of $artifactName ($v). */
