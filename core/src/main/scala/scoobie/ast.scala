@@ -1,8 +1,8 @@
 package scoobie
 
 import _root_.shapeless._
-import _root_.shapeless.ops.hlist.{Mapper, Prepend, ToTraversable}
-import scoobie.shapeless.Polys._
+import _root_.shapeless.ops.hlist.{Prepend, ToTraversable}
+import scoobie.shapeless.Polys.UnwrapperPoly
 import scoobie.shapeless.Typeclasses.{Combine4, UnwrapAndFlattenHList}
 
 /**
