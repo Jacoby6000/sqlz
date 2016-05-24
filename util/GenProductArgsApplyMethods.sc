@@ -53,7 +53,6 @@ makeProductApply("QueryValue", List("HList"), List.empty, List(
   }
 )).mkString("\n")
 
-"Update"
 // Update
 makeProductApply("ModifyField", List("HList"), List.empty, List(
   { case ApplyArguments(idx, typeList) =>

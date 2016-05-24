@@ -385,7 +385,6 @@ object sql {
         * Check out PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
         */
 
-      def apply = applyProduct(HNil: HNil)
       def apply[A <: HList, Unwrapped0 <: HList, Prepended0 <: HList](a: QueryValue[A])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A]:: HNil, QueryValueUnwrapper.type, Unwrapped0], ev1: Prepend.Aux[LeftType, Unwrapped0, Prepended0]) = applyProduct(a :: HNil)
       def apply[A <: HList, B <: HList, Unwrapped0 <: HList, Prepended0 <: HList](a: QueryValue[A], b: QueryValue[B])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A] :: QueryValue[B]:: HNil, QueryValueUnwrapper.type, Unwrapped0], ev1: Prepend.Aux[LeftType, Unwrapped0, Prepended0]) = applyProduct(a :: b :: HNil)
       def apply[A <: HList, B <: HList, C <: HList, Unwrapped0 <: HList, Prepended0 <: HList](a: QueryValue[A], b: QueryValue[B], c: QueryValue[C])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A] :: QueryValue[B] :: QueryValue[C]:: HNil, QueryValueUnwrapper.type, Unwrapped0], ev1: Prepend.Aux[LeftType, Unwrapped0, Prepended0]) = applyProduct(a :: b :: c :: HNil)
