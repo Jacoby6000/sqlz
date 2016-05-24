@@ -125,9 +125,9 @@ lazy val doobieSupport =
   project.in(file("doobie-support"))
     .enablePlugins(SbtOsgi)
     .settings(scoobieSettings ++ publishSettings)
+    .settings(libraryDependencies += doobieCore)
     .settings(name := "scoobie-doobie-support")
     .settings(description := "Introduces doobie support to scoobie.")
-    .settings(libraryDependencies += doobieCore)
     .settings(packageInfoGenerator("scoobie.doobie", "scoobie-doobie-support"))
     .dependsOn(core)
 
@@ -143,17 +143,12 @@ lazy val weakSqlDsl =
 lazy val postgres =
   project.in(file("postgres"))
     .enablePlugins(SbtOsgi)
-    .settings(libraryDependencies ++= Seq(doobiePGDriver) ++ Seq(
-      "org.specs2" %% "specs2-core" % "3.8" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.13.0" % "test",
-      "org.typelevel" %% "shapeless-scalacheck" % "0.4" % "test",
-      "org.typelevel" %% "shapeless-scalaz" % "0.4" % "test"
-    ))
     .settings(scoobieSettings ++ publishSettings)
+    .settings(libraryDependencies += doobiePGDriver)
     .settings(name := "scoobie-contrib-postgres")
     .settings(description := "Introduces doobie support to scoobie with postgres.")
     .settings(packageInfoGenerator("scoobie.doobie.postgres", "scoobie-contrib-postgres"))
-    .dependsOn(core, doobieSupport, weakSqlDsl)
+    .dependsOn(core, doobieSupport, weakSqlDsl % "test")
 
 lazy val docs =
   project.in(file("doc"))
