@@ -18,8 +18,7 @@ object TypeclassSpec extends Specification with ProjectionTests with JoinTests {
     Query Union Unwrapper                   $queryUnionUnwrapper
     Query Comparison Unwrapper              $queryComparisonUnwrapper
     Modify Field Unwrapper                  $modifyFieldUnwrapper
-
-
+    HNil Unwrapper                          $hnilCaseUnwrapper
   """
 
   def unwrapAndFlattenQueryProjections[A <: HList, Out <: HList](a: A)(implicit unwrapAndFlattenHList: UnwrapAndFlattenHList.Aux[QueryProjection, A, QueryProjectionUnwrapper.type, Out]) = unwrapAndFlattenHList(a)
@@ -49,4 +48,7 @@ object TypeclassSpec extends Specification with ProjectionTests with JoinTests {
 
   lazy val modifyFieldUnwrapper =
     unwrapAndFlattenModifyFields(modify :: modify :: HNil) mustEqual (modify.params.head :: modify.params.head :: HNil)
+
+  lazy val hnilCaseUnwrapper =
+    unwrapAndFlattenQueryProjections(HNil) mustEqual HNil
 }
