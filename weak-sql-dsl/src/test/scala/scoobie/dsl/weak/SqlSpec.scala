@@ -27,6 +27,14 @@ class SqlSpec extends Specification { def is =
     In (2 params)              $queryIn2
     In (3 params)              $queryIn3
 
+  Query Comparison Extensions
+    And              $and
+    Or               $or
+
+  Query Projection Extensions
+    as         $as
+    on         $on
+
   Query Builder
     Basic Builder                    $basicBuilder
     Offset                           $offset
@@ -55,6 +63,21 @@ class SqlSpec extends Specification { def is =
   lazy val queryIn2 = p"foo" in ("a", "b") mustEqual QueryIn(QueryPathEnd("foo"), "a".asParam :: "b".asParam :: HNil)
   lazy val queryIn3 = p"foo" in ("a", "b", "c") mustEqual QueryIn(QueryPathEnd("foo"), "a".asParam :: "b".asParam :: "c".asParam :: HNil)
   lazy val queryIn4 = p"foo" in ("a", "b", "c", "d") mustEqual QueryIn(QueryPathEnd("foo"), "a".asParam :: "b".asParam :: "c".asParam :: "d".asParam :: HNil)
+
+  val simpleEquals = p"foo" === "bar"
+
+  lazy val and = (simpleEquals and simpleEquals) mustEqual QueryAnd(simpleEquals, simpleEquals)
+  lazy val or = (simpleEquals or simpleEquals) mustEqual QueryOr(simpleEquals, simpleEquals)
+
+  val simpleProjection = QueryProjectOne(p"foo", None)
+
+  lazy val as = {
+    (simpleProjection as "bar") mustEqual QueryProjectOne(p"foo", Some("bar"))
+    (QueryProjectAll as "bar") mustEqual QueryProjectAll
+  }
+
+  lazy val on = (simpleProjection on simpleEquals) mustEqual (simpleProjection -> simpleEquals)
+
 
   val baseQuery = select(p"foo", p"bar") from (p"baz")
 
