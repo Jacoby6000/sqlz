@@ -4,7 +4,7 @@ import org.specs2._
 import scoobie.{JoinTests, ProjectionTests}
 import scoobie.ast._
 import scoobie.shapeless.Polys._
-import scoobie.shapeless.Typeclasses.UnwrapAndFlattenHList
+import scoobie.shapeless.Typeclasses.{Combine3, Combine4, UnwrapAndFlattenHList}
 import _root_.shapeless._
 
 /**
@@ -19,6 +19,10 @@ object TypeclassSpec extends Specification with ProjectionTests with JoinTests {
     Query Comparison Unwrapper              $queryComparisonUnwrapper
     Modify Field Unwrapper                  $modifyFieldUnwrapper
     HNil Unwrapper                          $hnilCaseUnwrapper
+
+  Prependers
+    Combine3 Test                           $combine3Test
+    Combine4 Test                           $combine4Test
   """
 
   def unwrapAndFlattenQueryProjections[A <: HList, Out <: HList](a: A)(implicit unwrapAndFlattenHList: UnwrapAndFlattenHList.Aux[QueryProjection, A, QueryProjectionUnwrapper.type, Out]) = unwrapAndFlattenHList(a)
@@ -51,4 +55,14 @@ object TypeclassSpec extends Specification with ProjectionTests with JoinTests {
 
   lazy val hnilCaseUnwrapper =
     unwrapAndFlattenQueryProjections(HNil) mustEqual HNil
+
+
+  def combine3[A <: HList, B <: HList, C <: HList, Out <: HList](a: A, b: B, c: C)(implicit combine3: Combine3.Aux[A,B,C,Out]) =
+    combine3.combine(a,b,c)
+
+  def combine4[A <: HList, B <: HList, C <: HList, D <: HList, Out <: HList](a: A, b: B, c: C, d: D)(implicit combine4: Combine4.Aux[A,B,C,D,Out]) =
+    combine4.combine(a,b,c,d)
+
+  lazy val combine3Test = combine3("string" :: HNil, 5 :: HNil, 5d :: HNil) mustEqual ("string" :: 5 :: 5d :: HNil)
+  lazy val combine4Test = combine4("string" :: HNil, 5 :: HNil, 5d :: HNil, "string" :: HNil) mustEqual ("string" :: 5 :: 5d :: "string" :: HNil)
 }
