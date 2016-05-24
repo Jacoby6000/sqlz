@@ -26,6 +26,9 @@ class SqlSpec extends Specification { def is =
     Query In (1 param)               $queryIn1
     Query In (2 params)              $queryIn2
     Query In (3 params)              $queryIn3
+
+  Query Builder
+    Basic Builder                    $basicBuilder
     """
 
   implicit class AExtensions[A](a: A) {
@@ -45,8 +48,20 @@ class SqlSpec extends Specification { def is =
   lazy val queryDiv = (p"foo" / "bar") mustEqual QueryDiv(QueryPathEnd("foo"), QueryParameter("bar"), "bar" :: HNil)
   lazy val queryMul = (p"foo" * "bar") mustEqual QueryMul(QueryPathEnd("foo"), QueryParameter("bar"), "bar" :: HNil)
   lazy val queryAlias = (p"foo" as "blah") mustEqual QueryProjectOne(QueryPathEnd("foo"), Some("blah"))
-  lazy val queryIn1 = p"foo" in ("a") mustEqual QueryIn(QueryPathEnd("foo"), List("a".asParam), "a" :: HNil)
-  lazy val queryIn2 = p"foo" in ("a", "b") mustEqual QueryIn(QueryPathEnd("foo"), List("a".asParam, "b".asParam), "a" :: "b" :: HNil)
-  lazy val queryIn3 = p"foo" in ("a", "b", "c") mustEqual QueryIn(QueryPathEnd("foo"), List("a".asParam, "b".asParam, "c".asParam), "a" :: "b" :: "c" :: HNil)
-  lazy val queryIn4 = p"foo" in ("a", "b", "c", "d") mustEqual QueryIn(QueryPathEnd("foo"), List("a".asParam, "b".asParam, "c".asParam, "d".asParam), "a" :: "b" :: "c" :: "d" :: HNil)
+  lazy val queryIn1 = p"foo" in ("a") mustEqual QueryIn(QueryPathEnd("foo"), "a".asParam :: HNil)
+  lazy val queryIn2 = p"foo" in ("a", "b") mustEqual QueryIn(QueryPathEnd("foo"), "a".asParam :: "b".asParam :: HNil)
+  lazy val queryIn3 = p"foo" in ("a", "b", "c") mustEqual QueryIn(QueryPathEnd("foo"), "a".asParam :: "b".asParam :: "c".asParam :: HNil)
+  lazy val queryIn4 = p"foo" in ("a", "b", "c", "d") mustEqual QueryIn(QueryPathEnd("foo"), "a".asParam :: "b".asParam :: "c".asParam :: "d".asParam :: HNil)
+
+  val baseQuery = select(p"foo", p"bar") from (p"baz")
+
+  lazy val basicBuilder = baseQuery.build mustEqual (
+    QuerySelect(
+      QueryProjectOne(QueryPathEnd("baz"), None): QueryProjection[HNil],
+      (QueryProjectOne(QueryPathEnd("foo"), None): QueryProjection[HNil]) ::
+      (QueryProjectOne(QueryPathEnd("bar"), None): QueryProjection[HNil]) ::
+      HNil,
+      HNil: HNil, QueryComparisonNop, List.empty, List.empty, None, None)
+    )
+
 }
