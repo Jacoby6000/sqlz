@@ -11,7 +11,8 @@ object astspec extends Specification
                   with ParamTests
                   with ProjectionTests
                   with PathTests
-                  with ComparisonTests { def is = s2"""
+                  with ComparisonTests
+                  with JoinTests { def is = s2"""
   Ast Construction
     Query Path
       Query Path Cons $pathCons
@@ -42,5 +43,13 @@ object astspec extends Specification
     Query Projections
       Project All                 $queryProjectAllTest
       Project One                 $queryProjectOneTest
+
+    Query Joins
+      Inner Join                  $simpleInnerJoin
+      Left Outer Join             $simpleLeftOuterJoin
+      Right Outer Join            $simpleRightOuterJoin
+      Full Outer Join             $simpleFullOuterJoin
+      Cross Join                  $simpleCrossJoin
+
 """
 }
