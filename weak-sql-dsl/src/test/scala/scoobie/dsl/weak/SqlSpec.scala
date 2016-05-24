@@ -29,6 +29,9 @@ class SqlSpec extends Specification { def is =
 
   Query Builder
     Basic Builder                    $basicBuilder
+    Offset                           $offset
+    Limit                            $limit
+    Offset And Limit                 $offsetAndLimit
     """
 
   implicit class AExtensions[A](a: A) {
@@ -61,7 +64,39 @@ class SqlSpec extends Specification { def is =
       (QueryProjectOne(QueryPathEnd("foo"), None): QueryProjection[HNil]) ::
       (QueryProjectOne(QueryPathEnd("bar"), None): QueryProjection[HNil]) ::
       HNil,
-      HNil: HNil, QueryComparisonNop, List.empty, List.empty, None, None)
+      HNil: HNil, QueryComparisonNop, List.empty, List.empty, None, None
     )
+  )
+
+  lazy val offset = (baseQuery offset 5).build mustEqual (
+    QuerySelect(
+      QueryProjectOne(QueryPathEnd("baz"), None): QueryProjection[HNil],
+      (QueryProjectOne(QueryPathEnd("foo"), None): QueryProjection[HNil]) ::
+        (QueryProjectOne(QueryPathEnd("bar"), None): QueryProjection[HNil]) ::
+        HNil,
+      HNil: HNil, QueryComparisonNop, List.empty, List.empty, Some(5), None
+    )
+  )
+
+  lazy val limit = (baseQuery limit 5).build mustEqual (
+    QuerySelect(
+      QueryProjectOne(QueryPathEnd("baz"), None): QueryProjection[HNil],
+      (QueryProjectOne(QueryPathEnd("foo"), None): QueryProjection[HNil]) ::
+        (QueryProjectOne(QueryPathEnd("bar"), None): QueryProjection[HNil]) ::
+        HNil,
+      HNil: HNil, QueryComparisonNop, List.empty, List.empty, None, Some(5)
+    )
+  )
+
+  lazy val offsetAndLimit = (baseQuery offset 5 limit 5).build mustEqual (
+    QuerySelect(
+      QueryProjectOne(QueryPathEnd("baz"), None): QueryProjection[HNil],
+      (QueryProjectOne(QueryPathEnd("foo"), None): QueryProjection[HNil]) ::
+        (QueryProjectOne(QueryPathEnd("bar"), None): QueryProjection[HNil]) ::
+        HNil,
+      HNil: HNil, QueryComparisonNop, List.empty, List.empty, Some(5), Some(5)
+    )
+  )
+
 
 }
