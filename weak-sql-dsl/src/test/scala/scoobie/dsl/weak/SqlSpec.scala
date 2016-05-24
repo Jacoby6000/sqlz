@@ -11,21 +11,21 @@ import sql._
 class SqlSpec extends Specification { def is =
   s2"""
   Query Value Extensions
-    Query Equals                     $queryEquals
-    Query Not Equals !==             $queryNotEquals1
-    Query Not Equals <>              $queryNotEquals2
-    Query Less Than                  $queryLessThan
-    Query Less Than Or Equal         $queryLessThanOrEqual
-    Query Greater Than               $queryGreaterThan
-    Query Greater Than Or Equal      $queryGreaterThanOrEqual
-    Query Add                        $queryAdd
-    Query Sub                        $querySub
-    Query Div                        $queryDiv
-    Query Mul                        $queryMul
-    Query Alias                      $queryAlias
-    Query In (1 param)               $queryIn1
-    Query In (2 params)              $queryIn2
-    Query In (3 params)              $queryIn3
+    Equals                     $queryEquals
+    Not Equals !==             $queryNotEquals1
+    Not Equals <>              $queryNotEquals2
+    Less Than                  $queryLessThan
+    Less Than Or Equal         $queryLessThanOrEqual
+    Greater Than               $queryGreaterThan
+    Greater Than Or Equal      $queryGreaterThanOrEqual
+    Add                        $queryAdd
+    Sub                        $querySub
+    Div                        $queryDiv
+    Mul                        $queryMul
+    Alias                      $queryAlias
+    In (1 param)               $queryIn1
+    In (2 params)              $queryIn2
+    In (3 params)              $queryIn3
 
   Query Builder
     Basic Builder                    $basicBuilder

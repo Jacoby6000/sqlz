@@ -15,41 +15,41 @@ object AstSpec extends Specification
                   with JoinTests { def is = s2"""
   Ast Construction
     Query Path
-      Query Path Cons $pathCons
-      Query Path End  $pathEnd
+      Cons $pathCons
+      End  $pathEnd
 
     Query Values
-      Query Parameter         $param
+      Parameter         $param
       Raw String Expression   $rawExpression
-      Query Function          $queryFunctionTest
-      Query Add               $queryAddTest
-      Query Sub               $querySubTest
-      Query Div               $queryDivTest
-      Query Mul               $queryMulTest
-      Query Null              $queryNullParamsTest
+      Function          $queryFunctionTest
+      Add               $queryAddTest
+      Sub               $querySubTest
+      Div               $queryDivTest
+      Mul               $queryMulTest
+      Null              $queryNullParamsTest
 
     Query Comparisons
-      Query Literal               $queryLitTest
-      Query Equals                $simpleEqual
-      Query Greater Than          $simpleGreaterThan
-      Query Greater Than Or Equal $simpleGreaterThanOrEqual
-      Query Less Than             $simpleLessThan
-      Query Less Than Or Equal    $simpleLessThanOrEqual
-      Query And                   $simpleAnd
-      Query Or                    $simpleOr
-      Query In                    $simpleIn
-      Query NOP                   $queryComparisonNop
+      Literal               $queryLitTest
+      Equals                $simpleEqual
+      Greater Than          $simpleGreaterThan
+      Greater Than Or Equal $simpleGreaterThanOrEqual
+      Less Than             $simpleLessThan
+      Less Than Or Equal    $simpleLessThanOrEqual
+      And                   $simpleAnd
+      Or                    $simpleOr
+      In                    $simpleIn
+      NOP                   $queryComparisonNop
 
     Query Projections
-      Project All                 $queryProjectAllTest
-      Project One                 $queryProjectOneTest
+      All                 $queryProjectAllTest
+      One                 $queryProjectOneTest
 
     Query Joins
-      Inner Join                  $simpleInnerJoin
-      Left Outer Join             $simpleLeftOuterJoin
-      Right Outer Join            $simpleRightOuterJoin
-      Full Outer Join             $simpleFullOuterJoin
-      Cross Join                  $simpleCrossJoin
+      Inner                  $simpleInnerJoin
+      Left Outer             $simpleLeftOuterJoin
+      Right Outer            $simpleRightOuterJoin
+      Full Outer             $simpleFullOuterJoin
+      Cross                  $simpleCrossJoin
 
 """
 }

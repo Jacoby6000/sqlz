@@ -13,15 +13,15 @@ import _root_.shapeless._
 object TypeclassSpec extends Specification with ProjectionTests with JoinTests {
   def is = s2"""
   Unwrappers
-    Query Projection Unwrapper              $queryProjectionUnwrapper
-    Query Value Unwrapper                   $queryValueUnwrapper
-    Query Union Unwrapper                   $queryUnionUnwrapper
-    Query Comparison Unwrapper              $queryComparisonUnwrapper
-    Modify Field Unwrapper                  $modifyFieldUnwrapper
+    Query Projection              $queryProjectionUnwrapper
+    Query Value                   $queryValueUnwrapper
+    Query Union                   $queryUnionUnwrapper
+    Query Comparison              $queryComparisonUnwrapper
+    Modify Field                  $modifyFieldUnwrapper
 
   Prependers
-    Combine3 Test                           $combine3Test
-    Combine4 Test                           $combine4Test
+    Combine3                           $combine3Test
+    Combine4                           $combine4Test
   """
 
   def unwrapAndFlattenQueryProjections[A <: HList, Out <: HList](a: A)(implicit unwrapAndFlattenHList: UnwrapAndFlattenHList.Aux[QueryProjection, A, QueryProjectionUnwrapper.type, Out]) = unwrapAndFlattenHList(a)
