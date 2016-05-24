@@ -1,8 +1,3 @@
-import com.github.jacoby6000.query.ast.{ModifyField, ModifyFieldUnwrapper}
-import com.github.jacoby6000.query.shapeless.Typeclasses.UnwrapAndFlattenHList
-import shapeless.{::, HList, HNil}
-import shapeless.ops.hlist.Prepend
-
 import scalaz._
 import Scalaz._
 
@@ -28,7 +23,7 @@ def makeProductApply(argKind: String, subTypeOf: List[String], contextBounds: Li
 
   val typeConstraints = subTypeConstraints + contextBoundConstraints
   paramLists.map {
-    case Nil => """def apply = applyProduct(HNil)"""
+    case Nil => """def apply = applyProduct(HNil: HNil)"""
     case typeList =>
       val ApplyImplicits(additionalTypes, evidenceList) = evidences.zipWithIndex.map(tup => tup._1(ApplyArguments(tup._2, typeList))).suml
 

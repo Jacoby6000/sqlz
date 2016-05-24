@@ -17,7 +17,7 @@ object sql {
   }
 
   // Update DSL helpers
-  def update(table: QueryPath) = new UpdateBuilder(table, HNil, QueryComparisonNop)
+  def update(table: QueryPath) = new UpdateBuilder(table, HNil: HNil, QueryComparisonNop)
 
   case class UpdateBuilder[Values <: HList, ComparisonParams <: HList, UnwrappedValues <: HList, Params <: HList](table: QueryPath, values: Values, where: QueryComparison[ComparisonParams])(implicit un: UnwrapAndFlattenHList.Aux[ModifyField, Values, ModifyFieldUnwrapper.type, UnwrappedValues], p: Prepend.Aux[UnwrappedValues, ComparisonParams, Params], toList: ToTraversable.Aux[Values,List,ModifyField[_ <: HList]]) { builder =>
     object set extends ProductArgs {
@@ -89,7 +89,7 @@ object sql {
         * Check out PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
         */
 
-      def apply = applyProduct(HNil)
+      def apply = applyProduct(HNil: HNil)
       def apply[A <: HList, Unwrapped0 <: HList](a: ModifyField[A])(implicit un: UnwrapAndFlattenHList.Aux[ModifyField, ModifyField[A]:: HNil, ModifyFieldUnwrapper.type, Unwrapped0]) = applyProduct(a :: HNil)
       def apply[A <: HList, B <: HList, Unwrapped0 <: HList](a: ModifyField[A], b: ModifyField[B])(implicit un: UnwrapAndFlattenHList.Aux[ModifyField, ModifyField[A] :: ModifyField[B]:: HNil, ModifyFieldUnwrapper.type, Unwrapped0]) = applyProduct(a :: b :: HNil)
       def apply[A <: HList, B <: HList, C <: HList, Unwrapped0 <: HList](a: ModifyField[A], b: ModifyField[B], c: ModifyField[C])(implicit un: UnwrapAndFlattenHList.Aux[ModifyField, ModifyField[A] :: ModifyField[B] :: ModifyField[C]:: HNil, ModifyFieldUnwrapper.type, Unwrapped0]) = applyProduct(a :: b :: c :: HNil)
@@ -136,7 +136,7 @@ object sql {
      * Check out PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
      */
 
-    def apply = applyProduct(HNil)
+    def apply = applyProduct(HNil: HNil)
     def apply[A <: HList, Out_0 <: HList](a: QueryValue[A])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A] :: HNil, QueryValueUnwrapper.type, Out_0]) = applyProduct(a :: HNil)
     def apply[A <: HList, B <: HList, Out_0 <: HList](a: QueryValue[A], b: QueryValue[B])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A] :: QueryValue[B]:: HNil, QueryValueUnwrapper.type, Out_0]) = applyProduct(a :: b :: HNil)
     def apply[A <: HList, B <: HList, C <: HList, Out_0 <: HList](a: QueryValue[A], b: QueryValue[B], c: QueryValue[C])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A] :: QueryValue[B] :: QueryValue[C]:: HNil, QueryValueUnwrapper.type, Out_0]) = applyProduct(a :: b :: c :: HNil)
@@ -213,7 +213,7 @@ object sql {
      * Check out PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
      */
 
-    def apply = applyProduct(HNil)
+    def apply = applyProduct(HNil: HNil)
     def apply[A <: HList, Out_0 <: HList](a: QueryProjection[A])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjection[A]:: HNil, QueryProjectionUnwrapper.type, Out_0]) = applyProduct(a :: HNil)
     def apply[A <: HList, B <: HList, Out_0 <: HList](a: QueryProjection[A], b: QueryProjection[B])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjection[A] :: QueryProjection[B]:: HNil, QueryProjectionUnwrapper.type, Out_0]) = applyProduct(a :: b :: HNil)
     def apply[A <: HList, B <: HList, C <: HList, Out_0 <: HList](a: QueryProjection[A], b: QueryProjection[B], c: QueryProjection[C])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryProjection, QueryProjection[A] :: QueryProjection[B] :: QueryProjection[C]:: HNil, QueryProjectionUnwrapper.type, Out_0]) = applyProduct(a :: b :: c :: HNil)
@@ -385,7 +385,7 @@ object sql {
         * Check out PROJECTROOT/util/GenProductArgsApplyMethods.sc to see how this was generated, if you think it may be useful to you.
         */
 
-      def apply = applyProduct(HNil)
+      def apply = applyProduct(HNil: HNil)
       def apply[A <: HList, Unwrapped0 <: HList, Prepended0 <: HList](a: QueryValue[A])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A]:: HNil, QueryValueUnwrapper.type, Unwrapped0], ev1: Prepend.Aux[LeftType, Unwrapped0, Prepended0]) = applyProduct(a :: HNil)
       def apply[A <: HList, B <: HList, Unwrapped0 <: HList, Prepended0 <: HList](a: QueryValue[A], b: QueryValue[B])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A] :: QueryValue[B]:: HNil, QueryValueUnwrapper.type, Unwrapped0], ev1: Prepend.Aux[LeftType, Unwrapped0, Prepended0]) = applyProduct(a :: b :: HNil)
       def apply[A <: HList, B <: HList, C <: HList, Unwrapped0 <: HList, Prepended0 <: HList](a: QueryValue[A], b: QueryValue[B], c: QueryValue[C])(implicit ev0: UnwrapAndFlattenHList.Aux[QueryValue, QueryValue[A] :: QueryValue[B] :: QueryValue[C]:: HNil, QueryValueUnwrapper.type, Unwrapped0], ev1: Prepend.Aux[LeftType, Unwrapped0, Prepended0]) = applyProduct(a :: b :: c :: HNil)

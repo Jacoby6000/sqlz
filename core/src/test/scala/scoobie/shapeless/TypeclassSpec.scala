@@ -4,7 +4,7 @@ import org.specs2._
 import scoobie.{JoinTests, ProjectionTests}
 import scoobie.ast._
 import scoobie.shapeless.Polys._
-import scoobie.shapeless.Typeclasses.{Combine3, Combine4, UnwrapAndFlattenHList}
+import scoobie.shapeless.Typeclasses._
 import _root_.shapeless._
 
 /**
@@ -18,7 +18,6 @@ object TypeclassSpec extends Specification with ProjectionTests with JoinTests {
     Query Union Unwrapper                   $queryUnionUnwrapper
     Query Comparison Unwrapper              $queryComparisonUnwrapper
     Modify Field Unwrapper                  $modifyFieldUnwrapper
-    HNil Unwrapper                          $hnilCaseUnwrapper
 
   Prependers
     Combine3 Test                           $combine3Test
@@ -31,6 +30,7 @@ object TypeclassSpec extends Specification with ProjectionTests with JoinTests {
   def unwrapAndFlattenQueryValues[A <: HList, Out <: HList](a: A)(implicit unwrapAndFlattenHList: UnwrapAndFlattenHList.Aux[QueryValue, A, QueryValueUnwrapper.type, Out]) = unwrapAndFlattenHList(a)
   def unwrapAndFlattenModifyFields[A <: HList, Out <: HList](a: A)(implicit unwrapAndFlattenHList: UnwrapAndFlattenHList.Aux[ModifyField, A, ModifyFieldUnwrapper.type, Out]) = unwrapAndFlattenHList(a)
 
+  def unwrapQueryProjections[A <: HList, Out <: HList](a: A)(implicit unwrap: HListUnwrapper.Aux[QueryProjection, A, QueryProjectionUnwrapper.type, Out]) = unwrap(a)
 
   private val pjn: QueryProjection[String :: HNil] = projection
   private val prm: QueryValue[String :: HNil] = fooParam
@@ -52,10 +52,6 @@ object TypeclassSpec extends Specification with ProjectionTests with JoinTests {
 
   lazy val modifyFieldUnwrapper =
     unwrapAndFlattenModifyFields(modify :: modify :: HNil) mustEqual (modify.params.head :: modify.params.head :: HNil)
-
-  lazy val hnilCaseUnwrapper =
-    unwrapAndFlattenQueryProjections(HNil) mustEqual HNil
-
 
   def combine3[A <: HList, B <: HList, C <: HList, Out <: HList](a: A, b: B, c: C)(implicit combine3: Combine3.Aux[A,B,C,Out]) =
     combine3.combine(a,b,c)
