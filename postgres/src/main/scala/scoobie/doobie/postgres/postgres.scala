@@ -58,7 +58,7 @@ package object postgres {
       case QueryOr(_: QueryComparisonNop.type, right, _) => reduceComparison(right)
       case QueryOr(left , _: QueryComparisonNop.type, _) => reduceComparison(left)
       case QueryOr(left, right, _) => binOpReduction(" OR ", left, right)(reduceComparison)
-      case QueryNot(v) => "not " + reduceComparison(v)
+      case QueryNot(v) => "NOT (" + reduceComparison(v) + ")"
       case QueryComparisonNop => ""
     }
 
