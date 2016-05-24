@@ -37,8 +37,8 @@ lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
     "org.specs2" %% "specs2-core" % "3.8" % "test",
     "org.scalacheck" %% "scalacheck" % "1.13.0" % "test",
-    "org.typelevel" %% "shapeless-scalacheck" % "0.4",
-    "org.typelevel" %% "shapeless-scalaz" % "0.4"
+    "org.typelevel" %% "shapeless-scalacheck" % "0.4" % "test",
+    "org.typelevel" %% "shapeless-scalaz" % "0.4" % "test"
   ),
   addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.7.1")
 )
@@ -93,12 +93,11 @@ lazy val scoobieSettings = buildSettings ++ commonSettings ++ tutSettings
 lazy val scoobie =
   project.in(file("."))
     .settings(name := "scoobie")
-    .settings(scoobieSettings)
-    .settings(noPublishSettings)
+    .settings(scoobieSettings ++ noPublishSettings)
     .settings(unidocSettings)
     .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(docs))
-    .dependsOn(core, postgres, docs)
-    .aggregate(core, postgres, docs)
+    .dependsOn(core, doobieSupport, postgres, weakSqlDsl, docs)
+    .aggregate(core, doobieSupport, postgres, weakSqlDsl, docs)
     .settings(
       tutcp <<= tut andFinally {
           val src = file(".") / "doc" / "target" / "scala-2.11" / "tut" / "readme.md"
@@ -125,8 +124,7 @@ lazy val core =
 lazy val doobieSupport =
   project.in(file("doobie-support"))
     .enablePlugins(SbtOsgi)
-    .settings(scoobieSettings)
-    .settings(publishSettings)
+    .settings(scoobieSettings ++ publishSettings)
     .settings(name := "scoobie-doobie-support")
     .settings(description := "Introduces doobie support to scoobie.")
     .settings(libraryDependencies += doobieCore)
@@ -136,29 +134,30 @@ lazy val doobieSupport =
 lazy val weakSqlDsl =
   project.in(file("weak-sql-dsl"))
     .enablePlugins(SbtOsgi)
-    .settings(scoobieSettings)
-    .settings(publishSettings)
+    .settings(scoobieSettings ++ publishSettings)
     .settings(name := "scoobie-contrib-weak-sql-dsl")
     .settings(description := "Introduces a SQL DSL to scoobie.")
-    .settings(libraryDependencies += doobiePGDriver)
     .settings(packageInfoGenerator("scoobie.dsl.weaksql", "scoobie-contrib-weak-sql-dsl"))
     .dependsOn(core)
 
 lazy val postgres =
   project.in(file("postgres"))
     .enablePlugins(SbtOsgi)
-    .settings(scoobieSettings)
-    .settings(publishSettings)
+    .settings(libraryDependencies ++= Seq(doobiePGDriver) ++ Seq(
+      "org.specs2" %% "specs2-core" % "3.8" % "test",
+      "org.scalacheck" %% "scalacheck" % "1.13.0" % "test",
+      "org.typelevel" %% "shapeless-scalacheck" % "0.4" % "test",
+      "org.typelevel" %% "shapeless-scalaz" % "0.4" % "test"
+    ))
+    .settings(scoobieSettings ++ publishSettings)
     .settings(name := "scoobie-contrib-postgres")
     .settings(description := "Introduces doobie support to scoobie with postgres.")
-    .settings(libraryDependencies += doobiePGDriver)
     .settings(packageInfoGenerator("scoobie.doobie.postgres", "scoobie-contrib-postgres"))
-    .dependsOn(core, doobieSupport, weakSqlDsl % "test")
+    .dependsOn(core, doobieSupport, weakSqlDsl)
 
 lazy val docs =
   project.in(file("doc"))
-    .settings(scoobieSettings)
-    .settings(noPublishSettings)
+    .settings(scoobieSettings ++ noPublishSettings)
     .settings(
       ctut := {
         val src = crossTarget.value / "tut"
@@ -178,9 +177,9 @@ lazy val docs =
 
 
 lazy val doobieVersion = "0.3.0-M1"
-lazy val shapeless = "com.chuusai" %% "shapeless" % "2.3.1"
 lazy val doobieCore = "org.tpolecat" %% "doobie-core" % doobieVersion
 lazy val doobiePGDriver = "org.tpolecat" %% "doobie-contrib-postgresql" % doobieVersion
+lazy val shapeless = "com.chuusai" %% "shapeless" % "2.3.1"
 
 lazy val ctut = taskKey[Unit]("Copy tut output to blog repo nearby.")
 
