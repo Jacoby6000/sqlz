@@ -1,6 +1,7 @@
 package scoobie.shapeless
 
-import shapeless.{ HList, Poly1 }
+import scoobie.ast._
+import shapeless.{HList, Poly1}
 
 /**
  * Created by jacob.barber on 5/13/16.
@@ -17,5 +18,29 @@ object Polys {
     def apply[F[_ <: HList]](implicit unwrapper: UnwrapperPoly[F]): Aux[F, unwrapper.Out] = unwrapper
   }
 
-  implicit def unwrapperPolyFinder[F[_ <: HList]](implicit unwrapperPoly: UnwrapperPoly[F]): UnwrapperPoly.Aux[F, unwrapperPoly.Out] = unwrapperPoly
+  object QueryProjectionUnwrapper extends UnwrapperPoly[QueryProjection] {
+    type Out = this.type
+    def unwrap[A <: HList](f: QueryProjection[A]): A = f.params
+  }
+
+  object QueryUnionUnwrapper extends UnwrapperPoly[QueryUnion] {
+    type Out = this.type
+    def unwrap[A <: HList](f: QueryUnion[A]): A = f.params
+  }
+
+  object QueryComparisonUnwrapper extends UnwrapperPoly[QueryComparison] {
+    type Out = this.type
+    def unwrap[A <: HList](f: QueryComparison[A]): A = f.params
+  }
+
+  object ModifyFieldUnwrapper extends UnwrapperPoly[ModifyField] {
+    type Out = this.type
+    def unwrap[A <: HList](f: ModifyField[A]): A = f.params
+  }
+
+  object QueryValueUnwrapper extends UnwrapperPoly[QueryValue] {
+    type Out = this.type
+    def unwrap[A <: HList](f: QueryValue[A]): A = f.params
+  }
+
 }

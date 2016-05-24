@@ -7,13 +7,12 @@ import scoobie.ast._
 /**
   * Created by jbarber on 5/19/16.
   */
-object AstSpec extends Specification with PathTests with ParamTests with ProjectionTests with ComparisonTests {
-  def is =
-s2"""
+object astspec extends Specification with ParamTests with ProjectionTests with PathTests with ComparisonTests {
+  def is = s2"""
   Ast Construction
     Query Path
-      Query Path Cons         $pathCons
-      Query Path End          $pathEnd
+      Query Path Cons $pathCons
+      Query Path End  $pathEnd
 
     Query Values
       Query Parameter         $param
@@ -42,16 +41,3 @@ s2"""
       Project One                 $queryProjectOneTest
 """
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

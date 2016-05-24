@@ -9,6 +9,7 @@ import _root_.shapeless._
   */
 trait ProjectionTests extends SpecificationLike with ParamTests {
   lazy val queryProjectAllTest = QueryProjectAll.params mustEqual HNil
+  
   lazy val queryProjectOneTest = {
     projection.alias mustEqual None
     projection.params mustEqual ("foo" :: HNil)

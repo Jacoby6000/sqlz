@@ -7,7 +7,8 @@ import _root_.shapeless._
 /**
   * Created by jacob.barber on 5/23/16.
   */
-trait PathTests extends SpecificationLike {
+
+trait PathTests extends SpecLike {
   val columnPathEnd = QueryPathEnd("column")
   val columnPathCons = QueryPathCons("foo", QueryPathEnd("bar"))
 

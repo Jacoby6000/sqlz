@@ -2,38 +2,13 @@ package scoobie
 
 import _root_.shapeless._
 import _root_.shapeless.ops.hlist.{Prepend, ToTraversable}
-import scoobie.shapeless.Polys.UnwrapperPoly
+import scoobie.shapeless.Polys._
 import scoobie.shapeless.Typeclasses.{Combine4, UnwrapAndFlattenHList}
 
 /**
  * Created by jacob.barber on 2/2/16.
  */
 object ast {
-
-  object QueryProjectionUnwrapper extends UnwrapperPoly[QueryProjection] {
-    type Out = this.type
-    def unwrap[A <: HList](f: QueryProjection[A]): A = f.params
-  }
-
-  object QueryUnionUnwrapper extends UnwrapperPoly[QueryUnion] {
-    type Out = this.type
-    def unwrap[A <: HList](f: QueryUnion[A]): A = f.params
-  }
-
-  object QueryComparisonUnwrapper extends UnwrapperPoly[QueryComparison] {
-    type Out = this.type
-    def unwrap[A <: HList](f: QueryComparison[A]): A = f.params
-  }
-
-  object ModifyFieldUnwrapper extends UnwrapperPoly[ModifyField] {
-    type Out = this.type
-    def unwrap[A <: HList](f: ModifyField[A]): A = f.params
-  }
-
-  object QueryValueUnwrapper extends UnwrapperPoly[QueryValue] {
-    type Out = this.type
-    def unwrap[A <: HList](f: QueryValue[A]): A = f.params
-  }
 
   trait RawExpressionHandler[A] {
     def interpret(a: A): String

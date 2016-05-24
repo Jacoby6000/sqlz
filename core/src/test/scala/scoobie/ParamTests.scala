@@ -7,7 +7,7 @@ import _root_.shapeless._
 /**
   * Created by jacob.barber on 5/23/16.
   */
-trait ParamTests extends SpecificationLike with TestHelpers with PathTests {
+trait ParamTests extends SpecificationLike with PathTests with TestHelpers {
 
   implicit class BinaryExtractorExtensions[F[_ <: HList], A <: HList, B, C](f: F[A])(implicit binaryExtractor: BinaryExtractor2[F, B, C]) {
     def extract = binaryExtractor.extract(f)

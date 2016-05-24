@@ -1,6 +1,7 @@
 package scoobie.dsl.weak
 
 import scoobie.ast._
+import scoobie.shapeless.Polys._
 import scoobie.shapeless.Typeclasses.UnwrapAndFlattenHList
 import _root_.shapeless._
 import _root_.shapeless.ops.hlist.{Prepend, ToTraversable}
