@@ -7,7 +7,7 @@ import scoobie.ast._
 /**
   * Created by jbarber on 5/19/16.
   */
-object astspec extends Specification
+object AstSpec extends Specification
                   with ParamTests
                   with ProjectionTests
                   with PathTests

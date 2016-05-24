@@ -174,7 +174,7 @@ lazy val docs =
         }
       }
     )
-    .dependsOn(core, doobieSupport, postgres)
+    .dependsOn(core, doobieSupport, postgres, weakSqlDsl)
 
 
 lazy val doobieVersion = "0.3.0-M1"
