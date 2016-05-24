@@ -10,6 +10,14 @@ import sql._
   */
 class SqlSpec extends Specification { def is =
   s2"""
+  String Interpolators
+    Query Path (p"...")  $queryPathInterpolator
+    Raw Expression       $rawExpressionInterprolator
+
+  Simple Aliases
+    null (`null`)       ${`null` mustEqual QueryNull}
+    Star (`*`)         ${`*` mustEqual QueryProjectAll}
+
   Query Value Extensions
     Equals                     $queryEquals
     Not Equals !==             $queryNotEquals1
@@ -27,13 +35,18 @@ class SqlSpec extends Specification { def is =
     In (2 params)              $queryIn2
     In (3 params)              $queryIn3
 
+  Query Path Extensions
+    As           $pathAs
+    Ascending    $ascending
+    Descending   $descending
+
   Query Comparison Extensions
     And              $and
     Or               $or
 
   Query Projection Extensions
-    as         $as
-    on         $on
+    As         $projectionAs
+    On         $on
 
   Query Builder
     Basic Builder                    $basicBuilder
@@ -42,10 +55,21 @@ class SqlSpec extends Specification { def is =
     Offset And Limit                 $offsetAndLimit
     """
 
+
+
+  lazy val queryPathInterpolator = {
+    p"foo" mustEqual QueryPathEnd("foo")
+    p"foo.bar" mustEqual QueryPathCons("foo", QueryPathEnd("bar"))
+  }
+
+  lazy val rawExpressionInterprolator = {
+    val blah = "baz"
+    expr"foo $blah" mustEqual QueryRawExpression("foo baz")
+  }
+
   implicit class AExtensions[A](a: A) {
     def asParam: QueryValue[A :: HNil] = QueryParameter(a)
   }
-
 
   lazy val queryEquals = (p"foo" === "bar") mustEqual QueryEqual(QueryPathEnd("foo"), QueryParameter("bar"), "bar" :: HNil)
   lazy val queryNotEquals1 = (p"foo" !== "bar") mustEqual QueryNot(QueryEqual(QueryPathEnd("foo"), QueryParameter("bar"), "bar" :: HNil))
@@ -71,13 +95,18 @@ class SqlSpec extends Specification { def is =
 
   val simpleProjection = QueryProjectOne(p"foo", None)
 
-  lazy val as = {
+  lazy val projectionAs = {
     (simpleProjection as "bar") mustEqual QueryProjectOne(p"foo", Some("bar"))
     (QueryProjectAll as "bar") mustEqual QueryProjectAll
   }
-
   lazy val on = (simpleProjection on simpleEquals) mustEqual (simpleProjection -> simpleEquals)
 
+  lazy val pathAs = {
+    (QueryPathEnd("foo") as "bar") mustEqual QueryProjectOne(QueryPathEnd("foo"), Some("bar"))
+    (QueryPathCons("baz", QueryPathEnd("foo")) as "bar") mustEqual QueryProjectOne(QueryPathCons("baz", QueryPathEnd("foo")), Some("bar"))
+  }
+  lazy val ascending = QueryPathEnd("foo").asc mustEqual QuerySortAsc(QueryPathEnd("foo"))
+  lazy val descending = QueryPathEnd("foo").desc mustEqual QuerySortDesc(QueryPathEnd("foo"))
 
   val baseQuery = select(p"foo", p"bar") from (p"baz")
 

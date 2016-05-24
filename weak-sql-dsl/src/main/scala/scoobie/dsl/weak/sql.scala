@@ -177,12 +177,15 @@ object sql {
       go(parts.tail, QueryPathEnd(parts.head))
     }
 
-    def expr(args: String*)(implicit ev0: RawExpressionHandler[String]): QueryRawExpression[String] = {
+    def expr(args: String*): QueryRawExpression[String] = {
       QueryRawExpression(ctx.standardInterpolator(identity, args))
     }
 
     def func(): SqlQueryFunctionBuilder = SqlQueryFunctionBuilder(p())
   }
+
+  implicit val stringExpr = RawExpressionHandler[String](identity)
+
 
   implicit class QueryPathExtensions(val f: QueryPath) extends AnyVal {
     def as(alias: String): QueryProjection[HNil] = f match {
