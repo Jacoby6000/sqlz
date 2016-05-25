@@ -32,7 +32,7 @@ class PostgresTest extends Specification {
 
   lazy val semiComplexSelect =
     (
-      query.select(
+      select(
         p"c1.name",
         (p"c1.gnp" + 5) as "c1gnp",
         p"c1.code",
@@ -59,7 +59,7 @@ class PostgresTest extends Specification {
     val codes = NonEmptyList("TUV", "YUG")
     implicit val codesParam = Param.many(codes)
     (
-      query.select(p"name") from p"country" where (p"code" in ("USA", "BRA", codes.narrow))
+      select(p"name") from p"country" where (p"code" in ("USA", "BRA", codes.narrow))
     ).build
       .queryAndPrint[String](println _)
       .list
@@ -77,7 +77,7 @@ class PostgresTest extends Specification {
                     p"population" ==> 1
                   )).updateAndPrint(println).run
 
-      select1 <- (query.select(p"district") from p"city" where (p"id" === 4080))
+      select1 <- (select(p"district") from p"city" where (p"id" === 4080))
                     .build
                     .queryAndPrint[String](println)
                     .option
@@ -87,7 +87,7 @@ class PostgresTest extends Specification {
                     .updateAndPrint(println)
                     .run
 
-      select2 <- (query.select(p"population") from p"city" where (p"id" === 4080))
+      select2 <- (select(p"population") from p"city" where (p"id" === 4080))
                     .build
                     .queryAndPrint[Int](println)
                     .option
@@ -96,7 +96,7 @@ class PostgresTest extends Specification {
                     .updateAndPrint(println)
                     .run
 
-      select3 <- (query.select(p"population") from p"city" where (p"id" === 4080))
+      select3 <- (select(p"population") from p"city" where (p"id" === 4080))
                     .build
                     .queryAndPrint[Int](println)
                     .option

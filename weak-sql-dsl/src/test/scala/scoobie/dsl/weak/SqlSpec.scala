@@ -109,7 +109,7 @@ class SqlSpec extends Specification { def is =
   lazy val ascending = QueryPathEnd("foo").asc mustEqual QuerySortAsc(QueryPathEnd("foo"))
   lazy val descending = QueryPathEnd("foo").desc mustEqual QuerySortDesc(QueryPathEnd("foo"))
 
-  val baseQuery = query.select(p"foo", p"bar") from (p"baz")
+  val baseQuery = select(p"foo", p"bar") from (p"baz")
 
   lazy val basicBuilder = baseQuery.build mustEqual (
     QuerySelect(

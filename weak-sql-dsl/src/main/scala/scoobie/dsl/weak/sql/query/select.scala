@@ -5,6 +5,7 @@ import scoobie.shapeless.Polys._
 import scoobie.shapeless.Typeclasses.UnwrapAndFlattenHList
 import shapeless._
 import shapeless.ops.hlist.{Prepend, ToTraversable}
+import scoobie.dsl.weak.sql.join._
 
 /**
   * Created by jacob.barber on 5/24/16.
@@ -142,7 +143,7 @@ object select {
 
   }
 
-  case class QuerySortBuilder(f: QueryPath) extends AnyVal {
+  class QuerySortBuilder(val f: QueryPath) extends AnyVal {
     def asc: QuerySortAsc = QuerySortAsc(f)
     def desc: QuerySortDesc = QuerySortDesc(f)
   }
