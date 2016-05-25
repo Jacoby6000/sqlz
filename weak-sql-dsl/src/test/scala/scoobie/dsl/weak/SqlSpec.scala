@@ -3,7 +3,7 @@ package scoobie.dsl.weak
 import org.specs2._
 import scoobie.ast._
 import _root_.shapeless._
-import sql._
+import sql.{query, _}
 
 /**
   * Created by jacob.barber on 5/24/16.
@@ -109,7 +109,7 @@ class SqlSpec extends Specification { def is =
   lazy val ascending = QueryPathEnd("foo").asc mustEqual QuerySortAsc(QueryPathEnd("foo"))
   lazy val descending = QueryPathEnd("foo").desc mustEqual QuerySortDesc(QueryPathEnd("foo"))
 
-  val baseQuery = select(p"foo", p"bar") from (p"baz")
+  val baseQuery = query.select(p"foo", p"bar") from (p"baz")
 
   lazy val basicBuilder = baseQuery.build mustEqual (
     QuerySelect(
