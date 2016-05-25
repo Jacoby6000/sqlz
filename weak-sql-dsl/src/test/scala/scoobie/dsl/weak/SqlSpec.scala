@@ -72,32 +72,32 @@ class SqlSpec extends Specification { def is =
     def asParam: QueryValue[A :: HNil] = QueryParameter(a)
   }
 
-  lazy val queryEquals = (p"foo" === "bar") mustEqual QueryEqual(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryNotEquals1 = (p"foo" !== "bar") mustEqual QueryNot(QueryEqual(QueryPathEnd("foo"), QueryParameter("bar")))
-  lazy val queryNotEquals2 = (p"foo" <> "bar") mustEqual QueryNot(QueryEqual(QueryPathEnd("foo"), QueryParameter("bar")))
-  lazy val queryLessThan = (p"foo" < "bar") mustEqual QueryLessThan(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryLessThanOrEqual = (p"foo" <= "bar") mustEqual QueryLessThanOrEqual(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryGreaterThan = (p"foo" > "bar") mustEqual QueryGreaterThan(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryGreaterThanOrEqual = (p"foo" >= "bar") mustEqual QueryGreaterThanOrEqual(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryAdd = (p"foo" + "bar") mustEqual QueryAdd(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val querySub = (p"foo" - "bar") mustEqual QuerySub(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryDiv = (p"foo" / "bar") mustEqual QueryDiv(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryMul = (p"foo" * "bar") mustEqual QueryMul(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryAlias = (p"foo" as "blah") mustEqual QueryProjectOne(QueryPathEnd("foo"), Some("blah"))
-  lazy val queryIn1 = p"foo" in ("a") mustEqual QueryIn(QueryPathEnd("foo"), "a".asParam :: HNil)
-  lazy val queryIn2 = p"foo" in ("a", "b") mustEqual QueryIn(QueryPathEnd("foo"), "a".asParam :: "b".asParam :: HNil)
-  lazy val queryIn3 = p"foo" in ("a", "b", "c") mustEqual QueryIn(QueryPathEnd("foo"), "a".asParam :: "b".asParam :: "c".asParam :: HNil)
-  lazy val queryIn4 = p"foo" in ("a", "b", "c", "d") mustEqual QueryIn(QueryPathEnd("foo"), "a".asParam :: "b".asParam :: "c".asParam :: "d".asParam :: HNil)
+  lazy val queryEquals = (QueryPathEnd("foo") === "bar") mustEqual QueryEqual(QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryNotEquals1 = (QueryPathEnd("foo") !== "bar") mustEqual QueryNot(QueryEqual(QueryPathEnd("foo"), QueryParameter("bar")))
+  lazy val queryNotEquals2 = (QueryPathEnd("foo") <> "bar") mustEqual QueryNot(QueryEqual(QueryPathEnd("foo"), QueryParameter("bar")))
+  lazy val queryLessThan = (QueryPathEnd("foo") < "bar") mustEqual QueryLessThan(QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryLessThanOrEqual = (QueryPathEnd("foo") <= "bar") mustEqual QueryLessThanOrEqual(QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryGreaterThan = (QueryPathEnd("foo") > "bar") mustEqual QueryGreaterThan(QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryGreaterThanOrEqual = (QueryPathEnd("foo") >= "bar") mustEqual QueryGreaterThanOrEqual(QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryAdd = (QueryPathEnd("foo") + "bar") mustEqual QueryAdd(QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val querySub = (QueryPathEnd("foo") - "bar") mustEqual QuerySub(QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryDiv = (QueryPathEnd("foo") / "bar") mustEqual QueryDiv(QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryMul = (QueryPathEnd("foo") * "bar") mustEqual QueryMul(QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryAlias = (QueryPathEnd("foo") as "blah") mustEqual QueryProjectOne(QueryPathEnd("foo"), Some("blah"))
+  lazy val queryIn1 = QueryPathEnd("foo") in ("a") mustEqual QueryIn(QueryPathEnd("foo"), "a".asParam :: HNil)
+  lazy val queryIn2 = QueryPathEnd("foo") in ("a", "b") mustEqual QueryIn(QueryPathEnd("foo"), "a".asParam :: "b".asParam :: HNil)
+  lazy val queryIn3 = QueryPathEnd("foo") in ("a", "b", "c") mustEqual QueryIn(QueryPathEnd("foo"), "a".asParam :: "b".asParam :: "c".asParam :: HNil)
+  lazy val queryIn4 = QueryPathEnd("foo") in ("a", "b", "c", "d") mustEqual QueryIn(QueryPathEnd("foo"), "a".asParam :: "b".asParam :: "c".asParam :: "d".asParam :: HNil)
 
-  val simpleEquals = p"foo" === "bar"
+  val simpleEquals = QueryPathEnd("foo") === "bar"
 
   lazy val and = (simpleEquals and simpleEquals) mustEqual QueryAnd(simpleEquals, simpleEquals)
   lazy val or = (simpleEquals or simpleEquals) mustEqual QueryOr(simpleEquals, simpleEquals)
 
-  val simpleProjection = QueryProjectOne(p"foo", None)
+  val simpleProjection = QueryProjectOne(QueryPathEnd("foo"), None)
 
   lazy val projectionAs = {
-    (simpleProjection as "bar") mustEqual QueryProjectOne(p"foo", Some("bar"))
+    (simpleProjection as "bar") mustEqual QueryProjectOne(QueryPathEnd("foo"), Some("bar"))
     (QueryProjectAll as "bar") mustEqual QueryProjectAll
   }
   lazy val on = (simpleProjection on simpleEquals) mustEqual (simpleProjection -> simpleEquals)
@@ -109,7 +109,7 @@ class SqlSpec extends Specification { def is =
   lazy val ascending = QueryPathEnd("foo").asc mustEqual QuerySortAsc(QueryPathEnd("foo"))
   lazy val descending = QueryPathEnd("foo").desc mustEqual QuerySortDesc(QueryPathEnd("foo"))
 
-  val baseQuery = select(p"foo", p"bar") from (p"baz")
+  val baseQuery = select(QueryPathEnd("foo"), QueryPathEnd("bar")) from (QueryPathEnd("baz"))
 
   lazy val basicBuilder = baseQuery.build mustEqual (
     QuerySelect(
@@ -151,5 +151,14 @@ class SqlSpec extends Specification { def is =
     )
   )
 
+  lazy val orderBy = (baseQuery orderBy p"foo").build mustEqual (
+    QuerySelect(
+      QueryProjectOne(QueryPathEnd("baz"), None): QueryProjection[HNil],
+      (QueryProjectOne(QueryPathEnd("foo"), None): QueryProjection[HNil]) ::
+        (QueryProjectOne(QueryPathEnd("bar"), None): QueryProjection[HNil]) ::
+        HNil,
+      HNil: HNil, QueryComparisonNop, List(QueryPathEnd("foo")), List.empty, None, None
+    )
+  )
 
 }
