@@ -76,7 +76,7 @@ class SqlSpec extends Specification { def is =
     stringExpr.interpret(expr"foo $blah".t) mustEqual "foo baz"
   }
 
-  lazy val queryFunctionInterpolator = func"foo"(p"bar", "baz", 5) mustEqual QueryFunction(QueryPathEnd("foo"), QueryPathEnd("bar") :: "baz".asParam :: 5.asParam :: HNil)
+  lazy val queryFunctionInterpolator = func"foo"(p"bar", "baz", 5) mustEqual QueryFunction(QueryPathEnd("foo"), (QueryPathEnd("bar"): QueryValue[HNil]) :: "baz".asParam :: 5.asParam :: HNil)
 
 
   implicit class AExtensions[A](a: A) {
