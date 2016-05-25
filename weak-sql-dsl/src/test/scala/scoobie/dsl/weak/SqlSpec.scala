@@ -53,6 +53,13 @@ class SqlSpec extends Specification { def is =
     Offset                           $offset
     Limit                            $limit
     Offset And Limit                 $offsetAndLimit
+    Order By                         $orderBy
+    Group By                         $groupBy
+    Inner Join                       $innerJoin
+    Full Outer Join                  $fullOuterJoin
+    Left Outer Join                  $leftOuterJoin
+    Right Outer Join                 $rightOuterJoin
+    Cross Join                       $crossJoin
     """
 
 
@@ -151,14 +158,100 @@ class SqlSpec extends Specification { def is =
     )
   )
 
-  lazy val orderBy = (baseQuery orderBy p"foo").build mustEqual (
+  lazy val orderBy = (baseQuery orderBy QueryPathEnd("foo").asc).build mustEqual (
     QuerySelect(
       QueryProjectOne(QueryPathEnd("baz"), None): QueryProjection[HNil],
       (QueryProjectOne(QueryPathEnd("foo"), None): QueryProjection[HNil]) ::
         (QueryProjectOne(QueryPathEnd("bar"), None): QueryProjection[HNil]) ::
         HNil,
-      HNil: HNil, QueryComparisonNop, List(QueryPathEnd("foo")), List.empty, None, None
+      HNil: HNil, QueryComparisonNop, List(QuerySortAsc(QueryPathEnd("foo"))), List.empty, None, None
     )
   )
 
+  lazy val groupBy = (baseQuery groupBy QueryPathEnd("foo").asc).build mustEqual (
+    QuerySelect(
+      QueryProjectOne(QueryPathEnd("baz"), None): QueryProjection[HNil],
+      (QueryProjectOne(QueryPathEnd("foo"), None): QueryProjection[HNil]) ::
+        (QueryProjectOne(QueryPathEnd("bar"), None): QueryProjection[HNil]) ::
+        HNil,
+      HNil: HNil, QueryComparisonNop, List.empty, List(QuerySortAsc(QueryPathEnd("foo"))), None, None
+    )
+  )
+
+  val join = QueryProjectOne(QueryPathEnd("inner"), None) on (QueryPathEnd("whatever") <> `null`)
+
+  lazy val innerJoin = (baseQuery innerJoin (join)).build mustEqual (
+    QuerySelect(
+      QueryProjectOne(QueryPathEnd("baz"), None): QueryProjection[HNil],
+      (QueryProjectOne(QueryPathEnd("foo"), None): QueryProjection[HNil]) ::
+      (QueryProjectOne(QueryPathEnd("bar"), None): QueryProjection[HNil]) ::
+      HNil,
+      (QueryInnerJoin(QueryProjectOne(QueryPathEnd("inner"), None), QueryPathEnd("whatever") <> `null`): QueryUnion[HNil]) :: HNil,
+      QueryComparisonNop,
+      List.empty,
+      List.empty,
+      None,
+      None
+    )
+  )
+
+  lazy val leftOuterJoin = (baseQuery leftOuterJoin (join)).build mustEqual (
+    QuerySelect(
+      QueryProjectOne(QueryPathEnd("baz"), None): QueryProjection[HNil],
+      (QueryProjectOne(QueryPathEnd("foo"), None): QueryProjection[HNil]) ::
+        (QueryProjectOne(QueryPathEnd("bar"), None): QueryProjection[HNil]) ::
+        HNil,
+      (QueryLeftOuterJoin(QueryProjectOne(QueryPathEnd("inner"), None), QueryPathEnd("whatever") <> `null`): QueryUnion[HNil]) :: HNil,
+      QueryComparisonNop,
+      List.empty,
+      List.empty,
+      None,
+      None
+    )
+    )
+
+  lazy val rightOuterJoin = (baseQuery rightOuterJoin (join)).build mustEqual (
+    QuerySelect(
+      QueryProjectOne(QueryPathEnd("baz"), None): QueryProjection[HNil],
+      (QueryProjectOne(QueryPathEnd("foo"), None): QueryProjection[HNil]) ::
+        (QueryProjectOne(QueryPathEnd("bar"), None): QueryProjection[HNil]) ::
+        HNil,
+      (QueryRightOuterJoin(QueryProjectOne(QueryPathEnd("inner"), None), QueryPathEnd("whatever") <> `null`): QueryUnion[HNil]) :: HNil,
+      QueryComparisonNop,
+      List.empty,
+      List.empty,
+      None,
+      None
+    )
+    )
+
+  lazy val fullOuterJoin = (baseQuery fullOuterJoin (join)).build mustEqual (
+    QuerySelect(
+      QueryProjectOne(QueryPathEnd("baz"), None): QueryProjection[HNil],
+      (QueryProjectOne(QueryPathEnd("foo"), None): QueryProjection[HNil]) ::
+        (QueryProjectOne(QueryPathEnd("bar"), None): QueryProjection[HNil]) ::
+        HNil,
+      (QueryFullOuterJoin(QueryProjectOne(QueryPathEnd("inner"), None), QueryPathEnd("whatever") <> `null`): QueryUnion[HNil]) :: HNil,
+      QueryComparisonNop,
+      List.empty,
+      List.empty,
+      None,
+      None
+    )
+    )
+
+  lazy val crossJoin = (baseQuery crossJoin (join)).build mustEqual (
+    QuerySelect(
+      QueryProjectOne(QueryPathEnd("baz"), None): QueryProjection[HNil],
+      (QueryProjectOne(QueryPathEnd("foo"), None): QueryProjection[HNil]) ::
+        (QueryProjectOne(QueryPathEnd("bar"), None): QueryProjection[HNil]) ::
+        HNil,
+      (QueryCrossJoin(QueryProjectOne(QueryPathEnd("inner"), None), QueryPathEnd("whatever") <> `null`): QueryUnion[HNil]) :: HNil,
+      QueryComparisonNop,
+      List.empty,
+      List.empty,
+      None,
+      None
+    )
+    )
 }
