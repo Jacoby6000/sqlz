@@ -15,7 +15,6 @@ package object sql extends query.modify with query.select {
   implicit def sqlValueExtensions[A <: HList](a: QueryValue[A]): QueryValueExtensions[A] = new QueryValueExtensions(a)
   implicit def sqlComparisonExtensions[A <: HList](a: QueryComparison[A]): QueryComparisonExtensions[A] = new QueryComparisonExtensions(a)
   implicit def sqlProjectionExtensions[A <: HList](a: QueryProjection[A]): QueryProjectionExtensions[A] = new QueryProjectionExtensions(a)
-  implicit def sqlQueryFunctionBuilder(a: QueryPath): SqlQueryFunctionBuilder = new SqlQueryFunctionBuilder(a)
   implicit def sqlModifyFieldBuilder(a: QueryPath): ModifyFieldBuilder = ModifyFieldBuilder(a)
   implicit def sqlSortBuilder(a: QueryPath): QuerySortBuilder = new QuerySortBuilder(a)
 
