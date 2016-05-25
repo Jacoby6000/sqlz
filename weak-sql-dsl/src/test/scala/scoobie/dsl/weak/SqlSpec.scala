@@ -12,6 +12,7 @@ class SqlSpec extends Specification { def is =
   s2"""
   String Interpolators
     Query Path (p"...")  $queryPathInterpolator
+    Query Function       $queryFunctionInterpolator
     Raw Expression       $rawExpressionInterprolator
 
   Simple Aliases
@@ -74,6 +75,9 @@ class SqlSpec extends Specification { def is =
     expr"foo $blah" mustEqual QueryRawExpression("foo baz")
     stringExpr.interpret(expr"foo $blah".t) mustEqual "foo baz"
   }
+
+  lazy val queryFunctionInterpolator = func"foo"(p"bar", "baz", 5) mustEqual QueryFunction(QueryPathEnd("foo"), QueryPathEnd("bar") :: "baz".asParam :: 5.asParam :: HNil)
+
 
   implicit class AExtensions[A](a: A) {
     def asParam: QueryValue[A :: HNil] = QueryParameter(a)
