@@ -10,7 +10,7 @@ import scoobie.dsl.weak.sql.join._
 /**
   * Created by jacob.barber on 5/24/16.
   */
-object select {
+trait select {
   object SelectBuilderBuilder extends ProductArgs {
     def applyProduct[A <: HList, Out1 <: HList](a: A)(implicit
                                                       toList: ToTraversable.Aux[A, List, QueryProjection[_ <: HList]],
@@ -143,7 +143,7 @@ object select {
 
   }
 
-  class QuerySortBuilder(val f: QueryPath) extends AnyVal {
+  class QuerySortBuilder(val f: QueryPath) {
     def asc: QuerySortAsc = QuerySortAsc(f)
     def desc: QuerySortDesc = QuerySortDesc(f)
   }

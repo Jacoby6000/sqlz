@@ -3,14 +3,11 @@ package scoobie.dsl.weak
 import _root_.shapeless._
 import scoobie.ast._
 import scoobie.dsl.weak.sql.primitives._
-import scoobie.dsl.weak.sql.query.modify._
-import scoobie.dsl.weak.sql.query.select._
-
 
 /**
  * Created by jacob.barber on 3/4/16.
  */
-package object sql {
+package object sql extends query.modify with query.select {
 
   implicit val stringExpr = RawExpressionHandler[String](identity)
 
@@ -26,10 +23,8 @@ package object sql {
 
   val select = SelectBuilderBuilder
 
-
-
   // Update DSL helpers
-  def update(table: QueryPath) = new UpdateBuilder(table, HNil: HNil, QueryComparisonNop)
+  def update(table: QueryPath) = new UpdateBuilder(table, hnil, QueryComparisonNop)
 
   // Insert DSL helpers
   def insertInto(table: QueryPath): InsertBuilder = new InsertBuilder(table)
@@ -39,11 +34,10 @@ package object sql {
   val `null`: QueryValue[HNil] = QueryNull
   val `*`: QueryProjection[HNil] = QueryProjectAll
 
-
-
+  def not[A <: HList](queryComparison: QueryComparison[A]): QueryNot[A] = QueryNot(queryComparison)
 
   implicit def toQueryValue[A](a: A)(implicit ev: A =:!= QueryParameter[_], ev2: A =:!= QueryComparison[_]): QueryValue[A :: HNil] = QueryParameter(a)
   implicit def toQueryProjection(queryPath: QueryPath): QueryProjection[HNil] = QueryProjectOne(queryPath, None)
 
-  def not[A <: HList](queryComparison: QueryComparison[A]): QueryNot[A] = QueryNot(queryComparison)
+  def hnil: HNil = HNil
 }

@@ -8,8 +8,8 @@ import shapeless.{::, HList, HNil, ProductArgs}
 
 /**  * Created by jacob.barber on 5/24/16.
   */
-object modify {
-  case class DeleteBuilder(val table: QueryPath) extends AnyVal { def where[A <: HList](queryComparison: QueryComparison[A]) = QueryDelete(table, queryComparison)}
+trait modify {
+  case class DeleteBuilder(val table: QueryPath) { def where[A <: HList](queryComparison: QueryComparison[A]) = QueryDelete(table, queryComparison)}
 
   case class UpdateBuilder[Values <: HList, ComparisonParams <: HList, UnwrappedValues <: HList, Params <: HList](table: QueryPath, values: Values, where: QueryComparison[ComparisonParams])(implicit un: UnwrapAndFlattenHList.Aux[ModifyField, Values, ModifyFieldUnwrapper.type, UnwrappedValues], p: Prepend.Aux[UnwrappedValues, ComparisonParams, Params], toList: ToTraversable.Aux[Values,List,ModifyField[_ <: HList]]) { builder =>
     object set extends ProductArgs {
@@ -61,7 +61,7 @@ object modify {
     def build: QueryUpdate[Params] = QueryUpdate(table, values, where)
   }
 
-  case class ModifyFieldBuilder(queryPath: QueryPath) extends AnyVal {
+  case class ModifyFieldBuilder(queryPath: QueryPath) {
     def ==>[A <: HList](value: QueryValue[A]): ModifyField[A] = ModifyField(queryPath, value)
   }
 
