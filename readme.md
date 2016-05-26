@@ -91,7 +91,7 @@ First, lets set up a repl session with our imports, plus what we need to run doo
 ```scala
 import scoobie.doobie.doo.postgres._ // Use postgres with doobie support
 import scoobie.dsl.weak.sql._ // Import the Sql-like weakly typed DSL.
-import doobie.imports._ // Import doobie
+import doobie.imports.DriverManagerTransactor // Import doobie transactor
 import scalaz.concurrent.Task 
 
 val xa = DriverManagerTransactor[Task](
