@@ -20,7 +20,8 @@ Add this project as a dependency.
 
     Seq(
       "com.github.jacoby6000" %% "scoobie-core" % scoobieVersion,
-      "com.github.jacoby6000" %% "scoobie-contrib-postgres" % scoobieVersion
+      "com.github.jacoby6000" %% "scoobie-contrib-postgres" % scoobieVersion,
+      "com.github.jacoby6000" %% "scoobie-contrib-weak-sql-dsl" % scoobieVersion
     )
   }
 ```
@@ -30,11 +31,8 @@ Add this project as a dependency.
 Below is a sample query that somebody may want to write. The query below is perfectly valid; try it out!
 
 ```scala
-scala> import scoobie.doobie._
-import scoobie.doobie._
-
-scala> import scoobie.doobie.postgres.interpreter
-import scoobie.doobie.postgres.interpreter
+scala> import scoobie.doobie.doo.postgres._
+import scoobie.doobie.doo.postgres._
 
 scala> import scoobie.dsl.weak.sql._
 import scoobie.dsl.weak.sql._
@@ -91,8 +89,7 @@ As a proof of concept, here are some examples translated over from the book of d
 First, lets set up a repl session with our imports, plus what we need to run doobie.
 
 ```scala
-import scoobie.doobie._ // Import doobie support
-import scoobie.doobie.postgres.interpreter // Use postgres
+import scoobie.doobie.doo.postgres._ // Use postgres with doobie support
 import scoobie.dsl.weak.sql._ // Import the Sql-like weakly typed DSL.
 import doobie.imports._ // Import doobie
 import scalaz.concurrent.Task 

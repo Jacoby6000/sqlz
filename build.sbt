@@ -96,20 +96,27 @@ lazy val scoobie =
     .settings(scoobieSettings ++ noPublishSettings)
     .settings(unidocSettings)
     .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(docs))
+    .settings(
+      tutSourceDirectory := file("doc") / "src" / "main" / "tut",
+      tutTargetDirectory := file("doc") / "target" / "scala-2.11" / "tut"
+    )
     .dependsOn(core, doobieSupport, postgres, weakSqlDsl, docs)
     .aggregate(core, doobieSupport, postgres, weakSqlDsl, docs)
     .settings(
-      tutcp <<= tut andFinally {
-          val src = file(".") / "doc" / "target" / "scala-2.11" / "tut" / "readme.md"
-          val dst = file(".") / "readme.md"
+      tutcp <<= (tut map { a =>
 
-          println("Moving " + src + " to " + dst)
+        val src = file(".") / "doc" / "target" / "scala-2.11" / "tut" / "readme.md"
+        val dst = file(".") / "readme.md"
 
-          if (src.exists())
-            IO.copy(List(src -> dst), overwrite = true, preserveLastModified = true)
-          else
-            println("No tut output found at" + src.toString)
-      }
+        println("Copying " + src + " to " + dst)
+
+        if (src.exists())
+          IO.copy(List(src -> dst), overwrite = true, preserveLastModified = true)
+        else
+          println("No tut output found at" + src.toString)
+
+        a
+      })
     )
 
 lazy val core =
