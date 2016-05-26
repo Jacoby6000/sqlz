@@ -5,7 +5,7 @@ import _root_.shapeless.syntax.singleton._
 import org.specs2._
 import scoobie.dsl.weak.sql
 import scoobie.dsl.weak.sql.{query, _}
-import scoobie.doobie.postgres.interpreter
+import scoobie.doobie.doo.postgres._
 
 import scalaz.NonEmptyList
 import scalaz.concurrent.Task

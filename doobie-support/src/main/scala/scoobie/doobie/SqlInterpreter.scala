@@ -1,12 +1,14 @@
 package scoobie.doobie
 
-import doobie.imports._
-import doobie.syntax.string.{SqlInterpolator, Builder}
-import scoobie.ast.{QueryModify, QuerySelect, QueryExpression}
+import doobie.syntax.string.{Builder, Param, SqlInterpolator}
+import doobie.util.composite.Composite
+import doobie.util.query.Query0
+import doobie.util.update.Update0
+import scoobie.ast.{QueryExpression, QueryModify, QuerySelect}
 import shapeless.HList
 
 /**
-  * Created by jbarber on 5/21/16.
+  * Created by jacob.barber on 5/25/16.
   */
 case class SqlInterpreter(genSql: QueryExpression[_] => String) {
   def query[A <: HList: Param, B: Composite](ast: QuerySelect[A], printer: String => Unit): Query0[B] =

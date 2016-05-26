@@ -1,5 +1,5 @@
 import scoobie.doobie._
-import scoobie.doobie.postgres.interpreter
+import scoobie.doobie.doo.postgres.interpreter
 import scoobie.dsl.weak.sql._
 
 val q =

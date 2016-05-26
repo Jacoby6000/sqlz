@@ -1,11 +1,12 @@
-package scoobie.doobie
+package scoobie.doobie.doo
 
 import scoobie.ast._
+import scoobie.doobie.{DoobieSupport, SqlInterpreter}
 
 /**
   * Created by jbarber on 5/20/16.
   */
-package object postgres {
+object postgres extends DoobieSupport {
 
   implicit val interpreter = SqlInterpreter(interpretPSql _)
 
