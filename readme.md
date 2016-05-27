@@ -19,9 +19,8 @@ Add this project as a dependency.
     val scoobieVersion = "0.1.0"
 
     Seq(
-      "com.github.jacoby6000" %% "scoobie-core" % scoobieVersion,
-      "com.github.jacoby6000" %% "scoobie-contrib-postgres" % scoobieVersion,
-      "com.github.jacoby6000" %% "scoobie-contrib-weak-sql-dsl" % scoobieVersion
+      "com.github.jacoby6000" %% "scoobie-contrib-doobie30-postgres" % scoobieVersion, // import doobie 3.0 postgres support
+      "com.github.jacoby6000" %% "scoobie-contrib-mild-sql-dsl" % scoobieVersion // import the weak sql dsl
     )
   }
 ```

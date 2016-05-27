@@ -4,8 +4,8 @@ scala:
 
 env:
   - TEST_SUITE=scoobie
-  - TEST_SUITE=postgres23
   - TEST_SUITE=postgres30
+  # - TEST_SUITE=postgres23
 
 script:
   - bash scripts/build.sh $TEST_SUITE
