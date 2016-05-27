@@ -148,11 +148,11 @@ lazy val doobieSupport23 =
     .enablePlugins(SbtOsgi)
     .settings(target := file("doobie-support").getAbsoluteFile / "target23")
     .settings(publishSettings)
-    .settings(libraryDependencies ++= Seq(doobieCore % doobieVersion23, specs71))
     .settings(name := "scoobie-contrib-doobie23-support")
+    .settings(description := "Introduces doobie support to scoobie.")
+    .settings(libraryDependencies ++= Seq(doobieCore % doobieVersion23, specs71))
     .settings(packageInfoGenerator("scoobie.doobie", "scoobie-doobie23-support"))
     .settings(scoobieSettings)
-    .settings(description := "Introduces doobie support to scoobie.")
     .dependsOn(core, task71Compat % "test")
 
 lazy val doobieSupport30 =
@@ -160,11 +160,11 @@ lazy val doobieSupport30 =
     .enablePlugins(SbtOsgi)
     .settings(target := file("doobie-support").getAbsoluteFile / "target30")
     .settings(publishSettings)
-    .settings(libraryDependencies ++= Seq(doobieCore % doobieVersion30, specs72))
     .settings(name := "scoobie-contrib-doobie30-support")
+    .settings(description := "Introduces doobie support to scoobie.")
+    .settings(libraryDependencies ++= Seq(doobieCore % doobieVersion30, specs72))
     .settings(packageInfoGenerator("scoobie.doobie", "scoobie-doobie30-support"))
     .settings(scoobieSettings)
-    .settings(description := "Introduces doobie support to scoobie.")
     .dependsOn(core)
 
 lazy val postgres =
@@ -181,9 +181,9 @@ lazy val postgres23 =
     .settings(target := file("postgres").getAbsoluteFile / "target23")
     .settings(publishSettings)
     .settings(scoobieSettings)
+    .settings(name := "scoobie-contrib-doobie23-postgres")
     .settings(description := "Introduces doobie support to scoobie with postgres.")
     .settings(libraryDependencies ++= Seq(doobiePGDriver % doobieVersion23, specs71))
-    .settings(name := "scoobie-contrib-doobie23-postgres")
     .settings(packageInfoGenerator("scoobie.doobie.postgres", "scoobie-contrib-doobie23-postgres"))
     .dependsOn(doobieSupport23, weakSqlDsl % "test", task71Compat % "test")
 
@@ -193,9 +193,9 @@ lazy val postgres30 =
     .settings(target := file("postgres").getAbsoluteFile / "target30")
     .settings(publishSettings)
     .settings(scoobieSettings)
+    .settings(name := "scoobie-contrib-doobie30-postgres")
     .settings(description := "Introduces doobie support to scoobie with postgres.")
     .settings(libraryDependencies ++= Seq(doobiePGDriver % doobieVersion30, specs72))
-    .settings(name := "scoobie-contrib-doobie30-postgres")
     .settings(packageInfoGenerator("scoobie.doobie.postgres", "scoobie-contrib-doobie30-postgres"))
     .dependsOn(doobieSupport30, weakSqlDsl % "test")
 
@@ -206,9 +206,9 @@ lazy val weakSqlDsl =
     .settings(scoobieSettings ++ publishSettings)
     .settings(name := "scoobie-contrib-mild-sql-dsl")
     .settings(description := "Introduces a weakly typed SQL DSL to scoobie.")
+    .settings(libraryDependencies ++= Seq(doobiePGDriver % doobieVersion30, specs72))
     .settings(packageInfoGenerator("scoobie.dsl.weaksql", "scoobie-contrib-mild-sql-dsl"))
     .dependsOn(core)
-
 
 
 lazy val docs =
