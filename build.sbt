@@ -37,9 +37,6 @@ lazy val commonSettings = Seq(
     "-sourcepath", (baseDirectory in LocalRootProject).value.getAbsolutePath,
     "-doc-source-url", "https://github.com/jacoby6000/scoobie/tree/v" + version.value + "€{FILE_PATH}.scala"
   ),
-  libraryDependencies ++= Seq(
-    "org.scalacheck" %% "scalacheck" % "1.13.0" % "test"
-  ),
   addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.7.1")
 )
 
@@ -107,8 +104,8 @@ lazy val scoobie =
       tutSourceDirectory := file("doc") / "src" / "main" / "tut",
       tutTargetDirectory := file("doc") / "target" / "scala-2.11" / "tut"
     )
-    .dependsOn(core, doobieSupport, postgres, weakSqlDsl, docs)
-    .aggregate(core, doobieSupport, postgres, weakSqlDsl, docs)
+    .dependsOn(coreTest, doobieSupport, postgres, weakSqlDsl, docs)
+    .aggregate(coreTest, doobieSupport, postgres, weakSqlDsl, docs)
     .settings(
       tutcp <<= (tut map { a =>
 
@@ -132,15 +129,20 @@ lazy val core =
     .settings(name := "scoobie-core")
     .settings(description := "AST for making convenient SQL DSLs in Scala.")
     .settings(scoobieSettings ++ publishSettings)
-    .settings(libraryDependencies ++= Seq(shapeless, specs72))
+    .settings(libraryDependencies += shapeless)
     .settings(packageInfoGenerator("scoobie", "scoobie-core"))
+
+lazy val coreTest =
+  core
+    .settings(scoobieSettings ++ publishSettings)
+    .settings(libraryDependencies += specs72)
 
 lazy val doobieSupport =
   project.in(file("doobie-support"))
     .settings(scoobieSettings)
     .settings(description := "Introduces doobie support to scoobie.")
     .settings(noPublishSettings)
-    .settings(libraryDependencies ++= Seq(doobieCore % doobieVersion30, specs72))
+    .settings(libraryDependencies ++= Seq(doobieCore % doobieVersion30))
     .dependsOn(core)
 
 lazy val doobieSupport23 =
@@ -150,10 +152,10 @@ lazy val doobieSupport23 =
     .settings(publishSettings)
     .settings(name := "scoobie-contrib-doobie23-support")
     .settings(description := "Introduces doobie support to scoobie.")
-    .settings(libraryDependencies ++= Seq(doobieCore % doobieVersion23, specs71))
+    .settings(libraryDependencies ++= Seq(doobieCore % doobieVersion23 force(), specs71))
     .settings(packageInfoGenerator("scoobie.doobie", "scoobie-doobie23-support"))
     .settings(scoobieSettings)
-    .dependsOn(core % "compile->compile;test->compile", task71Compat % "test")
+    .dependsOn(core, task71Compat % "test")
 
 lazy val doobieSupport30 =
   project.in(file("doobie-support"))
@@ -206,7 +208,7 @@ lazy val weakSqlDsl =
     .settings(scoobieSettings ++ publishSettings)
     .settings(name := "scoobie-contrib-mild-sql-dsl")
     .settings(description := "Introduces a weakly typed SQL DSL to scoobie.")
-    .settings(libraryDependencies ++= Seq(doobiePGDriver % doobieVersion30, specs72))
+    .settings(libraryDependencies += specs72)
     .settings(packageInfoGenerator("scoobie.dsl.weaksql", "scoobie-contrib-mild-sql-dsl"))
     .dependsOn(core)
 
