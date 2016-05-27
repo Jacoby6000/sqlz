@@ -132,11 +132,6 @@ lazy val core =
     .settings(libraryDependencies ++= Seq(shapeless, specs72))
     .settings(packageInfoGenerator("scoobie", "scoobie-core"))
 
-lazy val coreTest =
-  core
-    .settings(scoobieSettings ++ publishSettings)
-    .settings(libraryDependencies += specs72)
-
 lazy val doobieSupport =
   project.in(file("doobie-support"))
     .settings(scoobieSettings)
