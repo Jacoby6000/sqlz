@@ -8,9 +8,7 @@ env:
   - TEST_SUITE=postgres30
 
 script:
-  - sbt $TEST_SUITE/clean $TEST_SUITE/coverage $TEST_SUITE/test $TEST_SUITE/coverageReport
-  - sbt tut
-  - cmp readme.md doc/target/scala-2.11/tut/readme.md
+  - scripts/build.sh $TEST_SUITE
 
 addons:
   postgresql: "9.3"
