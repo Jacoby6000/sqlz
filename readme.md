@@ -34,8 +34,8 @@ Below is a sample query that somebody may want to write. The query below is perf
 scala> import scoobie.doobie.doo.postgres._
 import scoobie.doobie.doo.postgres._
 
-scala> import scoobie.dsl.weak.sql._
-import scoobie.dsl.weak.sql._
+scala> import scoobie.snacks.mild.sql._
+import scoobie.snacks.mild.sql._
 
 scala> val q =
      |   select (
@@ -55,7 +55,7 @@ scala> val q =
      |     p"c.name" === "LightSaber" and
      |     p"c.age" > 27
      |   ) orderBy p"c.age".desc groupBy p"b.worth".asc
-q: scoobie.dsl.weak.sql.QueryBuilder[shapeless.HNil,shapeless.::[scoobie.ast.QueryProjection[shapeless.::[Int,shapeless.HNil]],shapeless.::[scoobie.ast.QueryProjection[shapeless.HNil],shapeless.HNil]],shapeless.::[scoobie.ast.QueryUnion[shapeless.HNil],shapeless.::[scoobie.ast.QueryUnion[shapeless.HNil],shapeless.HNil]],shapeless.::[Int,shapeless.HNil],shapeless.HNil,this.Out,shapeless.::[Int,shapeless.HNil],shapeless.::[Int,shapeless.HNil],this.Out] = QueryBuilder(QueryProjectOne(QueryPathEnd(bar),None),QueryProjectOne(QueryAdd(QueryPathEnd(foo),QueryParameter(10 :: HNil),10 :: HNil),Some(woozle)) :: QueryProjectAll :: HNil,QueryLeftOuterJoin(QueryProjectOne(QueryPathEnd(baz),Some(b)),QueryEqual(QueryPathCons(bar,QueryPathEnd(id)),QueryPathCons(b,QueryPathEnd(barId)),HNil),HNil) :: Que...
+q: scoobie.snacks.mild.sql.QueryBuilder[shapeless.HNil,shapeless.::[scoobie.ast.QueryProjection[shapeless.::[Int,shapeless.HNil]],shapeless.::[scoobie.ast.QueryProjection[shapeless.HNil],shapeless.HNil]],shapeless.::[scoobie.ast.QueryUnion[shapeless.HNil],shapeless.::[scoobie.ast.QueryUnion[shapeless.HNil],shapeless.HNil]],shapeless.::[Int,shapeless.HNil],shapeless.HNil,this.Out,shapeless.::[Int,shapeless.HNil],shapeless.::[Int,shapeless.HNil],this.Out] = QueryBuilder(QueryProjectOne(QueryPathEnd(bar),None),QueryProjectOne(QueryAdd(QueryPathEnd(foo),QueryParameter(10 :: HNil),10 :: HNil),Some(woozle)) :: QueryProjectAll :: HNil,QueryLeftOuterJoin(QueryProjectOne(QueryPathEnd(baz),Some(b)),QueryEqual(QueryPathCons(bar,QueryPathEnd(id)),QueryPathCons(b,QueryPathEnd(barId)),HNil),HNil) :: ...
 
 scala> val sql = q.build.genSql // Generate the sql associated with this query
 sql: String = SELECT "foo" + ? AS woozle, * FROM "bar" LEFT OUTER JOIN "baz" AS b ON "bar"."id" = "b"."barId" INNER JOIN "biz" AS c ON "c"."id" = "bar"."bizId" WHERE "c"."name" = ?  AND  "c"."age" > ? ORDER BY "c"."age" DESC GROUP BY "b"."worth" ASC
@@ -90,7 +90,7 @@ First, lets set up a repl session with our imports, plus what we need to run doo
 
 ```scala
 import scoobie.doobie.doo.postgres._ // Use postgres with doobie support
-import scoobie.dsl.weak.sql._ // Import the Sql-like weakly typed DSL.
+import scoobie.snacks.mild.sql._ // Import the Sql-like weakly (mildly) typed DSL.
 import doobie.imports.DriverManagerTransactor // Import doobie transactor
 import scalaz.concurrent.Task 
 
