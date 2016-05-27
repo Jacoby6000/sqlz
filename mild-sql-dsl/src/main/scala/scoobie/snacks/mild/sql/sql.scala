@@ -1,8 +1,9 @@
-package scoobie.dsl.weak
+package scoobie.snacks.mild
 
 import _root_.shapeless._
 import scoobie.ast._
-import scoobie.dsl.weak.sql.primitives._
+import scoobie.snacks.mild.sql.primitives._
+import scoobie.snacks.mild.sql.primitives.{QueryProjectionExtensions, QueryComparisonExtensions, QueryValueExtensions, SqlDslStringInterpolators}
 
 /**
  * Created by jacob.barber on 3/4/16.

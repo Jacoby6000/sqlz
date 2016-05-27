@@ -139,12 +139,12 @@ lazy val doobieSupport =
     .dependsOn(core)
 
 lazy val weakSqlDsl =
-  project.in(file("weak-sql-dsl"))
+  project.in(file("mild-sql-dsl"))
     .enablePlugins(SbtOsgi)
     .settings(scoobieSettings ++ publishSettings)
-    .settings(name := "scoobie-contrib-weak-sql-dsl")
-    .settings(description := "Introduces a SQL DSL to scoobie.")
-    .settings(packageInfoGenerator("scoobie.dsl.weaksql", "scoobie-contrib-weak-sql-dsl"))
+    .settings(name := "scoobie-contrib-mild-sql-dsl")
+    .settings(description := "Introduces a weakly typed SQL DSL to scoobie.")
+    .settings(packageInfoGenerator("scoobie.dsl.weaksql", "scoobie-contrib-mild-sql-dsl"))
     .dependsOn(core)
 
 lazy val postgres =

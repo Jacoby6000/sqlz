@@ -1,4 +1,4 @@
-package scoobie.dsl.weak
+package scoobie.snacks.mild
 
 import org.specs2._
 import scoobie.ast._

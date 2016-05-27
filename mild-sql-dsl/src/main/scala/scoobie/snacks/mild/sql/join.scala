@@ -1,4 +1,4 @@
-package scoobie.dsl.weak.sql
+package scoobie.snacks.mild.sql
 
 import scoobie.ast._
 import shapeless.HList

@@ -3,9 +3,9 @@ package scoobie.doobie
 import _root_.doobie.imports._
 import _root_.shapeless.syntax.singleton._
 import org.specs2._
-import scoobie.dsl.weak.sql
-import scoobie.dsl.weak.sql.{query, _}
 import scoobie.doobie.doo.postgres._
+import scoobie.snacks.mild.sql
+import scoobie.snacks.mild.sql._
 
 import scalaz.NonEmptyList
 import scalaz.concurrent.Task

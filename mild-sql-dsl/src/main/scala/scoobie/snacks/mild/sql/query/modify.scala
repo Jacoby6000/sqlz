@@ -1,4 +1,4 @@
-package scoobie.dsl.weak.sql.query
+package scoobie.snacks.mild.sql.query
 
 import scoobie.ast._
 import scoobie.shapeless.Polys.ModifyFieldUnwrapper
