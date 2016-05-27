@@ -104,8 +104,8 @@ lazy val scoobie =
       tutSourceDirectory := file("doc") / "src" / "main" / "tut",
       tutTargetDirectory := file("doc") / "target" / "scala-2.11" / "tut"
     )
-    .dependsOn(coreTest, doobieSupport, postgres, weakSqlDsl, docs)
-    .aggregate(coreTest, doobieSupport, postgres, weakSqlDsl, docs)
+    .dependsOn(core, doobieSupport, postgres, weakSqlDsl, docs)
+    .aggregate(core, doobieSupport, postgres, weakSqlDsl, docs)
     .settings(
       tutcp <<= (tut map { a =>
 
