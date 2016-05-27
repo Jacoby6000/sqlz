@@ -139,9 +139,9 @@ lazy val doobieSupport =
   project.in(file("doobie-support"))
     .settings(scoobieSettings)
     .settings(description := "Introduces doobie support to scoobie.")
-    .dependsOn(core)
     .settings(noPublishSettings)
     .settings(libraryDependencies ++= Seq(doobieCore % doobieVersion30, specs72))
+    .dependsOn(core)
 
 lazy val doobieSupport23 =
   project.in(file("doobie-support"))
@@ -153,7 +153,7 @@ lazy val doobieSupport23 =
     .settings(libraryDependencies ++= Seq(doobieCore % doobieVersion23, specs71))
     .settings(packageInfoGenerator("scoobie.doobie", "scoobie-doobie23-support"))
     .settings(scoobieSettings)
-    .dependsOn(core, task71Compat % "test")
+    .dependsOn(core % "compile->compile;test->compile", task71Compat % "test")
 
 lazy val doobieSupport30 =
   project.in(file("doobie-support"))
