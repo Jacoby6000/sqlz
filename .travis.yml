@@ -8,7 +8,7 @@ env:
   - TEST_SUITE=postgres30
 
 script:
-  - scripts/build.sh $TEST_SUITE
+  - bash scripts/build.sh $TEST_SUITE
 
 addons:
   postgresql: "9.3"
