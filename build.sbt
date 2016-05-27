@@ -129,7 +129,7 @@ lazy val core =
     .settings(name := "scoobie-core")
     .settings(description := "AST for making convenient SQL DSLs in Scala.")
     .settings(scoobieSettings ++ publishSettings)
-    .settings(libraryDependencies += shapeless)
+    .settings(libraryDependencies ++= Seq(shapeless, specs72))
     .settings(packageInfoGenerator("scoobie", "scoobie-core"))
 
 lazy val coreTest =
