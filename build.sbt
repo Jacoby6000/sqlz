@@ -13,6 +13,8 @@ lazy val buildSettings = Seq(
   crossScalaVersions := Seq("2.10.5", scalaVersion.value)
 )
 
+
+
 lazy val commonSettings = Seq(
   scalacOptions ++= Seq(
     "-encoding",

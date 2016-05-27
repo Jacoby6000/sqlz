@@ -2,10 +2,13 @@ language: scala
 scala:
   - 2.11.8
 
+env:
+  - TEST_SUITE=scoobie
+  - TEST_SUITE=postgres23
+  - TEST_SUITE=postgres30
+
 script:
-  - sbt clean coverage test coverageReport
-  - sbt postgres23/clean postgres23/test
-  - sbt postgres30/clean postgres30/test
+  - sbt $TEST_SUITE/clean $TEST_SUITE/coverage $TEST_SUITE/test $TEST_SUITE/coverageReport
   - sbt tut
   - cmp readme.md doc/target/scala-2.11/tut/readme.md
 
