@@ -16,10 +16,11 @@ Add the sonatype releases resolver
 Add this project as a dependency.
 ```scala
   libraryDependencies ++= {
-    val scoobieVersion = "0.2.0"
+    val scoobieVersion = "0.1.0"
 
     Seq(
-      "com.github.jacoby6000" %% "scoobie-contrib-doobie23-postgres" % scoobieVersion, // depend on doobie 2.3
+      "com.github.jacoby6000" %% "scoobie-core" % scoobieVersion,
+      "com.github.jacoby6000" %% "scoobie-contrib-postgres" % scoobieVersion,
       "com.github.jacoby6000" %% "scoobie-contrib-weak-sql-dsl" % scoobieVersion
     )
   }
