@@ -1,57 +1,14 @@
-package scoobie
+package scoobie.doobie.doo
 
-import doobie.imports._
-import doobie.syntax.string.{Builder, SqlInterpolator}
 import scoobie.ast._
-import _root_.shapeless._
+import scoobie.doobie.{DoobieSupport, SqlInterpreter}
 
 /**
- * Created by jacob.barber on 3/3/16.
- */
-object interpreters {
-  def void[A](a: A): Unit = ()
+  * Created by jbarber on 5/20/16.
+  */
+object postgres extends DoobieSupport {
 
-  case class SqlInterpreter(genSql: QueryExpression[_] => String) {
-    def query[A <: HList: Param, B: Composite](ast: QuerySelect[A], printer: String => Unit): Query0[B] =
-      builderFromSql(genAndPrintSql(ast, printer), ast.params).query[B]
-
-    def update[A <: HList: Param](ast: QueryModify[A], printer: String => Unit): Update0 =
-      builderFromSql(genAndPrintSql(ast, printer), ast.params).update
-
-    def builder[A <: HList: Param](ast: QueryExpression[A], printer: String => Unit): Builder[A] =
-      builderFromSql(genAndPrintSql(ast, printer), ast.params)
-
-    def builderFromSql[A <: HList : Param](sqlString: String, params: A) =
-      new SqlInterpolator(new StringContext(sqlString.split('?'): _*)).sql.applyProduct[A](params)
-
-    def genAndPrintSql[A <: HList](ast: QueryExpression[A], printer: String => Unit): String = {
-      val sqlString = genSql(ast)
-      printer(sqlString)
-      sqlString
-    }
-  }
-
-  implicit class QueryExpressionExtensions[A <: HList: Param](expr: QueryExpression[A])(implicit sqlInterpreter: SqlInterpreter) {
-    def builderAndPrint(printer: String => Unit): Builder[A] = sqlInterpreter.builder(expr, printer)
-    def builder: Builder[A] = sqlInterpreter.builder(expr, void)
-
-    def genAndPrintSql(printer: String => Unit): String = sqlInterpreter.genAndPrintSql(expr, printer)
-    def genSql: String = sqlInterpreter.genAndPrintSql(expr, void)
-  }
-
-  implicit class QuerySelectExtensions[A <: HList: Param](expr: QuerySelect[A])(implicit sqlInterpreter: SqlInterpreter) {
-    def queryAndPrint[B: Composite](printer: String => Unit = void): Query0[B] = sqlInterpreter.query[A, B](expr, printer)
-    def query[B: Composite]: Query0[B] = sqlInterpreter.query[A, B](expr, void)
-  }
-
-  implicit class QueryModifyExtensions[A <: HList: Param](expr: QueryModify[A])(implicit sqlInterpreter: SqlInterpreter) {
-    def updateAndPrint(printer: String => Unit = void): Update0 = sqlInterpreter.update[A](expr, printer)
-    def update: Update0 = sqlInterpreter.update[A](expr, void)
-  }
-
-  object sqlDialects {
-    implicit val postgres = SqlInterpreter(interpretPSql _)
-  }
+  implicit val interpreter = SqlInterpreter(interpretPSql _)
 
   def interpretPSql(expr: QueryExpression[_]): String = {
     val singleQuote = '"'.toString
@@ -86,9 +43,11 @@ object interpreters {
     def reduceComparison(value: QueryComparison[_]): String = value match {
       case QueryLit(v) => reduceValue(v)
       case QueryEqual(left, QueryNull, _) => reduceValue(left) + " IS NULL"
+      case QueryEqual(QueryNull, right, _) => reduceValue(right) + " IS NULL"
       case QueryEqual(left, right, _) => binOpReduction("=", left, right)(reduceValue)
-      case QueryNotEqual(left, QueryNull, _) => reduceValue(left) + " IS NOT NULL"
-      case QueryNotEqual(left, right, _) => binOpReduction("<>", left, right)(reduceValue)
+      case QueryNot(QueryEqual(left, QueryNull, _)) => reduceValue(left) + " IS NOT NULL"
+      case QueryNot(QueryEqual(QueryNull, right, _)) => reduceValue(right) + " IS NOT NULL"
+      case QueryNot(QueryEqual(left, right, _)) => binOpReduction("<>", left, right)(reduceValue)
       case QueryGreaterThan(left, right, _) => binOpReduction(">", left, right)(reduceValue)
       case QueryGreaterThanOrEqual(left, right, _) => binOpReduction(">=", left, right)(reduceValue)
       case QueryIn(left, rights, _) => reduceValue(left) + " IN " + rights.map(reduceValue).mkString("(", ", ", ")")
@@ -100,7 +59,7 @@ object interpreters {
       case QueryOr(_: QueryComparisonNop.type, right, _) => reduceComparison(right)
       case QueryOr(left , _: QueryComparisonNop.type, _) => reduceComparison(left)
       case QueryOr(left, right, _) => binOpReduction(" OR ", left, right)(reduceComparison)
-      case QueryNot(v) => "not " + reduceComparison(v)
+      case QueryNot(v) => "NOT (" + reduceComparison(v) + ")"
       case QueryComparisonNop => ""
     }
 

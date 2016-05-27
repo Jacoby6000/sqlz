@@ -1,4 +1,4 @@
-[![Join the chat at https://gitter.im/Jacoby6000/Scala-SQL-AST](https://badges.gitter.im/Jacoby6000/Scala-SQL-AST.svg)](https://gitter.im/Jacoby6000/Scala-SQL-AST?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/Jacoby6000/scoobie.svg?branch=master)](https://travis-ci.org/Jacoby6000/scoobie)
+[![Join the chat at https://gitter.im/Jacoby6000/Scala-SQL-AST](https://badges.gitter.im/Jacoby6000/Scala-SQL-AST.svg)](https://gitter.im/Jacoby6000/Scala-SQL-AST?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/Jacoby6000/scoobie.svg?branch=master)](https://travis-ci.org/Jacoby6000/scoobie) [![codecov](https://codecov.io/gh/Jacoby6000/scoobie/branch/master/graph/badge.svg)](https://codecov.io/gh/Jacoby6000/scoobie)
 
 ### Querying with [Doobie](https://github.com/tpolecat/doobie), without raw sql
 
@@ -15,7 +15,14 @@ Add the sonatype releases resolver
 
 Add this project as a dependency.
 ```scala
-  libraryDependencies += "com.github.jacoby6000" %% "scoobie" % "0.1.0",
+  libraryDependencies ++= {
+    val scoobieVersion = "0.1.0"
+
+    Seq(
+      "com.github.jacoby6000" %% "scoobie-contrib-doobie30-postgres" % scoobieVersion, // import doobie 3.0 postgres support
+      "com.github.jacoby6000" %% "scoobie-contrib-mild-sql-dsl" % scoobieVersion // import the weak sql dsl
+    )
+  }
 ```
 
 ### Using the SQL DSL
@@ -23,9 +30,8 @@ Add this project as a dependency.
 Below is a sample query that somebody may want to write. The query below is perfectly valid; try it out!
 
 ```tut
-import scoobie.interpreters._
-import scoobie.interpreters.sqlDialects.postgres
-import scoobie.dsl.weak.sql._
+import scoobie.doobie.doo.postgres._
+import scoobie.snacks.mild.sql._
 
 val q =
   select (
@@ -77,10 +83,9 @@ As a proof of concept, here are some examples translated over from the book of d
 First, lets set up a repl session with our imports, plus what we need to run doobie.
 
 ```tut:silent
-import scoobie.interpreters._ // Import the interpreters
-import scoobie.interpreters.sqlDialects.postgres // Use postgres
-import scoobie.dsl.weak.sql._ // Import the Sql-like weakly typed DSL.
-import doobie.imports._ // Import doobie
+import scoobie.doobie.doo.postgres._ // Use postgres with doobie support
+import scoobie.snacks.mild.sql._ // Import the Sql-like weakly (mildly) typed DSL.
+import doobie.imports.DriverManagerTransactor // Import doobie transactor
 import scalaz.concurrent.Task 
 
 val xa = DriverManagerTransactor[Task](
@@ -136,13 +141,12 @@ def joined = {
     p"c2.name"
   ) from (
     p"country" as "c1"
-  ) leftOuterJoin (
+  ) innerJoin (
     p"country" as "c2" on (
       func"reverse"(p"c1.code") === p"c2.code"
     )
   ) where (
-    (p"c2.code" !== `null`) and
-    (p"c2.name" !== p"c1.name")
+    p"c2.name" !== p"c1.name"
   )).build
     .queryAndPrint[ComplimentaryCountries](sql => println("\n" + sql))
 }
