@@ -4,6 +4,8 @@ scala:
 
 script:
   - sbt clean coverage test coverageReport
+  - sbt postgres23/clean postgres23/test
+  - sbt postgres30/clean postgres30/test
   - sbt tut
   - cmp readme.md doc/target/scala-2.11/tut/readme.md
 

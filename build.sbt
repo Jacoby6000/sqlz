@@ -130,13 +130,68 @@ lazy val core =
 
 lazy val doobieSupport =
   project.in(file("doobie-support"))
-    .enablePlugins(SbtOsgi)
-    .settings(scoobieSettings ++ publishSettings)
-    .settings(libraryDependencies += doobieCore)
-    .settings(name := "scoobie-doobie-support")
+    .settings(scoobieSettings)
     .settings(description := "Introduces doobie support to scoobie.")
-    .settings(packageInfoGenerator("scoobie.doobie", "scoobie-doobie-support"))
     .dependsOn(core)
+    .settings(noPublishSettings)
+    .settings(libraryDependencies += (doobieCore % doobieVersion30))
+
+lazy val doobieSupport23 =
+  project.in(file("doobie-support"))
+    .enablePlugins(SbtOsgi)
+    .settings(target := file("doobie-support").getAbsoluteFile / "target23")
+    .settings(publishSettings)
+    .settings(libraryDependencies += (doobieCore % doobieVersion23))
+    .settings(name := "scoobie-contrib-doobie23-support")
+    .settings(packageInfoGenerator("scoobie.doobie", "scoobie-doobie23-support"))
+    .settings(scoobieSettings)
+    .settings(description := "Introduces doobie support to scoobie.")
+    .dependsOn(core)
+
+lazy val doobieSupport30 =
+  project.in(file("doobie-support"))
+    .enablePlugins(SbtOsgi)
+    .settings(target := file("doobie-support").getAbsoluteFile / "target30")
+    .settings(publishSettings)
+    .settings(libraryDependencies += (doobieCore % doobieVersion30))
+    .settings(name := "scoobie-contrib-doobie30-support")
+    .settings(packageInfoGenerator("scoobie.doobie", "scoobie-doobie30-support"))
+    .settings(scoobieSettings)
+    .settings(description := "Introduces doobie support to scoobie.")
+    .dependsOn(core)
+
+lazy val postgres =
+  project.in(file("postgres"))
+    .settings(noPublishSettings)
+    .settings(scoobieSettings)
+    .settings(description := "Introduces doobie support to scoobie with postgres.")
+    .settings(libraryDependencies += (doobiePGDriver % doobieVersion30))
+    .dependsOn(doobieSupport, weakSqlDsl % "test")
+
+lazy val postgres23 =
+  project.in(file("postgres"))
+    .enablePlugins(SbtOsgi)
+    .settings(target := file("postgres").getAbsoluteFile / "target23")
+    .settings(publishSettings)
+    .settings(scoobieSettings)
+    .settings(description := "Introduces doobie support to scoobie with postgres.")
+    .settings(libraryDependencies += (doobiePGDriver % doobieVersion23))
+    .settings(name := "scoobie-contrib-doobie23-postgres")
+    .settings(packageInfoGenerator("scoobie.doobie.postgres", "scoobie-contrib-doobie23-postgres"))
+    .dependsOn(doobieSupport23, weakSqlDsl % "test")
+
+lazy val postgres30 =
+  project.in(file("postgres"))
+    .enablePlugins(SbtOsgi)
+    .settings(target := file("postgres").getAbsoluteFile / "target30")
+    .settings(publishSettings)
+    .settings(scoobieSettings)
+    .settings(description := "Introduces doobie support to scoobie with postgres.")
+    .settings(libraryDependencies += (doobiePGDriver % doobieVersion30))
+    .settings(name := "scoobie-contrib-doobie30-postgres")
+    .settings(packageInfoGenerator("scoobie.doobie.postgres", "scoobie-contrib-doobie30-postgres"))
+    .dependsOn(doobieSupport30, weakSqlDsl % "test")
+
 
 lazy val weakSqlDsl =
   project.in(file("mild-sql-dsl"))
@@ -147,15 +202,7 @@ lazy val weakSqlDsl =
     .settings(packageInfoGenerator("scoobie.dsl.weaksql", "scoobie-contrib-mild-sql-dsl"))
     .dependsOn(core)
 
-lazy val postgres =
-  project.in(file("postgres"))
-    .enablePlugins(SbtOsgi)
-    .settings(scoobieSettings ++ publishSettings)
-    .settings(libraryDependencies += doobiePGDriver)
-    .settings(name := "scoobie-contrib-postgres")
-    .settings(description := "Introduces doobie support to scoobie with postgres.")
-    .settings(packageInfoGenerator("scoobie.doobie.postgres", "scoobie-contrib-postgres"))
-    .dependsOn(core, doobieSupport, weakSqlDsl % "test")
+
 
 lazy val docs =
   project.in(file("doc"))
@@ -178,9 +225,11 @@ lazy val docs =
     .dependsOn(core, doobieSupport, postgres, weakSqlDsl)
 
 
-lazy val doobieVersion = "0.3.0-M1"
-lazy val doobieCore = "org.tpolecat" %% "doobie-core" % doobieVersion
-lazy val doobiePGDriver = "org.tpolecat" %% "doobie-contrib-postgresql" % doobieVersion
+lazy val doobieVersion30 = "0.3.0-M1"
+lazy val doobieVersion23 = "0.2.3"
+lazy val doobieCore = "org.tpolecat" %% "doobie-core"
+lazy val doobiePGDriver = "org.tpolecat" %% "doobie-contrib-postgresql"
+
 lazy val shapeless = "com.chuusai" %% "shapeless" % "2.3.1"
 
 lazy val ctut = taskKey[Unit]("Copy tut output to blog repo nearby.")
