@@ -1,5 +1,6 @@
 package scoobie.doobie
 
+import scoobie._
 import _root_.doobie.imports._
 import _root_.shapeless.syntax.singleton._
 import org.specs2._
