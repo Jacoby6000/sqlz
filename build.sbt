@@ -104,6 +104,7 @@ lazy val scoobie =
       tutSourceDirectory := file("doc") / "src" / "main" / "tut",
       tutTargetDirectory := file("doc") / "target" / "scala-2.11" / "tut"
     )
+    .dependsOn(core, postgres, weakSqlDsl)
     .aggregate(core, doobieSupport, doobieSupport23, doobieSupport30, postgres, postgres23, postgres30, weakSqlDsl, docs)
     .settings(
       tutcp <<= (tut map { a =>
@@ -225,7 +226,7 @@ lazy val docs =
         }
       }
     )
-    .dependsOn(core, doobieSupport, postgres, weakSqlDsl)
+    .dependsOn(postgres30, weakSqlDsl)
 
 
 lazy val doobieVersion30 = "0.3.0-M1"
