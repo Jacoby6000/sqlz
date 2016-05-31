@@ -184,4 +184,4 @@ SELECT "c1"."code", "c1"."name", "c2"."code", "c2"."name" FROM "country" AS c1 I
   ComplimentaryCountries(GUY,Guyana,YUG,Yugoslavia)
 ```
 
-Check out [this end to end example](https://github.com/Jacoby6000/scoobie/blob/master/core/src/test/scala/com/github/jacoby6000/scoobie/dsl/weak/SqlDSLSimpleSelectTest.scala#L71) for an idea of how to utilize insert/update/delete as well.
+Check out [this end to end example](https://github.com/Jacoby6000/scoobie/blob/master/postgres/src/test/scala/scoobie/doobie/PostgresTest.scala#L71) for an idea of how to utilize insert/update/delete as well.
