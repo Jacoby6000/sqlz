@@ -8,17 +8,16 @@ import scoobie.doobie.{DoobieSupport, SqlInterpreter}
   */
 object postgres extends DoobieSupport {
 
-  implicit val interpreter = SqlInterpreter(interpretPSql _)
+  implicit val interpreter = SqlInterpreter(interpretSql(_, "\""))
 
-  def interpretPSql(expr: QueryExpression[_]): String = {
-    val singleQuote = '"'.toString
+  def interpretSql(expr: QueryExpression[_], escapeFieldWith: String): String = {
     def wrap(s: String, using: String): String = s"$using$s$using"
 
     def binOpReduction[A](op: String, left: A, right: A)(f: A => String) = f(left) + wrap(op, " ") + f(right)
 
     def reducePath(queryPath: QueryPath): String = queryPath match {
-      case QueryPathEnd(str) => wrap(str, "\"")
-      case QueryPathCons(head, tail) => wrap(head, "\"") + "." + reducePath(tail)
+      case QueryPathEnd(str) => wrap(str, escapeFieldWith)
+      case QueryPathCons(head, tail) => wrap(head, escapeFieldWith) + "." + reducePath(tail)
     }
 
     def reduceProjection(projection: QueryProjection[_]): String = projection match {
@@ -36,7 +35,7 @@ object postgres extends DoobieSupport {
       case QuerySub(left, right, _) => binOpReduction("-", left, right)(reduceValue)
       case QueryDiv(left, right, _) => binOpReduction("/", left, right)(reduceValue)
       case QueryMul(left, right, _) => binOpReduction("*", left, right)(reduceValue)
-      case sel: QuerySelect[_] => "(" + interpretPSql(sel) + ")"
+      case sel: QuerySelect[_] => "(" + interpretSql(sel, escapeFieldWith) + ")"
       case QueryNull => "NULL"
     }
 
