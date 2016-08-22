@@ -229,7 +229,7 @@ lazy val docs =
     .dependsOn(postgres30, weakSqlDsl)
 
 
-lazy val doobieVersion30 = "0.3.0-M1"
+lazy val doobieVersion30 = "0.3.0"
 lazy val doobieVersion23 = "0.2.3"
 lazy val doobieCore = "org.tpolecat" %% "doobie-core"
 lazy val doobiePGDriver = "org.tpolecat" %% "doobie-contrib-postgresql"
