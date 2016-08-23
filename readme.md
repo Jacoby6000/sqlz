@@ -16,7 +16,7 @@ Add the sonatype releases resolver
 Add this project as a dependency.
 ```scala
   libraryDependencies ++= {
-    val scoobieVersion = "0.1.0"
+    val scoobieVersion = "0.2.1"
 
     Seq(
       "com.github.jacoby6000" %% "scoobie-contrib-doobie30-postgres" % scoobieVersion, // import doobie 3.0 postgres support
@@ -24,6 +24,14 @@ Add this project as a dependency.
     )
   }
 ```
+
+Refer to the chart below to see what dependencies use what versions of things
+
+| scoobie distribution              | scoobie version | doobie | status | jdk  | scala | scalaz | scalaz-stream | shapeless |
+|:---------------------------------:|:---------------:|:------:|:------:|:----:|:-----:|:------:|:-------------:|:---------:|
+| scoobie-contrib-doobie30-postgres | 0.2.1           |  0.3.0 | stable | 1.8+ | 2.11  |   7.2  |      0.8a     |    2.3    |
+| scoobie-contrib-doobie23-postgres | 0.2.1           |  0.2.3 | stable | 1.6+ | 2.11  |   7.1  |      0.8      |    2.2    |
+| scoobie-contrib-mild-sql-dsl      | 0.2.1           |  N/A   | stable | 1.6+ | 2.11  |   N/A  |      N/A      |    2.3    | 
 
 ### Using the SQL DSL
 
