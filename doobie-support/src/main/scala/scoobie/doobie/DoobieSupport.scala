@@ -1,7 +1,7 @@
 package scoobie.doobie
 
 import doobie.imports._
-import doobie.syntax.string.{Builder, SqlInterpolator}
+import doobie.syntax.string.SqlInterpolator
 import scoobie.ast._
 import shapeless._
 

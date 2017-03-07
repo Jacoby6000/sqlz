@@ -159,7 +159,6 @@ object ast {
       pl: ToTraversable.Aux[QueryProjections, List, QueryProjection[_ <: HList]],
       ul: ToTraversable.Aux[QueryUnions, List, QueryUnion[_ <: HList]]): QuerySelect[Params] =
         QuerySelect[Params](table, pl(values), ul(unions), filter, sorts, groupings, offset, limit, p.combine(table.params, mv(values), mu(unions), filter.params))
-
   }
 
   case class QuerySelect[Params <: HList] private (
