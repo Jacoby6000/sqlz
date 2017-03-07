@@ -12,6 +12,5 @@ addSbtPlugin("com.typesafe.sbt"  % "sbt-osgi"     % "0.8.0")
 addSbtPlugin("com.typesafe.sbt"  % "sbt-site"     % "0.8.1")
 addSbtPlugin("com.typesafe.sbt"  % "sbt-ghpages"  % "0.5.3")
 
-addSbtPlugin("io.get-coursier" % "sbt-coursier-java-6" % "1.0.0-M12-1")
 //addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.6.0")
 //addCompilerPlugin("com.milessabin" % "si2712fix-plugin" % "1.2.0" cross CrossVersion.full)

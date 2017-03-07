@@ -1,5 +1,6 @@
 package scoobie.doobie.doo
 
+import doobie.imports._
 import scoobie.ast._
 import scoobie.doobie.{DoobieSupport, SqlInterpreter}
 
@@ -10,7 +11,7 @@ object postgres extends DoobieSupport {
 
   implicit val interpreter = SqlInterpreter(interpretSql(_, "\""))
 
-  def interpretSql(expr: QueryExpression[_], escapeFieldWith: String): String = {
+  def interpretSql[A: Param](expr: QueryExpression[A], escapeFieldWith: String): Fragment = {
     def wrap(s: String, using: String): String = s"$using$s$using"
 
     def binOpReduction[A](op: String, left: A, right: A)(f: A => String) = f(left) + wrap(op, " ") + f(right)
@@ -25,17 +26,17 @@ object postgres extends DoobieSupport {
       case QueryProjectOne(path, alias) => reduceValue(path) + alias.map(" AS " + _).getOrElse("")
     }
 
-    def reduceValue(value: QueryValue[_]): String = value match {
-      case expr @ QueryRawExpression(ex) => expr.rawExpressionHandler.interpret(ex)
-      case QueryParameter(s) => "?"
-      case QueryPathCons(a, b) => reducePath(QueryPathCons(a, b))
-      case QueryPathEnd(a) => reducePath(QueryPathEnd(a))
-      case QueryFunction(path, args, _) => reducePath(path) + "(" + args.map(reduceValue).mkString(", ") + ")"
-      case QueryAdd(left, right, _) => binOpReduction("+", left, right)(reduceValue)
-      case QuerySub(left, right, _) => binOpReduction("-", left, right)(reduceValue)
-      case QueryDiv(left, right, _) => binOpReduction("/", left, right)(reduceValue)
-      case QueryMul(left, right, _) => binOpReduction("*", left, right)(reduceValue)
-      case sel: QuerySelect[_] => "(" + interpretSql(sel, escapeFieldWith) + ")"
+    def reduceValue(value: QueryValue[_]): Fragment = value match {
+      case expr @ QueryRawExpression(ex) => Fragment(expr.rawExpressionHandler.interpret(ex))
+      case QueryParameter(s) => fr"$s"
+      case QueryPathCons(a, b) => Fragment(reducePath(QueryPathCons(a, b)))
+      case QueryPathEnd(a) => Fragment(reducePath(QueryPathEnd(a)))
+      case QueryFunction(path, args, _) => Fragment(reducePath(path) + "(" + args.map(reduceValue).mkString(", ") + ")")
+      case QueryAdd(left, right, _) => Fragment(binOpReduction("+", left, right)(reduceValue))
+      case QuerySub(left, right, _) => Fragment(binOpReduction("-", left, right)(reduceValue))
+      case QueryDiv(left, right, _) => Fragment(binOpReduction("/", left, right)(reduceValue))
+      case QueryMul(left, right, _) => Fragment(binOpReduction("*", left, right)(reduceValue))
+      case sel: QuerySelect[_] => Fragment("(" + interpretSql(sel, escapeFieldWith) + ")")
       case QueryNull => "NULL"
     }
 

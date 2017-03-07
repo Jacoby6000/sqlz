@@ -58,7 +58,7 @@ class PostgresTest extends Specification {
 
   lazy val selectWhereIn = {
     val codes = NonEmptyList("TUV", "YUG")
-    implicit val codesParam = Param.many(codes)
+    implicit val codesParam = Param.
     (
       select(p"name") from p"country" where (p"code" in ("USA", "BRA", codes.narrow))
     ).build
