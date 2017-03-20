@@ -4,12 +4,13 @@ import _root_.shapeless._
 import scoobie.ast._
 import scoobie.snacks.mild.sql.primitives._
 import scoobie.snacks.mild.sql.primitives.{QueryComparisonExtensions, QueryProjectionExtensions, QueryValueExtensions, SqlDslStringInterpolators}
-import scoobie.snacks.mild.sql.query.coercion.Coerce
+import scoobie.coercion.Coerce
 
 /**
  * Created by jacob.barber on 3/4/16.
  */
 package object sql extends query.modify with query.select {
+
 
   implicit val stringExpr = RawExpressionHandler[String](identity)
 
@@ -32,9 +33,7 @@ package object sql extends query.modify with query.select {
 
   def not[F[_]](queryComparison: QueryComparison[F]): QueryNot[F] = QueryNot(queryComparison)
 
-  implicit def toQueryValue[F[_], A](
-    a: A
-  )(
+  implicit def toQueryValue[F[_], A](a: A)(
     implicit
     $e: Coerce[F],
     ev: A =:!= QueryParameter[F, _],

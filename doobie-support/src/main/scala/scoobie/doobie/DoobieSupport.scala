@@ -8,9 +8,9 @@ import shapeless._
   * Created by jacob.barber on 5/25/16.
   */
 trait DoobieSupport {
-  implicit def toQuerySelectExtensions[A <: HList: Param](expr: QuerySelect[A])(implicit sqlInterpreter: SqlInterpreter): QuerySelectExtensions[A] = new QuerySelectExtensions[A](expr)
-  implicit def toQueryExpressionExtensions[A <: HList: Param](expr: QueryExpression[A])(implicit sqlInterpreter: SqlInterpreter): QueryExpressionExtensions[A] = new QueryExpressionExtensions[A](expr)
-  implicit def toQueryModifyExtensions[A <: HList: Param](expr: QueryModify[A])(implicit sqlInterpreter: SqlInterpreter): QueryModifyExtensions[A] = new QueryModifyExtensions[A](expr)
+  implicit def toQuerySelectExtensions(expr: QuerySelect[ScoobieFragmentProducer])(implicit sqlInterpreter: SqlInterpreter): QuerySelectExtensions = new QuerySelectExtensions(expr)
+  implicit def toQueryExpressionExtensions(expr: QueryExpression[ScoobieFragmentProducer])(implicit sqlInterpreter: SqlInterpreter): QueryExpressionExtensions = new QueryExpressionExtensions(expr)
+  implicit def toQueryModifyExtensions(expr: QueryModify[ScoobieFragmentProducer])(implicit sqlInterpreter: SqlInterpreter): QueryModifyExtensions = new QueryModifyExtensions(expr)
 }
 
 

@@ -20,7 +20,9 @@ object ast {
 
   sealed trait QueryValue[F[_]]
   case class QueryRawExpression[F[_], T](t: T)(implicit val rawExpressionHandler: RawExpressionHandler[T]) extends QueryValue[F]
-  case class QueryParameter[F[_], T](value: T)(implicit val ev: F[T]) extends QueryValue[F]
+  case class QueryParameter[F[_], T](value: T)(implicit val ev: F[T]) extends QueryValue[F] {
+    type Out = T
+  }
 
   case class QueryFunction[F[_]] private (path: QueryPath[F], args: List[QueryValue[F]]) extends QueryValue[F]
   case class QueryAdd[F[_]] private (left: QueryValue[F], right: QueryValue[F]) extends QueryValue[F]

@@ -1,4 +1,4 @@
-package scoobie.snacks.mild.sql.query
+package scoobie
 
 /**
   * Created by jacob.barber on 3/7/17.

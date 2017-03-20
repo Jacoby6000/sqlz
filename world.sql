@@ -1,7 +1,7 @@
 --
 -- H2 port of the PostgreSQL port of the MySQL "World" database.
 --
--- The sample data used in the world database is Copyright Statistics
+-- The sample data used in the world database is Copyright Statistics 
 -- Finland, http://www.stat.fi/worldinfigures.
 --
 
@@ -836,7 +836,7 @@ INSERT INTO city VALUES (792, 'Butuan', 'PHL', 'Caraga', 267279);
 INSERT INTO city VALUES (793, 'Angeles', 'PHL', 'Central Luzon', 263971);
 INSERT INTO city VALUES (794, 'Tarlac', 'PHL', 'Central Luzon', 262481);
 INSERT INTO city VALUES (795, 'Mandaue', 'PHL', 'Central Visayas', 259728);
-INSERT INTO city VALUES (796, 'Baguio', 'PHL', 'CAT', 252386);
+INSERT INTO city VALUES (796, 'Baguio', 'PHL', 'CAR', 252386);
 INSERT INTO city VALUES (797, 'Batangas', 'PHL', 'Southern Tagalog', 247588);
 INSERT INTO city VALUES (798, 'Cainta', 'PHL', 'Southern Tagalog', 242511);
 INSERT INTO city VALUES (799, 'San Pedro', 'PHL', 'Southern Tagalog', 231403);
@@ -3423,7 +3423,7 @@ INSERT INTO city VALUES (3379, 'Van', 'TUR', 'Van', 219319);
 INSERT INTO city VALUES (3380, 'Sultanbeyli', 'TUR', 'Istanbul', 211068);
 INSERT INTO city VALUES (3381, 'Izmit (Kocaeli)', 'TUR', 'Kocaeli', 210068);
 INSERT INTO city VALUES (3382, 'Manisa', 'TUR', 'Manisa', 207148);
-INSERT INTO city VALUES (3383, 'A man dressed like a bat', 'TUR', 'A man dressed like a bat', 203793);
+INSERT INTO city VALUES (3383, 'Batman', 'TUR', 'Batman', 203793);
 INSERT INTO city VALUES (3384, 'Balikesir', 'TUR', 'Balikesir', 196382);
 INSERT INTO city VALUES (3385, 'Sakarya (Adapazari)', 'TUR', 'Sakarya', 190641);
 INSERT INTO city VALUES (3386, 'Iskenderun', 'TUR', 'Hatay', 153022);
@@ -3607,7 +3607,7 @@ INSERT INTO city VALUES (3563, 'Ciudad Losada', 'VEN', '', 134501);
 INSERT INTO city VALUES (3564, 'Guacara', 'VEN', 'Carabobo', 131334);
 INSERT INTO city VALUES (3565, 'Valera', 'VEN', 'Trujillo', 130281);
 INSERT INTO city VALUES (3566, 'Guanare', 'VEN', 'Portuguesa', 125621);
-INSERT INTO city VALUES (3567, 'Catúpano', 'VEN', 'Sucre', 119639);
+INSERT INTO city VALUES (3567, 'Carúpano', 'VEN', 'Sucre', 119639);
 INSERT INTO city VALUES (3568, 'Catia La Mar', 'VEN', 'Distrito Federal', 117012);
 INSERT INTO city VALUES (3569, 'El Tigre', 'VEN', 'Anzoátegui', 116256);
 INSERT INTO city VALUES (3570, 'Guatire', 'VEN', 'Miranda', 109121);
@@ -5372,3 +5372,4 @@ ALTER TABLE countrylanguage
 COMMIT;
 
 ANALYZE;
+

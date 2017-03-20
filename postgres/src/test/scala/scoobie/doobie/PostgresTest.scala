@@ -5,8 +5,10 @@ import _root_.doobie.imports._
 import _root_.shapeless.syntax.singleton._
 import org.specs2._
 import scoobie.doobie.doo.postgres._
+import scoobie.doobie.coerceToDoobieParam
 import scoobie.snacks.mild.sql
 import scoobie.snacks.mild.sql._
+import _root_.doobie.syntax.process._
 
 import scalaz.NonEmptyList
 import scalaz.concurrent.Task
@@ -16,7 +18,7 @@ import scalaz.concurrent.Task
   */
 class PostgresTest extends Specification {
 
-  val xa = DriverManagerTransactor[Task](
+  val xa: Transactor[Task] = DriverManagerTransactor[Task](
     "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"
   )
 
@@ -58,9 +60,8 @@ class PostgresTest extends Specification {
 
   lazy val selectWhereIn = {
     val codes = NonEmptyList("TUV", "YUG")
-    implicit val codesParam = Param.
     (
-      select(p"name") from p"country" where (p"code" in ("USA", "BRA", codes.narrow))
+      select(p"name") from p"country" where (p"code" in ("USA", "BRA", codes))
     ).build
       .queryAndPrint[String](println _)
       .list

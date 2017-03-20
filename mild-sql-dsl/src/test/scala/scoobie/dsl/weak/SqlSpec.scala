@@ -3,7 +3,7 @@ package scoobie.snacks.mild
 import org.specs2._
 import scoobie.ast._
 import _root_.shapeless._
-import scoobie.snacks.mild.sql.query.coercion.Coerce
+import scoobie.coercion.Coerce
 import sql.{query, _}
 
 /**
