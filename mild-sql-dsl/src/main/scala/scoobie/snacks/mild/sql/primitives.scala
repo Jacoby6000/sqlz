@@ -2,8 +2,6 @@ package scoobie.snacks.mild.sql
 
 import scoobie.ast._
 import scoobie.coercion.Coerce
-import shapeless.{::, HList, HNil, ProductArgs}
-import shapeless.ops.hlist.{Prepend, ToTraversable}
 
 /**
   * Created by jacob.barber on 5/24/16.

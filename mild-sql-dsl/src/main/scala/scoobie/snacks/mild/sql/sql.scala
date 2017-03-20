@@ -1,6 +1,5 @@
 package scoobie.snacks.mild
 
-import _root_.shapeless._
 import scoobie.ast._
 import scoobie.snacks.mild.sql.primitives._
 import scoobie.snacks.mild.sql.primitives.{QueryComparisonExtensions, QueryProjectionExtensions, QueryValueExtensions, SqlDslStringInterpolators}
@@ -10,7 +9,6 @@ import scoobie.coercion.Coerce
  * Created by jacob.barber on 3/4/16.
  */
 package object sql extends query.modify with query.select {
-
 
   implicit val stringExpr = RawExpressionHandler[String](identity)
 
@@ -45,5 +43,12 @@ package object sql extends query.modify with query.select {
   implicit def toQueryProjection[F[_]](queryPath: QueryPath[F])(implicit coerce: Coerce[F]): QueryProjection[F] =
     QueryProjectOne(queryPath, None)
 
-  def hnil: HNil = HNil
+  /* Stolen From Shapeless */
+  def unexpected : Nothing = sys.error("Unexpected invocation")
+
+  trait =:!=[A, B] extends Serializable
+
+  implicit def neq[A, B] : A =:!= B = new =:!=[A, B] {}
+  implicit def neqAmbig1[A] : A =:!= A = unexpected
+  implicit def neqAmbig2[A] : A =:!= A = unexpected
 }

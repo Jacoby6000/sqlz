@@ -122,7 +122,7 @@ lazy val core =
     .settings(name := "scoobie-core")
     .settings(description := "AST for making convenient SQL DSLs in Scala.")
     .settings(scoobieSettings ++ publishSettings)
-    .settings(libraryDependencies ++= Seq(shapeless, specs))
+    .settings(libraryDependencies ++= Seq(specs))
     .settings(packageInfoGenerator("scoobie", "scoobie-core"))
 
 lazy val doobieSupport =
@@ -229,8 +229,6 @@ lazy val doobieCoreCats = "org.tpolecat" %% "doobie-core-cats"
 lazy val doobiePGDriver = "org.tpolecat" %% "doobie-postgres"
 
 lazy val specs = "org.specs2" %% "specs2-core" % "3.8.8" % "test"
-
-lazy val shapeless = "com.chuusai" %% "shapeless" % "2.3.2"
 
 lazy val ctut = taskKey[Unit]("Copy tut output to blog repo nearby.")
 

@@ -1,8 +1,5 @@
 package scoobie
 
-import _root_.shapeless._
-import _root_.shapeless.ops.hlist.{Prepend, ToTraversable}
-
 /**
  * Created by jacob.barber on 2/2/16.
  */

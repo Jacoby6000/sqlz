@@ -1,8 +1,6 @@
 package scoobie.snacks.mild.sql.query
 
 import scoobie.ast._
-import shapeless._
-import shapeless.ops.hlist.{Prepend, ToTraversable}
 
 /**
   * Created by jacob.barber on 5/24/16.
