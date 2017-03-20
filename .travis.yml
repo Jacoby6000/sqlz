@@ -1,11 +1,20 @@
 language: scala
+
+jdk:
+  - oraclejdk8
+
 scala:
   - 2.12.1
+  - 2.11.8
 
 env:
   - TEST_SUITE=scoobie
   - TEST_SUITE=postgres23
   - TEST_SUITE=postgres30
+
+env:
+  global:
+    - MAIN_SCALA_VERSION=2.12.1
 
 script:
   - bash scripts/build.sh $TEST_SUITE
