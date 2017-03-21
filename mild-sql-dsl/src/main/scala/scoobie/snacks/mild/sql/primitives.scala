@@ -6,14 +6,14 @@ import scoobie.coercion.Coerce
 /**
   * Created by jacob.barber on 5/24/16.
   */
-object primitives {
-  class QueryValueExtensions[F[_]](val a: QueryValue[F]) extends AnyVal {
+trait primitives {
+  class QueryValueExtensions[F[_]](val a: QueryValue[F]) {
     def >(b: QueryValue[F]): QueryComparison[F] = QueryGreaterThan(a, b)
     def >=(b: QueryValue[F]): QueryComparison[F] = QueryGreaterThanOrEqual(a, b)
     def <(b: QueryValue[F]): QueryComparison[F] = QueryLessThan(a, b)
     def <=(b: QueryValue[F]): QueryComparison[F] = QueryLessThanOrEqual(a, b)
     def ===(b: QueryValue[F]): QueryComparison[F] = QueryEqual(a, b)
-    def !==(b: QueryValue[F]): QueryComparison[F] = QueryNotEqual(a, b)
+    def !==(b: QueryValue[F]): QueryComparison[F] = QueryNot(QueryEqual(a, b))
     def <>(b: QueryValue[F]): QueryComparison[F] = !==(b)
 
     def +(b: QueryValue[F]): QueryValue[F] = QueryAdd(a, b)
@@ -58,8 +58,9 @@ object primitives {
     def on(comparison: QueryComparison[F]): (QueryProjection[F], QueryComparison[F]) = (a, comparison)
   }
 
-  class QueryComparisonExtensions[F[_]](val left: QueryComparison[F]) extends AnyVal {
+  class QueryComparisonExtensions[F[_]](val left: QueryComparison[F]) {
     def and(right: QueryComparison[F]) = QueryAnd(left, right)
     def or(right: QueryComparison[F]) = QueryOr(left, right)
   }
+
 }

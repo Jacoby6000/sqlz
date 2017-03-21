@@ -5,7 +5,6 @@ import _root_.doobie.imports._
 import _root_.shapeless.syntax.singleton._
 import org.specs2._
 import scoobie.doobie.doo.postgres._
-import scoobie.doobie.coerceToDoobieParam
 import scoobie.snacks.mild.sql
 import scoobie.snacks.mild.sql._
 import _root_.doobie.syntax.process._

@@ -2,6 +2,7 @@ package scoobie.doobie.doo
 
 import doobie.imports._
 import scoobie.ast._
+import scoobie.coercion.Coerce
 import scoobie.doobie.{DoobieSupport, ScoobieFragmentProducer, SqlInterpreter}
 import shapeless.HNil
 
@@ -11,6 +12,7 @@ import shapeless.HNil
 object postgres extends DoobieSupport {
 
   implicit val interpreter = SqlInterpreter(interpretSql(_, "\""))
+  implicit val coercetoScoobieFragmentProducer: Coerce[ScoobieFragmentProducer] = scoobie.doobie.doobieCoercer
 
   def interpretSql(expr: QueryExpression[ScoobieFragmentProducer], escapeFieldWith: String): Fragment = {
     def wrap(s: Fragment, using: Fragment, usingRight: Option[Fragment] = None): Fragment = using ++ s ++ usingRight.getOrElse(using)

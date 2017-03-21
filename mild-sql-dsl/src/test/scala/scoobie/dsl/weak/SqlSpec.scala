@@ -87,8 +87,8 @@ class SqlSpec extends Specification { def is =
   }
 
   lazy val queryEquals = (QueryPathEnd("foo") === "bar") mustEqual QueryEqual(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryNotEquals1 = (QueryPathEnd("foo") !== "bar") mustEqual QueryNotEqual(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryNotEquals2 = (QueryPathEnd("foo") <> "bar") mustEqual QueryNotEqual(QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryNotEquals1 = (QueryPathEnd("foo") !== "bar") mustEqual QueryNot(QueryEqual(QueryPathEnd("foo"), QueryParameter("bar")))
+  lazy val queryNotEquals2 = (QueryPathEnd("foo") <> "bar") mustEqual QueryNot(QueryEqual(QueryPathEnd("foo"), QueryParameter("bar")))
   lazy val queryLessThan = (QueryPathEnd("foo") < "bar") mustEqual QueryLessThan(QueryPathEnd("foo"), QueryParameter("bar"))
   lazy val queryLessThanOrEqual = (QueryPathEnd("foo") <= "bar") mustEqual QueryLessThanOrEqual(QueryPathEnd("foo"), QueryParameter("bar"))
   lazy val queryGreaterThan = (QueryPathEnd("foo") > "bar") mustEqual QueryGreaterThan(QueryPathEnd("foo"), QueryParameter("bar"))

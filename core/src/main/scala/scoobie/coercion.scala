@@ -5,4 +5,7 @@ package scoobie
   */
 object coercion {
   trait Coerce[F[_]]
+  object Coerce {
+    def apply[F[_]] = new Coerce[F] {}
+  }
 }

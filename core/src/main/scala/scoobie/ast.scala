@@ -49,7 +49,6 @@ object ast {
   }
 
   case class QueryEqual[F[_]](left: QueryValue[F], right: QueryValue[F]) extends QueryComparison[F]
-  case class QueryNotEqual[F[_]](left: QueryValue[F], right: QueryValue[F]) extends QueryComparison[F]
   case class QueryGreaterThan[F[_]](left: QueryValue[F], right: QueryValue[F]) extends QueryComparison[F]
   case class QueryGreaterThanOrEqual[F[_]](left: QueryValue[F], right: QueryValue[F]) extends QueryComparison[F]
   case class QueryLessThan[F[_]](left: QueryValue[F], right: QueryValue[F]) extends QueryComparison[F]

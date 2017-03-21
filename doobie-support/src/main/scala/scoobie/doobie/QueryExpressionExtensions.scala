@@ -10,4 +10,5 @@ import scoobie.ast.QueryExpression
   */
 class QueryExpressionExtensions(expr: QueryExpression[ScoobieFragmentProducer])(implicit sqlInterpreter: SqlInterpreter) {
   def build: Fragment = sqlInterpreter.genSql(expr)
+  def genFragment: Fragment = build
 }

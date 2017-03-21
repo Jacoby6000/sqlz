@@ -16,10 +16,10 @@ Add the sonatype releases resolver
 Add this project as a dependency.
 ```scala
   libraryDependencies ++= {
-    val scoobieVersion = "0.2.1"
+    val scoobieVersion = "0.3.0"
 
     Seq(
-      "com.github.jacoby6000" %% "scoobie-contrib-doobie30-postgres" % scoobieVersion, // import doobie 3.0 postgres support
+      "com.github.jacoby6000" %% "scoobie-contrib-doobie40-postgres" % scoobieVersion, // import doobie 4.0 postgres support
       "com.github.jacoby6000" %% "scoobie-contrib-mild-sql-dsl" % scoobieVersion // import the weak sql dsl
     )
   }
@@ -60,7 +60,7 @@ val q =
     p"c.age" > 27
   ) orderBy p"c.age".desc groupBy p"b.worth".asc
 
-val sql = q.build.genSql // Generate the sql associated with this query
+val sql = q.build.genFragment // Generate the sql fragment associated with this query
 ```
 
 The formatted output of this is
@@ -93,12 +93,14 @@ First, lets set up a repl session with our imports, plus what we need to run doo
 ```tut:silent
 import scoobie.doobie.doo.postgres._ // Use postgres with doobie support
 import scoobie.snacks.mild.sql._ // Import the Sql-like weakly (mildly) typed DSL.
-import doobie.imports.DriverManagerTransactor // Import doobie transactor
+import doobie.imports._ // Import doobie transactor
 import scalaz.concurrent.Task 
 
 val xa = DriverManagerTransactor[Task](
   "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"
 )
+
+implicit val logger = LogHandler.jdkLogHandler
 
 import xa.yolo._
 
@@ -119,7 +121,7 @@ And now lets run some basic queries (Note, instead of `.queryAndPrint[T](printer
 def biggerThan(n: Int) = {
   (baseQuery where p"population" > n)
     .build
-    .queryAndPrint[Country](sql => println("\n" + sql))
+    .query[Country]
 }
 
 biggerThan(150000000).quick.unsafePerformSync
@@ -130,7 +132,7 @@ def populationIn(r: Range) = {
     p"population" >= r.min and
     p"population" <= r.max
   )).build
-    .queryAndPrint[Country](sql => println("\n" + sql))
+    .query[Country]
 } 
 
 populationIn(150000000 to 200000000).quick.unsafePerformSync
@@ -156,7 +158,7 @@ def joined = {
   ) where (
     p"c2.name" !== p"c1.name"
   )).build
-    .queryAndPrint[ComplimentaryCountries](sql => println("\n" + sql))
+    .query[ComplimentaryCountries]
 }
 
 joined.quick.unsafePerformSync

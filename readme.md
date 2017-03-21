@@ -16,10 +16,10 @@ Add the sonatype releases resolver
 Add this project as a dependency.
 ```scala
   libraryDependencies ++= {
-    val scoobieVersion = "0.2.1"
+    val scoobieVersion = "0.3.0"
 
     Seq(
-      "com.github.jacoby6000" %% "scoobie-contrib-doobie30-postgres" % scoobieVersion, // import doobie 3.0 postgres support
+      "com.github.jacoby6000" %% "scoobie-contrib-doobie40-postgres" % scoobieVersion, // import doobie 4.0 postgres support
       "com.github.jacoby6000" %% "scoobie-contrib-mild-sql-dsl" % scoobieVersion // import the weak sql dsl
     )
   }
@@ -62,10 +62,10 @@ scala> val q =
      |     p"c.name" === "LightSaber" and
      |     p"c.age" > 27
      |   ) orderBy p"c.age".desc groupBy p"b.worth".asc
-q: scoobie.snacks.mild.sql.QueryBuilder[shapeless.HNil,shapeless.::[scoobie.ast.QueryProjection[shapeless.::[Int,shapeless.HNil]],shapeless.::[scoobie.ast.QueryProjection[shapeless.HNil],shapeless.HNil]],shapeless.::[scoobie.ast.QueryUnion[shapeless.HNil],shapeless.::[scoobie.ast.QueryUnion[shapeless.HNil],shapeless.HNil]],shapeless.::[Int,shapeless.HNil],shapeless.HNil,this.Out,shapeless.::[Int,shapeless.HNil],shapeless.::[Int,shapeless.HNil],this.Out] = QueryBuilder(QueryProjectOne(QueryPathEnd(bar),None),QueryProjectOne(QueryAdd(QueryPathEnd(foo),QueryParameter(10 :: HNil),10 :: HNil),Some(woozle)) :: QueryProjectAll :: HNil,QueryLeftOuterJoin(QueryProjectOne(QueryPathEnd(baz),Some(b)),QueryEqual(QueryPathCons(bar,QueryPathEnd(id)),QueryPathCons(b,QueryPathEnd(barId)),HNil),HNil) :: ...
+q: scoobie.snacks.mild.sql.QueryBuilder[scoobie.doobie.ScoobieFragmentProducer] = QueryBuilder(QueryProjectOne(QueryPathEnd(bar),None),List(QueryProjectOne(QueryAdd(QueryPathEnd(foo),QueryParameter(10)),Some(woozle)), scoobie.ast$QueryProjectAll@1dd4e967),List(QueryInnerJoin(QueryProjectOne(QueryPathEnd(biz),Some(c)),QueryEqual(QueryPathCons(c,QueryPathEnd(id)),QueryPathCons(bar,QueryPathEnd(bizId)))), QueryLeftOuterJoin(QueryProjectOne(QueryPathEnd(baz),Some(b)),QueryEqual(QueryPathCons(bar,QueryPathEnd(id)),QueryPathCons(b,QueryPathEnd(barId))))),QueryAnd(scoobie.ast$QueryComparisonNop@766e0220,QueryAnd(QueryEqual(QueryPathCons(c,QueryPathEnd(name)),QueryParameter(LightSaber)),QueryGreaterThan(QueryPathCons(c,QueryPathEnd(age)),QueryParameter(27)))),List(QuerySortDesc(QueryPathCons(c,...
 
-scala> val sql = q.build.genSql // Generate the sql associated with this query
-sql: String = SELECT "foo" + ? AS woozle, * FROM "bar" LEFT OUTER JOIN "baz" AS b ON "bar"."id" = "b"."barId" INNER JOIN "biz" AS c ON "c"."id" = "bar"."bizId" WHERE "c"."name" = ?  AND  "c"."age" > ? ORDER BY "c"."age" DESC GROUP BY "b"."worth" ASC
+scala> val sql = q.build.genFragment // Generate the sql fragment associated with this query
+sql: doobie.imports.Fragment = Fragment("SELECT "foo"  +  ? AS woozle , *FROM "bar" INNER JOIN "biz" AS c ON "c"."id"  =  "bar"."bizId" LEFT OUTER JOIN "baz" AS b ON "bar"."id"  =  "b"."barId" WHERE "c"."name"  =  ?  AND  "c"."age"  >  ? ORDER BY "c"."age"  DESC GROUP BY "b"."worth"  ASC ")
 ```
 
 The formatted output of this is
@@ -98,12 +98,14 @@ First, lets set up a repl session with our imports, plus what we need to run doo
 ```scala
 import scoobie.doobie.doo.postgres._ // Use postgres with doobie support
 import scoobie.snacks.mild.sql._ // Import the Sql-like weakly (mildly) typed DSL.
-import doobie.imports.DriverManagerTransactor // Import doobie transactor
+import doobie.imports._ // Import doobie transactor
 import scalaz.concurrent.Task 
 
 val xa = DriverManagerTransactor[Task](
   "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"
 )
+
+implicit val logger = LogHandler.jdkLogHandler
 
 import xa.yolo._
 
@@ -124,13 +126,11 @@ And now lets run some basic queries (Note, instead of `.queryAndPrint[T](printer
 scala> def biggerThan(n: Int) = {
      |   (baseQuery where p"population" > n)
      |     .build
-     |     .queryAndPrint[Country](sql => println("\n" + sql))
+     |     .query[Country]
      | }
 biggerThan: (n: Int)doobie.imports.Query0[Country]
 
 scala> biggerThan(150000000).quick.unsafePerformSync
-
-SELECT "code", "name", "population", "gnp" FROM "country"  WHERE "population" > ?
   Country(BRA,Brazil,170115000,Some(776739.0))
   Country(IDN,Indonesia,212107000,Some(84982.0))
   Country(IND,India,1013662000,Some(447114.0))
@@ -143,13 +143,11 @@ scala> def populationIn(r: Range) = {
      |     p"population" >= r.min and
      |     p"population" <= r.max
      |   )).build
-     |     .queryAndPrint[Country](sql => println("\n" + sql))
+     |     .query[Country]
      | } 
 populationIn: (r: Range)doobie.imports.Query0[Country]
 
 scala> populationIn(150000000 to 200000000).quick.unsafePerformSync
-
-SELECT "code", "name", "population", "gnp" FROM "country"  WHERE "population" >= ?  AND  "population" <= ?
   Country(BRA,Brazil,170115000,Some(776739.0))
   Country(PAK,Pakistan,156483000,Some(61289.0))
 ```
@@ -175,13 +173,11 @@ scala> def joined = {
      |   ) where (
      |     p"c2.name" !== p"c1.name"
      |   )).build
-     |     .queryAndPrint[ComplimentaryCountries](sql => println("\n" + sql))
+     |     .query[ComplimentaryCountries]
      | }
 joined: doobie.imports.Query0[ComplimentaryCountries]
 
 scala> joined.quick.unsafePerformSync
-
-SELECT "c1"."code", "c1"."name", "c2"."code", "c2"."name" FROM "country" AS c1 INNER JOIN "country" AS c2 ON "reverse"("c1"."code") = "c2"."code" WHERE "c2"."name" <> "c1"."name"
   ComplimentaryCountries(PSE,Palestine,ESP,Spain)
   ComplimentaryCountries(YUG,Yugoslavia,GUY,Guyana)
   ComplimentaryCountries(ESP,Spain,PSE,Palestine)
