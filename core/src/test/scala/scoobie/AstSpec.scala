@@ -1,7 +1,6 @@
 package scoobie
 
 import org.specs2._
-import _root_.shapeless._
 import scoobie.ast._
 
 /**
