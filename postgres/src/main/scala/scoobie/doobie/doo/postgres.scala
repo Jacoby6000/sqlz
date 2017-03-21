@@ -42,6 +42,8 @@ object postgres extends DoobieSupport {
     def reduceValue(value: QueryValue[ScoobieFragmentProducer]): Fragment = value match {
       case p @ QueryParameter(s) =>
         p.ev.genFragment(s)
+      case expr @ QueryRawExpression(v) =>
+        fragment(expr.rawExpressionHandler.interpret(v))
       case QueryPathCons(a, b) => reducePath(QueryPathCons(a, b))
       case QueryPathEnd(a) => reducePath(QueryPathEnd(a))
       case QueryFunction(path, args) => reducePath(path, false) ++ parensAndCommas(args.map(reduceValue))

@@ -8,6 +8,6 @@ import scoobie.ast.QuerySelect
   * Created by jacob.barber on 5/25/16.
   */
 class QuerySelectExtensions(expr: QuerySelect[ScoobieFragmentProducer])(implicit sqlInterpreter: SqlInterpreter) {
-  def queryAndPrint[B: Composite](printer: Fragment => Unit): Query0[B] = sqlInterpreter.query[B](expr, printer)
-  def query[B: Composite]: Query0[B] = queryAndPrint[B](void)
+  def queryWithLogHandler[B: Composite](logHandler: LogHandler): Query0[B] = sqlInterpreter.query[B](expr, logHandler)
+  def query[B: Composite](implicit logHandler: LogHandler = LogHandler.nop): Query0[B] = sqlInterpreter.query[B](expr, logHandler)
 }

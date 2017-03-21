@@ -1,4 +1,4 @@
-package scoobie.doobie
+package scoobie.doobie.doo
 
 import scoobie._
 import _root_.doobie.imports._
@@ -17,6 +17,9 @@ import scalaz.concurrent.Task
   * Created by jbarber on 5/14/16.
   */
 class PostgresTest extends Specification {
+
+  implicit val logger = LogHandler.jdkLogHandler
+
 
   val xa: Transactor[Task] = DriverManagerTransactor[Task](
     "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"
@@ -53,7 +56,7 @@ class PostgresTest extends Specification {
         p"c1.lifeexpectancy" > 50
       )
     ).build
-      .queryAndPrint[(Country, Country)](println _)
+      .query[(Country, Country)]
       .list
       .transact(xa)
       .unsafePerformSync
@@ -63,7 +66,7 @@ class PostgresTest extends Specification {
     (
       select(p"name") from p"country" where (p"code" in ("USA", "BRA", codes))
     ).build
-      .queryAndPrint[String](println _)
+      .query[String]
       .list
       .transact(xa)
       .unsafePerformSync
@@ -77,30 +80,30 @@ class PostgresTest extends Specification {
                     p"countrycode" ==> "SHT",
                     p"district" ==> "District of unlawful testing",
                     p"population" ==> 1
-                  )).updateAndPrint(println).run
+                  )).update.run
 
       select1 <- (select(p"district") from p"city" where (p"id" === 4080))
                     .build
-                    .queryAndPrint[String](println)
+                    .query[String]
                     .option
 
       updated <- (update(p"city") set (p"population" ==> 10) where (p"id" === 4080))
                     .build
-                    .updateAndPrint(println)
+                    .update
                     .run
 
       select2 <- (select(p"population") from p"city" where (p"id" === 4080))
                     .build
-                    .queryAndPrint[Int](println)
+                    .query[Int]
                     .option
 
       deleted <- (deleteFrom(p"city") where (p"id" === 4080))
-                    .updateAndPrint(println)
+                    .update
                     .run
 
       select3 <- (select(p"population") from p"city" where (p"id" === 4080))
                     .build
-                    .queryAndPrint[Int](println)
+                    .query[Int]
                     .option
     } yield {
       inserted must beEqualTo(1)
