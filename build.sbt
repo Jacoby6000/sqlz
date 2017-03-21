@@ -97,8 +97,8 @@ lazy val scoobie =
       tutSourceDirectory := file("doc") / "src" / "main" / "tut",
       tutTargetDirectory := file("doc") / "target" / "scala-2.11" / "tut"
     )
-    .dependsOn(core, postgres, weakSqlDsl)
-    .aggregate(core, doobieSupport, doobieSupport40, doobieSupport41, postgres, postgres40, postgres41, weakSqlDsl, docs)
+    .dependsOn(core, doobiePostgres, weakSqlDsl)
+    .aggregate(core, doobieSupport, doobieSupport40, doobieSupport41, doobiePostgres, doobiePostgres40, doobiePostgres41, weakSqlDsl, docs)
     .settings(
       tutcp <<= (tut map { a =>
 
@@ -157,37 +157,48 @@ lazy val doobieSupport41 =
     .settings(scoobieSettings)
     .dependsOn(core)
 
-lazy val postgres =
-  project.in(file("postgres"))
+lazy val ansiSql =
+  project.in(file("ansi-sql"))
+    .enablePlugins(SbtOsgi)
+    .settings(publishSettings)
+    .settings(name := "scoobie-contrib-ansi-sql.")
+    .settings(description := "Provides an ANSI-SQL interpreter for use with the Scoobie AST.")
+    .settings(libraryDependencies ++= Seq(scalaz, specs))
+    .settings(packageInfoGenerator("scoobie.doobie.doo.ansi", "scoobie-ansi-sql"))
+    .settings(scoobieSettings)
+    .dependsOn(core, weakSqlDsl % "test")
+
+lazy val doobiePostgres =
+  project.in(file("doobie-postgres"))
     .settings(noPublishSettings)
     .settings(scoobieSettings)
     .settings(description := "Introduces doobie support to scoobie with postgres.")
     .settings(libraryDependencies ++= Seq(doobiePGDriver % doobieVersion41, specs))
-    .dependsOn(doobieSupport, weakSqlDsl % "test")
+    .dependsOn(doobieSupport, ansiSql, weakSqlDsl % "test")
 
-lazy val postgres40 =
-  project.in(file("postgres"))
+lazy val doobiePostgres40 =
+  project.in(file("doobie-postgres"))
     .enablePlugins(SbtOsgi)
-    .settings(target := file("postgres").getAbsoluteFile / "target40")
+    .settings(target := file("doobie-postgres").getAbsoluteFile / "target40")
     .settings(publishSettings)
     .settings(scoobieSettings)
     .settings(name := "scoobie-contrib-doobie40-postgres")
     .settings(description := "Introduces doobie support to scoobie with postgres.")
     .settings(libraryDependencies ++= Seq(doobiePGDriver % doobieVersion40, specs))
     .settings(packageInfoGenerator("scoobie.doobie.postgres", "scoobie-contrib-doobie40-postgres"))
-    .dependsOn(doobieSupport40, weakSqlDsl % "test")
+    .dependsOn(doobieSupport40, ansiSql, weakSqlDsl % "test")
 
-lazy val postgres41 =
-  project.in(file("postgres"))
+lazy val doobiePostgres41 =
+  project.in(file("doobie-postgres"))
     .enablePlugins(SbtOsgi)
-    .settings(target := file("postgres").getAbsoluteFile / "target41")
+    .settings(target := file("doobie-postgres").getAbsoluteFile / "target41")
     .settings(publishSettings)
     .settings(scoobieSettings)
     .settings(name := "scoobie-contrib-doobie41-postgres")
     .settings(description := "Introduces doobie support to scoobie with postgres.")
     .settings(libraryDependencies ++= Seq(doobiePGDriver % doobieVersion41, specs))
     .settings(packageInfoGenerator("scoobie.doobie.postgres", "scoobie-contrib-doobie41-postgres"))
-    .dependsOn(doobieSupport41, weakSqlDsl % "test")
+    .dependsOn(doobieSupport41, ansiSql, weakSqlDsl % "test")
 
 
 lazy val weakSqlDsl =
@@ -219,7 +230,7 @@ lazy val docs =
         }
       }
     )
-    .dependsOn(postgres41, weakSqlDsl)
+    .dependsOn(doobiePostgres41, weakSqlDsl)
 
 
 lazy val doobieVersion40 = "0.4.0"
@@ -227,6 +238,7 @@ lazy val doobieVersion41 = "0.4.1"
 lazy val doobieCore = "org.tpolecat" %% "doobie-core"
 lazy val doobieCoreCats = "org.tpolecat" %% "doobie-core-cats"
 lazy val doobiePGDriver = "org.tpolecat" %% "doobie-postgres"
+lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.10"
 
 lazy val specs = "org.specs2" %% "specs2-core" % "3.8.8" % "test"
 

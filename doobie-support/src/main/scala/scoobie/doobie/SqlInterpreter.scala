@@ -12,7 +12,7 @@ import shapeless.HList
 /**
   * Created by jacob.barber on 5/25/16.
   */
-case class SqlInterpreter(genSql: QueryExpression[ScoobieFragmentProducer] => Fragment) {
+case class DoobieSqlInterpreter(genSql: QueryExpression[ScoobieFragmentProducer] => Fragment) {
   def query[B: Composite](ast: QuerySelect[ScoobieFragmentProducer], logHandler: LogHandler): Query0[B] =
     genSql(ast).queryWithLogHandler(logHandler)
 

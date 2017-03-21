@@ -14,5 +14,5 @@ package object doobie {
     ScoobieFragmentProducer[A](a => fr"$a")
 
   implicit def producerFromFoldable[F[_]: Foldable: Functor, A: Meta]: ScoobieFragmentProducer[F[A]] =
-    ScoobieFragmentProducer[F[A]](_.map(x => fr0"$x").foldSmash(fr0"", fr0", ", fr0""))
+    ScoobieFragmentProducer[F[A]](_.map(x => fr0"$x").foldSmash(fr0"", fr0" , ", fr0""))
 }
