@@ -31,6 +31,8 @@ object ast {
       case _: QueryNull[_] => true
       case _ => false
     }
+
+    override def toString: String = "QueryNull"
   }
 
   object QueryNull {
@@ -43,6 +45,8 @@ object ast {
       case _: QueryComparisonNop[_] => true
       case _ => false
     }
+
+    override def toString: String = "QueryComparisonNop"
   }
   object QueryComparisonNop {
     def apply[F[_]]: QueryComparisonNop[F] = new QueryComparisonNop[F]
@@ -70,6 +74,8 @@ object ast {
       case _: QueryProjectAll[_] => true
       case _ => false
     }
+
+    override def toString: String = "QueryProjectAll"
   }
 
   object QueryProjectAll {
