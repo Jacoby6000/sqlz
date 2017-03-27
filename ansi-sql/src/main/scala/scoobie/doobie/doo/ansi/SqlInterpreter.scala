@@ -9,13 +9,24 @@ object SqlInterpreter {
   case class LiteralQueryString(s: String) extends AnyVal
 }
 
-case class SqlInterpreter[F[_], B: Monoid](escapeFieldWith: String)(implicit lifter: SqlQueryLifter[F,B], literalInterpreter: F[LiteralQueryString], intInterpreter: F[Int]) {
+/**
+  * Generates sql query strings, converting them in to type B using a typeclass F[_].
+  *
+  * @param escapeFieldWith
+  * @param ev$1 Evidence that B is a semigroup
+  * @param lifter Something that knows how to use the typeclass F to produce values of B.
+  * @param sqlFragmentInterpreter An implementation of F[_] that should not do any augmentation to the query string provided.
+  * @param intInterpreter An implementation of F[_] for handling ints.
+  * @tparam F The typeclass used to lift values in to the context of B.  Most important inside of the QueryParameter case of the reduceValue function.
+  * @tparam B A type we can produce using an value for F[A] and a value for A.
+  */
+case class SqlInterpreter[F[_], B: Semigroup](escapeFieldWith: String)(implicit lifter: SqlQueryLifter[F,B], sqlFragmentInterpreter: F[LiteralQueryString], intInterpreter: F[Int]) {
   implicit class SqlLitInterpolator(val s: StringContext) {
     def litSql(params: String*): B =
       evaluatedLitSql(s.standardInterpolator(identity, params))
   }
 
-  def evaluatedLitSql(s: String): B = lifter.liftValue(LiteralQueryString(s), literalInterpreter)
+  def evaluatedLitSql(s: String): B = lifter.liftValue(LiteralQueryString(s), sqlFragmentInterpreter)
 
   def interpretSql(expr: QueryExpression[F]): B = {
     def wrap(s: B, using: B, usingRight: Option[B] = None): B = using |+| s |+| usingRight.getOrElse(using)

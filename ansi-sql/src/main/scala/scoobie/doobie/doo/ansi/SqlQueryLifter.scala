@@ -8,7 +8,7 @@ trait SqlQueryLifter[F[_], B] {
     * A can be seen as the type of the piece of sql query (a number, a literal, a query fragment)
     * F[A] can be seen as an interpreter for A. So, something that can take A and convert to B
     *
-    * B can be seen as the fully interpreted query type.  For example: [[java.sql.PreparedStatement]] or [[doobie.imports.Fragment]]
+    * B can be seen as the fully interpreted query type.  For example: [[doobie.imports.Fragment]]
     *
     */
   def liftValue[A](a: A, fa: F[A]): B
