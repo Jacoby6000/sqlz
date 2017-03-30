@@ -9,8 +9,8 @@ scala:
 
 env:
   - TEST_SUITE=scoobie
-  - TEST_SUITE=postgres40
-  - TEST_SUITE=postgres41
+  - TEST_SUITE=doobiePostgres40
+  - TEST_SUITE=doobiePostgres41
 
 script:
   - bash scripts/build.sh $TEST_SUITE
