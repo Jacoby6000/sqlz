@@ -109,7 +109,7 @@ lazy val scoobie =
 
         if (src.exists())
           IO.copy(List(src -> dst), overwrite = true, preserveLastModified = true)
-        else
+        ele
           println("No tut output found at" + src.toString)
 
         a
