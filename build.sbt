@@ -161,7 +161,7 @@ lazy val ansiSql =
   project.in(file("ansi-sql"))
     .enablePlugins(SbtOsgi)
     .settings(publishSettings)
-    .settings(name := "scoobie-contrib-ansi-sql.")
+    .settings(name := "scoobie-contrib-ansi-sql")
     .settings(description := "Provides an ANSI-SQL interpreter for use with the Scoobie AST.")
     .settings(libraryDependencies ++= Seq(scalaz, specs))
     .settings(packageInfoGenerator("scoobie.doobie.doo.ansi", "scoobie-ansi-sql"))
