@@ -83,12 +83,12 @@ object ast {
   }
 
 
-  sealed trait QueryUnion[F[_]]
-  case class QueryInnerJoin[F[_]](table: QueryProjection[F], on: QueryComparison[F]) extends QueryUnion[F]
-  case class QueryFullOuterJoin[F[_]](table: QueryProjection[F], on: QueryComparison[F]) extends QueryUnion[F]
-  case class QueryLeftOuterJoin[F[_]](table: QueryProjection[F], on: QueryComparison[F]) extends QueryUnion[F]
-  case class QueryRightOuterJoin[F[_]](table: QueryProjection[F], on: QueryComparison[F]) extends QueryUnion[F]
-  case class QueryCrossJoin[F[_]](table: QueryProjection[F], on: QueryComparison[F]) extends QueryUnion[F]
+  sealed trait QueryJoin[F[_]]
+  case class QueryInnerJoin[F[_]](table: QueryProjection[F], on: QueryComparison[F]) extends QueryJoin[F]
+  case class QueryFullOuterJoin[F[_]](table: QueryProjection[F], on: QueryComparison[F]) extends QueryJoin[F]
+  case class QueryLeftOuterJoin[F[_]](table: QueryProjection[F], on: QueryComparison[F]) extends QueryJoin[F]
+  case class QueryRightOuterJoin[F[_]](table: QueryProjection[F], on: QueryComparison[F]) extends QueryJoin[F]
+  case class QueryCrossJoin[F[_]](table: QueryProjection[F], on: QueryComparison[F]) extends QueryJoin[F]
 
   sealed trait QuerySort[F[_]]
   case class QuerySortAsc[F[_]](path: QueryPath[F]) extends QuerySort[F]
@@ -98,14 +98,14 @@ object ast {
   sealed trait QueryModify[F[_]] extends QueryExpression[F]
 
   case class QuerySelect[F[_]](
-    table: QueryProjection[F],
-    values: List[QueryProjection[F]],
-    unions: List[QueryUnion[F]],
-    filter: QueryComparison[F],
-    sorts: List[QuerySort[F]],
-    groupings: List[QuerySort[F]],
-    offset: Option[Int],
-    limit: Option[Int]
+                                table: QueryProjection[F],
+                                values: List[QueryProjection[F]],
+                                unions: List[QueryJoin[F]],
+                                filter: QueryComparison[F],
+                                sorts: List[QuerySort[F]],
+                                groupings: List[QuerySort[F]],
+                                offset: Option[Int],
+                                limit: Option[Int]
   ) extends QueryExpression[F] with QueryValue[F]
 
   case class ModifyField[F[_]](key: QueryPath[F], value: QueryValue[F])

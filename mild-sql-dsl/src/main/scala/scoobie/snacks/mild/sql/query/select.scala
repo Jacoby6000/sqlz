@@ -16,14 +16,14 @@ trait select {
   }
 
   case class QueryBuilder[F[_]](
-    table: QueryProjection[F],
-    values: List[QueryProjection[F]],
-    unions: List[QueryUnion[F]],
-    filter: QueryComparison[F],
-    sorts: List[QuerySort[F]],
-    groupings: List[QuerySort[F]],
-    offset: Option[Int],
-    limit: Option[Int]
+                                 table: QueryProjection[F],
+                                 values: List[QueryProjection[F]],
+                                 unions: List[QueryJoin[F]],
+                                 filter: QueryComparison[F],
+                                 sorts: List[QuerySort[F]],
+                                 groupings: List[QuerySort[F]],
+                                 offset: Option[Int],
+                                 limit: Option[Int]
   ) {
     def leftOuterJoin(tup: (QueryProjection[F], QueryComparison[F])): QueryBuilder[F] =
       this.copy(unions = QueryLeftOuterJoin(tup._1, tup._2) :: unions)

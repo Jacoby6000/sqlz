@@ -20,7 +20,8 @@ object SqlInterpreter {
   * @tparam F The typeclass used to lift values in to the context of B.  Most important inside of the QueryParameter case of the reduceValue function.
   * @tparam B A type we can produce using an value for F[A] and a value for A.
   */
-case class SqlInterpreter[F[_], B: Semigroup](escapeFieldWith: String)(implicit lifter: SqlQueryLifter[F,B], sqlFragmentInterpreter: F[LiteralQueryString], intInterpreter: F[Int]) {
+case class SqlInterpreter[F[_], B: Semigroup](escapeFieldWith: String)
+                                             (implicit lifter: SqlQueryLifter[F,B], sqlFragmentInterpreter: F[LiteralQueryString], intInterpreter: F[Int]) {
   implicit class SqlLitInterpolator(val s: StringContext) {
     def litSql(params: String*): B =
       evaluatedLitSql(s.standardInterpolator(identity, params))
@@ -31,14 +32,14 @@ case class SqlInterpreter[F[_], B: Semigroup](escapeFieldWith: String)(implicit 
   def interpretSql(expr: QueryExpression[F]): B = {
     def wrap(s: B, using: B, usingRight: Option[B] = None): B = using |+| s |+| usingRight.getOrElse(using)
 
-    def commas(frags: List[B]): B = frags.foldLeft(Option.empty[B]){
+    def commas(bs: List[B]): B = bs.foldLeft(Option.empty[B]){
       case (Some(acc), fr) => Some(acc |+| litSql", " |+| fr)
       case (None, fr) => Some(fr)
     }.getOrElse(litSql" ")
 
-    def spaces(fr: List[B]): B = fr.foldLeft(litSql"")((acc, fr) => acc |+| fr)
+    def spaces(bs: List[B]): B = bs.foldLeft(litSql"")((acc, fr) => acc |+| fr)
 
-    def parens(fr: B): B = litSql"(" |+| fr |+| litSql") "
+    def parens(b: B): B = litSql"(" |+| b |+| litSql") "
 
     def parensAndCommas(frags: List[B]): B =
       parens(commas(frags))
@@ -94,7 +95,7 @@ case class SqlInterpreter[F[_], B: Semigroup](escapeFieldWith: String)(implicit 
       case _: QueryComparisonNop[F] => litSql" "
     }
 
-    def reduceUnion(union: QueryUnion[F]): B = union match {
+    def reduceJoin(union: QueryJoin[F]): B = union match {
       case QueryLeftOuterJoin(path, logic) => litSql"LEFT OUTER JOIN " |+| reduceProjection(path) |+| litSql"ON " |+| reduceComparison(logic)
       case QueryRightOuterJoin(path, logic) => litSql"RIGHT OUTER JOIN " |+| reduceProjection(path) |+| litSql"ON " |+| reduceComparison(logic)
       case QueryCrossJoin(path, logic) => litSql"CROSS JOIN " |+| reduceProjection(path) |+| litSql"ON " |+| reduceComparison(logic)
@@ -114,7 +115,7 @@ case class SqlInterpreter[F[_], B: Semigroup](escapeFieldWith: String)(implicit 
       case QuerySelect(table, values, unions, filters, sorts, groups, offset, limit) =>
         val sqlProjections = commas(values.map(reduceProjection))
         val sqlFilter = if(filters == QueryComparisonNop[F]) litSql"" else litSql"WHERE " |+| reduceComparison(filters)
-        val sqlUnions = spaces(unions.map(reduceUnion))
+        val sqlJoins = spaces(unions.map(reduceJoin))
 
         val sqlSorts =
           if (sorts.isEmpty) litSql""
@@ -129,7 +130,7 @@ case class SqlInterpreter[F[_], B: Semigroup](escapeFieldWith: String)(implicit 
         val sqlOffset = offset.map(n => litSql"OFFSET " |+| lifter.liftValue(n, intInterpreter) |+| litSql" ").getOrElse(litSql"")
         val sqlLimit = limit.map(n => litSql"LIMIT " |+| lifter.liftValue(n, intInterpreter) |+| litSql" ").getOrElse(litSql"")
 
-        litSql"SELECT " |+| sqlProjections |+| litSql"FROM " |+| sqlTable |+| sqlUnions |+| sqlFilter |+| sqlSorts |+| sqlGroups |+| sqlLimit |+| sqlOffset
+        litSql"SELECT " |+| sqlProjections |+| litSql"FROM " |+| sqlTable |+| sqlJoins |+| sqlFilter |+| sqlSorts |+| sqlGroups |+| sqlLimit |+| sqlOffset
 
       case QueryInsert(table, values) =>
         val sqlTable = reducePath(table)
