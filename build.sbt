@@ -65,6 +65,7 @@ lazy val publishSettings = osgiSettings ++ Seq(
       <id>Jacoby6000</id>
       <name>Jacob Barber</name>
       <url>http://jacoby6000.github.com/</url>
+      <email>Jacoby6000@gmail.com</email>
     </developer>
   </developers>,
   releaseCrossBuild := true,
