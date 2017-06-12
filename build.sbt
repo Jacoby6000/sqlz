@@ -94,10 +94,6 @@ lazy val scoobie =
     .settings(scoobieSettings ++ noPublishSettings)
     .settings(unidocSettings)
     .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(docs))
-    .settings(
-      tutSourceDirectory := file("doc") / "src" / "main" / "tut",
-      tutTargetDirectory := file("doc") / "target" / "scala-2.11" / "tut"
-    )
     .dependsOn(core, doobiePostgres, weakSqlDsl)
     .aggregate(core, doobieSupport, doobieSupport40, doobieSupport41, doobiePostgres, doobiePostgres40, doobiePostgres41, weakSqlDsl, docs, ansiSql)
     .settings(
