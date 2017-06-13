@@ -1,7 +1,6 @@
 package scoobie.doobie
 
 import doobie.imports._
-import _root_.shapeless._
 import scoobie.ast.QuerySelect
 
 /**

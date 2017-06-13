@@ -1,7 +1,6 @@
 package scoobie.snacks.mild
 
 import scoobie.ast._
-import scoobie.snacks.mild.sql.primitives
 import scoobie.coercion.Coerce
 import scoobie.snacks.TypeComparisons._
 

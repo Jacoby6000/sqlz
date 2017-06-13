@@ -32,9 +32,8 @@ trait primitives {
 
   class SqlDslStringInterpolators[F[_]](val ctx: StringContext)(implicit coerce: Coerce[F]) {
     def p(): QueryPath[F] = {
-      val -::- = scala.collection.immutable.::
       def go(remainingParts: List[String], queryPath: QueryPath[F]): QueryPath[F] = remainingParts match {
-        case head -::- tail => go(tail, QueryPathCons(head, queryPath))
+        case head :: tail => go(tail, QueryPathCons(head, queryPath))
         case Nil => queryPath
       }
 

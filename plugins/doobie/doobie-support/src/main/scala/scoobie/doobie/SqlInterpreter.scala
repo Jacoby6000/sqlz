@@ -1,13 +1,11 @@
 package scoobie.doobie
 
-import doobie.syntax.string.SqlInterpolator
 import doobie.util.composite.Composite
 import doobie.util.query.Query0
 import doobie.util.update.Update0
 import doobie.util.fragment.Fragment
 import doobie.util.log.LogHandler
 import scoobie.ast.{QueryExpression, QueryModify, QuerySelect}
-import shapeless.HList
 
 /**
   * Created by jacob.barber on 5/25/16.

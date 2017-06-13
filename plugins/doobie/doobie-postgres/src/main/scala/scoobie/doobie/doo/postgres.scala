@@ -1,15 +1,10 @@
 package scoobie.doobie.doo
 
 import doobie.imports._
-import scoobie.ast._
 import scoobie.coercion.Coerce
 import scoobie.doobie.doo.ansi.SqlInterpreter.LiteralQueryString
 import scoobie.doobie.doo.ansi._
 import scoobie.doobie.{DoobieSqlInterpreter, DoobieSupport, ScoobieFragmentProducer}
-import shapeless.HNil
-
-import scalaz._
-import Scalaz._
 
 /**
   * Created by jbarber on 5/20/16.
@@ -28,5 +23,4 @@ object postgres extends DoobieSupport {
 
   implicit val doobieInterpreter = DoobieSqlInterpreter(interpreter.interpretSql(_))
   implicit val coercetoScoobieFragmentProducer: Coerce[ScoobieFragmentProducer] = scoobie.doobie.doobieCoercer
-
 }

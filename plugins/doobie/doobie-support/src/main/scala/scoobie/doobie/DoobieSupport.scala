@@ -1,8 +1,6 @@
 package scoobie.doobie
 
-import doobie.imports._
 import scoobie.ast._
-import shapeless._
 
 /**
   * Created by jacob.barber on 5/25/16.

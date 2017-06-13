@@ -3,7 +3,7 @@ package scoobie.snacks.mild
 import org.specs2._
 import scoobie.ast._
 import scoobie.coercion.Coerce
-import sql.{query, _}
+import scoobie.snacks.mild.sql._
 
 /**
   * Created by jacob.barber on 5/24/16.
@@ -86,20 +86,20 @@ class SqlSpec extends Specification { def is =
     def asParam: QueryValue[DummyHKT] = QueryParameter(a)
   }
 
-  lazy val queryEquals = (QueryPathEnd("foo") === "bar") mustEqual QueryEqual(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryNotEquals1 = (QueryPathEnd("foo") !== "bar") mustEqual QueryNot(QueryEqual(QueryPathEnd("foo"), QueryParameter("bar")))
-  lazy val queryNotEquals2 = (QueryPathEnd("foo") <> "bar") mustEqual QueryNot(QueryEqual(QueryPathEnd("foo"), QueryParameter("bar")))
-  lazy val queryLessThan = (QueryPathEnd("foo") < "bar") mustEqual QueryLessThan(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryLessThanOrEqual = (QueryPathEnd("foo") <= "bar") mustEqual QueryLessThanOrEqual(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryGreaterThan = (QueryPathEnd("foo") > "bar") mustEqual QueryGreaterThan(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryGreaterThanOrEqual = (QueryPathEnd("foo") >= "bar") mustEqual QueryGreaterThanOrEqual(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryAdd = (QueryPathEnd("foo") + "bar") mustEqual QueryAdd(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val querySub = (QueryPathEnd("foo") - "bar") mustEqual QuerySub(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryDiv = (QueryPathEnd("foo") / "bar") mustEqual QueryDiv(QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryMul = (QueryPathEnd("foo") * "bar") mustEqual QueryMul(QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryEquals = (QueryPathEnd("foo") === "bar") mustEqual QueryEqual[DummyHKT](QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryNotEquals1 = (QueryPathEnd("foo") !== "bar") mustEqual QueryNot[DummyHKT](QueryEqual(QueryPathEnd("foo"), QueryParameter("bar")))
+  lazy val queryNotEquals2 = (QueryPathEnd("foo") <> "bar") mustEqual QueryNot(QueryEqual[DummyHKT](QueryPathEnd("foo"), QueryParameter("bar")))
+  lazy val queryLessThan = (QueryPathEnd("foo") < "bar") mustEqual QueryLessThan[DummyHKT](QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryLessThanOrEqual = (QueryPathEnd("foo") <= "bar") mustEqual QueryLessThanOrEqual[DummyHKT](QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryGreaterThan = (QueryPathEnd("foo") > "bar") mustEqual QueryGreaterThan[DummyHKT](QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryGreaterThanOrEqual = (QueryPathEnd("foo") >= "bar") mustEqual QueryGreaterThanOrEqual[DummyHKT](QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryAdd = (QueryPathEnd("foo") + "bar") mustEqual QueryAdd[DummyHKT](QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val querySub = (QueryPathEnd("foo") - "bar") mustEqual QuerySub[DummyHKT](QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryDiv = (QueryPathEnd("foo") / "bar") mustEqual QueryDiv[DummyHKT](QueryPathEnd("foo"), QueryParameter("bar"))
+  lazy val queryMul = (QueryPathEnd("foo") * "bar") mustEqual QueryMul[DummyHKT](QueryPathEnd("foo"), QueryParameter("bar"))
   lazy val queryAlias = (QueryPathEnd("foo") as "blah") mustEqual QueryProjectOne(QueryPathEnd("foo"), Some("blah"))
-  lazy val queryIn1 = QueryPathEnd("foo") in ("a") mustEqual QueryIn(QueryPathEnd("foo"), List("a".asParam))
-  lazy val queryIn2 = QueryPathEnd("foo") in ("a", "b") mustEqual QueryIn(QueryPathEnd("foo"), List("a".asParam, "b".asParam))
+  lazy val queryIn1 = QueryPathEnd("foo") in ("a") mustEqual QueryIn[DummyHKT](QueryPathEnd("foo"), List("a".asParam))
+  lazy val queryIn2 = QueryPathEnd("foo") in ("a", "b") mustEqual QueryIn[DummyHKT](QueryPathEnd("foo"), List("a".asParam, "b".asParam))
 
   val simpleEquals = p"foo" === "bar"
 

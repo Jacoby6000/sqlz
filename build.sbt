@@ -107,7 +107,7 @@ lazy val doobiePostgres =
     .settings(Defaults.itSettings)
     .settings(noPublishSettings)
     .settings(doobiePgSettings.head)
-    .dependsOn(doobieSupport, ansiSql, weakSqlDsl % "it")
+    .dependsOn(doobieSupport % "compile->compile;it->it;", ansiSql, weakSqlDsl % "it")
 
 lazy val doobiePostgres41 =
   project.in(doobiePgFile)
@@ -116,7 +116,7 @@ lazy val doobiePostgres41 =
     .settings(Defaults.itSettings)
     .settings(publishSettings)
     .settings(doobiePgSettings.tail.head)
-    .dependsOn(doobieSupport41, ansiSql, weakSqlDsl % "it")
+    .dependsOn(doobieSupport41 % "compile->compile;it->it;", ansiSql, weakSqlDsl % "it")
 
 lazy val doobiePostgres40 =
   project.in(doobiePgFile)
@@ -125,7 +125,7 @@ lazy val doobiePostgres40 =
     .settings(Defaults.itSettings)
     .settings(publishSettings)
     .settings(doobiePgSettings.tail.tail.head)
-    .dependsOn(doobieSupport40, ansiSql, weakSqlDsl % "it")
+    .dependsOn(doobieSupport40 % "compile->compile;it->it;", ansiSql, weakSqlDsl % "it")
 
 lazy val doobieMySqlPlugin = ScoobieUtil.doobiePlugin(
     None,
@@ -142,7 +142,7 @@ lazy val doobieMySql =
     .settings(Defaults.itSettings)
     .settings(noPublishSettings)
     .settings(doobieMySqlSettings.head)
-    .dependsOn(doobieSupport, ansiSql, weakSqlDsl % "it")
+    .dependsOn(doobieSupport % "compile->compile;it->it;", ansiSql, weakSqlDsl % "it")
 
 lazy val doobieMySql41 =
   project.in(doobieMySqlFile)
@@ -151,7 +151,7 @@ lazy val doobieMySql41 =
     .settings(Defaults.itSettings)
     .settings(publishSettings)
     .settings(doobieMySqlSettings.tail.head)
-    .dependsOn(doobieSupport41, ansiSql, weakSqlDsl % "it")
+    .dependsOn(doobieSupport41 % "compile->compile;it->it;", ansiSql, weakSqlDsl % "it")
 
 lazy val doobieMySql40 =
   project.in(doobieMySqlFile)
@@ -160,7 +160,7 @@ lazy val doobieMySql40 =
     .settings(Defaults.itSettings)
     .settings(publishSettings)
     .settings(doobieMySqlSettings.tail.tail.head)
-    .dependsOn(doobieSupport40, ansiSql, weakSqlDsl % "it")
+    .dependsOn(doobieSupport40 % "compile->compile;it->it;", ansiSql, weakSqlDsl % "it")
 
 lazy val weakSqlDsl =
   project.in(file("./plugins/dsl/mild-sql-dsl"))
