@@ -4,7 +4,7 @@ import scoobie._
 import _root_.doobie.imports._
 import _root_.shapeless.syntax.singleton._
 import org.specs2._
-import scoobie.doobie.doo.postgres._
+import scoobie.doobie.doo.mysql._
 import scoobie.snacks.mild.sql
 import scoobie.snacks.mild.sql._
 import _root_.doobie.syntax.process._
@@ -15,13 +15,13 @@ import scalaz.concurrent.Task
 /**
   * Created by jbarber on 5/14/16.
   */
-class PostgresTest extends Specification {
+class MySqlTest extends Specification {
 
   implicit val logger = LogHandler.jdkLogHandler
 
 
   val xa: Transactor[Task] = DriverManagerTransactor[Task](
-    "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"
+    "com.mysql.cj.jdbc.Driver", "jdbc:mysql://localhost/world?serverTimezone=America/Chicago", "world", "world"
   )
 
   def is =

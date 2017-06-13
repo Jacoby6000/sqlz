@@ -103,7 +103,7 @@ lazy val doobieMySqlPlugin = ScoobieUtil.doobiePlugin(
   )
 
 lazy val doobieMySqlFile = doobieMySqlPlugin.dir
-lazy val doobieMySqlSettings = doobieMySqlPlugin.settings
+lazy val doobieMySqlSettings = doobieMySqlPlugin.settings.map(_ ++ Seq(libraryDependencies += ("mysql" % "mysql-connector-java" % "6.0.6")))
 
 lazy val doobieMySql =
   project.in(doobieMySqlFile)

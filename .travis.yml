@@ -11,18 +11,24 @@ env:
   - TEST_SUITE=scoobie
   - TEST_SUITE=doobiePostgres40
   - TEST_SUITE=doobiePostgres41
+  - TEST_SUITE=doobieMySql40
+  - TEST_SUITE=doobieMySql41
 
 script:
   - bash scripts/build.sh $TEST_SUITE
 
 addons:
   postgresql: "9.3"
+  mysql: "5.7"
 
 before_script:
   - psql -c 'create database world;' -U postgres
-  - psql -q -c '\i world.sql' -d world -U postgres
+  - psql -q -c '\i ./plugins/doobie/doobie-postgres/src/test/resources/world.sql' -d world -U postgres
   - psql -d world -c "create extension postgis" -U postgres
   - psql -d world -c "create type myenum as enum ('foo', 'bar')" -U postgres
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS world;'
+  - mysql -e "CREATE USER 'world'@'localhost' IDENTIFIED WITH 'mysql_native_password' AS '*70BB17D9634310906050FED37E38259FFAE578B8' REQUIRE NONE PASSWORD EXPIRE DEFAULT ACCOUNT UNLOCK"
+  - mysql < "./plugins/doobie/doobie-postgres/src/test/resources/world.sql"
 
 cache:
   directories:
