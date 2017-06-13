@@ -27,7 +27,7 @@ before_script:
   - psql -d world -c "create extension postgis" -U postgres
   - psql -d world -c "create type myenum as enum ('foo', 'bar')" -U postgres
   - mysql -e 'CREATE DATABASE IF NOT EXISTS world;'
-  - mysql world < ./plugins/doobie/doobie-postgres/src/test/resources/world.sql
+  - mysql world < ./plugins/doobie/doobie-mysql/src/test/resources/world.sql
 
 cache:
   directories:
