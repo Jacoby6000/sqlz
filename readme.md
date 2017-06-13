@@ -31,6 +31,8 @@ Refer to the chart below to see what dependencies use what versions of things
 |:---------------------------------:|:---------------:|:------:|:------:|:----:|:--------------:|:------:|:--------------:|:---------:|
 | scoobie-contrib-doobie40-postgres | 0.3.0           |  0.4.0 | stable | 1.8+ | 2.11.8/2.12.1  |   7.2  |      0.8a      |    2.3    |
 | scoobie-contrib-doobie41-postgres | 0.3.0           |  0.4.1 | stable | 1.6+ | 2.11.8/2.12.1  |   7.2  |      0.8a      |    2.3    |
+| scoobie-contrib-doobie40-mysql    | 0.3.0           |  0.4.0 | stable | 1.8+ | 2.11.8/2.12.1  |   7.2  |      0.8a      |    2.3    |
+| scoobie-contrib-doobie41-mysql    | 0.3.0           |  0.4.1 | stable | 1.6+ | 2.11.8/2.12.1  |   7.2  |      0.8a      |    2.3    |
 | scoobie-contrib-mild-sql-dsl      | 0.3.0           |  N/A   | stable | 1.6+ | 2.11.8/2.12.1  |   N/A  |      N/A       |    N/A    |
 
 ### Using the SQL DSL
