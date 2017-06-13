@@ -15,7 +15,7 @@ object ScoobieUtil {
   lazy val doobieCoreCats = "org.tpolecat" %% "doobie-core-cats"
   lazy val doobiePGDriver = "org.tpolecat" %% "doobie-postgres"
   lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.10"
-  lazy val specs = "org.specs2" %% "specs2-core" % "3.8.8" % "test"
+  lazy val specs = "org.specs2" %% "specs2-core" % "3.8.8" % "test,it"
   lazy val ctut = taskKey[Unit]("Copy tut output to blog repo nearby.")
 
   lazy val noPublishSettings = Seq(
