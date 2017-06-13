@@ -8,12 +8,12 @@ scala:
   - 2.11.8
 
 env:
-  - TEST_SUITE=scoobie ACTION=test
+  - TEST_SUITE=scoobie ACTION=test AND=it:test
   - TEST_SUITE=scoobieDoobie40 ACTION=it:test
   - TEST_SUITE=scoobieDoobie41 ACTION=it:test
 
 script:
-  - bash scripts/build.sh $TEST_SUITE $ACTION
+  - bash scripts/build.sh $TEST_SUITE $ACTION $AND
 
 addons:
   postgresql: "9.3"
