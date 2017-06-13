@@ -111,20 +111,20 @@ object ScoobieUtil {
   case class DoobiePlugin(dir: File, settings: List[Seq[Setting[_]]])
 
   def doobiePlugin(
-    doobieArtifact: GroupArtifactID,
+    doobieArtifact: Option[GroupArtifactID],
     doobiePluginName: String,
     projectDescription: String,
     repeat: Boolean = true,
     doobieVersionList: List[String] = doobieVersions
   ): DoobiePlugin = {
-    val sourceDir = s"doobie-$doobiePluginName"
+    val sourceDir = s"./plugins/doobie/doobie-$doobiePluginName"
     val settings = doobieVersionList.map { doobieVersion =>
       val versionNoDots = doobieVersion.filterNot(_ == '.')
       val scoobieArtifactName = s"scoobie-contrib-doobie$versionNoDots-$doobiePluginName"
       scoobieSettings ++ Seq(
         name := scoobieArtifactName,
         description := projectDescription,
-        libraryDependencies ++= Seq(doobieArtifact % doobieVersion, specs),
+        libraryDependencies ++= doobieArtifact.map(_ % doobieVersion).toList ++ Seq(specs),
         packageInfoGenerator(s"scoobie.doobie.$doobiePluginName", scoobieArtifactName),
         target := file(sourceDir).getAbsoluteFile / s"target$versionNoDots"
       )
