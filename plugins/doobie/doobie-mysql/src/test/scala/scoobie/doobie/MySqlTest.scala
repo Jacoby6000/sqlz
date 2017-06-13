@@ -21,7 +21,7 @@ class MySqlTest extends Specification {
 
 
   val xa: Transactor[Task] = DriverManagerTransactor[Task](
-    "com.mysql.cj.jdbc.Driver", "jdbc:mysql://localhost/world?serverTimezone=America/Chicago", "world", "world"
+    "com.mysql.cj.jdbc.Driver", "jdbc:mysql://localhost/world?serverTimezone=America/Chicago", "root", ""
   )
 
   def is =
