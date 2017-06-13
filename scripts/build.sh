@@ -1,8 +1,8 @@
 #! /bin/bash
 
 if [ "$1" = "scoobie" ]; then
-    sbt clean coverage test coverageReport tut
+    sbt clean coverage $2 coverageReport tut
     bash <(curl -s https://codecov.io/bash)
 else
-    sbt $1/clean coverage $1/test coverageReport
+    sbt $1/clean coverage $1/$2 coverageReport
 fi
