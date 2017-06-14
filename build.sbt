@@ -14,17 +14,11 @@ lazy val scoobie =
     .settings(scoobieSettings ++ noPublishSettings)
     .settings(unidocSettings)
     .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(docs))
-    .aggregate(
+    .dependsOn(
       core,
       doobieSupport,
-      doobieSupport41,
-      doobieSupport40,
       doobiePostgres,
-      doobiePostgres41,
-      doobiePostgres40,
       doobieMySql,
-      doobieMySql41,
-      doobieMySql40,
       weakSqlDsl,
       docs,
       ansiSql
