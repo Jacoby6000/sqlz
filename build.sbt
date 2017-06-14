@@ -14,15 +14,8 @@ lazy val scoobie =
     .settings(scoobieSettings ++ noPublishSettings)
     .settings(unidocSettings)
     .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(docs))
-    .dependsOn(
-      core,
-      doobieSupport,
-      doobiePostgres,
-      doobieMySql,
-      weakSqlDsl,
-      docs,
-      ansiSql
-    )
+    .dependsOn(core, doobieSupport, doobiePostgres, doobieMySql, weakSqlDsl, ansiSql)
+    .aggregate(core, doobieSupport, doobiePostgres, doobieMySql, weakSqlDsl, ansiSql)
 
 lazy val scoobieDoobie40 =
   project.in(file("./.dummy/scoobieDoobie40"))
@@ -185,19 +178,4 @@ lazy val docs =
   project.in(file("doc"))
     .enablePlugins(TutPlugin)
     .settings(scoobieSettings ++ noPublishSettings)
-    .settings(
-      ctut := {
-        val src = crossTarget.value / "tut"
-        val dst = file("../jacoby6000.github.io/_scoobie-" + version.value + "/")
-        if (!src.isDirectory) {
-          println("Input directory " + src + " not found.")
-        } else if (!dst.isDirectory) {
-          println("Output directory " + dst + " not found.")
-        } else {
-          println("Copying to " + dst.getPath)
-          val map = src.listFiles.filter(_.getName.endsWith(".md")).map(f => (f, new File(dst, f.getName)))
-          IO.copy(map, overwrite = true, preserveLastModified = false)
-        }
-      }
-    )
     .dependsOn(doobiePostgres41, weakSqlDsl)
