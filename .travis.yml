@@ -8,21 +8,24 @@ scala:
   - 2.11.8
 
 env:
-  - TEST_SUITE=scoobie
-  - TEST_SUITE=doobiePostgres40
-  - TEST_SUITE=doobiePostgres41
+  - TEST_SUITE=scoobie ACTION=test AND=it:test
+  - TEST_SUITE=scoobieDoobie40 ACTION=it:test
+  - TEST_SUITE=scoobieDoobie41 ACTION=it:test
 
 script:
-  - bash scripts/build.sh $TEST_SUITE
+  - bash scripts/build.sh $TEST_SUITE $ACTION $AND
 
 addons:
   postgresql: "9.3"
+  mysql: "5.7"
 
 before_script:
   - psql -c 'create database world;' -U postgres
-  - psql -q -c '\i world.sql' -d world -U postgres
+  - psql -q -c '\i ./plugins/doobie/doobie-postgres/src/it/resources/world.sql' -d world -U postgres
   - psql -d world -c "create extension postgis" -U postgres
   - psql -d world -c "create type myenum as enum ('foo', 'bar')" -U postgres
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS world;'
+  - mysql world < ./plugins/doobie/doobie-mysql/src/it/resources/world.sql
 
 cache:
   directories:

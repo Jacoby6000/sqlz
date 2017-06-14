@@ -1,7 +1,6 @@
 package scoobie
 
 import org.specs2._
-import scoobie.ast._
 
 /**
   * Created by jbarber on 5/19/16.
