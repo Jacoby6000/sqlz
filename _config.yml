@@ -1,0 +1,11 @@
+name: Scoobie
+baseurl: ''
+description: A set of DSLs for querying with Doobie.
+highlighter: rouge
+docs: true
+collections:
+  tut:
+    output: true
+version: 0.3.1-SNAPSHOT
+org: com.github.jacoby6000
+markdown: kramdown
