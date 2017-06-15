@@ -1,5 +1,5 @@
 name: Scoobie
-baseurl: ''
+baseurl: /scoobie
 description: A set of DSLs for querying with Doobie.
 highlighter: rouge
 docs: true
