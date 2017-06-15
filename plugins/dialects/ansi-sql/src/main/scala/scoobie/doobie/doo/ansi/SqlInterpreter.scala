@@ -13,12 +13,11 @@ object SqlInterpreter {
   * Generates sql query strings, converting them in to type B using a typeclass F[_].
   *
   * @param escapeFieldWith
-  * @param ev$1 Evidence that B is a semigroup
   * @param lifter Something that knows how to use the typeclass F to produce values of B.
   * @param sqlFragmentInterpreter An implementation of F[_] that should not do any augmentation to the query string provided.
   * @param intInterpreter An implementation of F[_] for handling ints.
   * @tparam F The typeclass used to lift values in to the context of B.  Most important inside of the QueryParameter case of the reduceValue function.
-  * @tparam B A type we can produce using an value for F[A] and a value for A.
+  * @tparam B A type we can produce using an value for F[A] and a value for A. B must be semigroupal.
   */
 case class SqlInterpreter[F[_], B: Semigroup](escapeFieldWith: String)
                                              (implicit lifter: SqlQueryLifter[F,B], sqlFragmentInterpreter: F[LiteralQueryString], intInterpreter: F[Int]) {

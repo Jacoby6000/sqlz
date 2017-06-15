@@ -65,7 +65,7 @@ lazy val doobieSupport41 =
   project.in(doobieCoreFile)
     .configs(IntegrationTest)
     .settings(Defaults.itSettings)
-    .settings(doobieCoreSettings.tail.tail.head)
+    .settings(doobieCoreSettings.tail.head)
     .enablePlugins(SbtOsgi)
     .settings(publishSettings)
     .dependsOn(core)
@@ -75,7 +75,7 @@ lazy val doobieSupport40 =
     .configs(IntegrationTest)
     .settings(Defaults.itSettings)
     .enablePlugins(SbtOsgi)
-    .settings(doobieCoreSettings.tail.head)
+    .settings(doobieCoreSettings.tail.tail.head)
     .settings(publishSettings)
     .dependsOn(core)
 

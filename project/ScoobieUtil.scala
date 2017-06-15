@@ -30,7 +30,8 @@ object ScoobieUtil {
     scalaVersion := "2.12.2",
     organization := "com.github.jacoby6000",
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
-    crossScalaVersions := Seq("2.11.11", scalaVersion.value)
+    crossScalaVersions := Seq("2.11.11", scalaVersion.value),
+    autoAPIMappings := true
   )
 
   lazy val scalacVersionOptions =
@@ -123,6 +124,7 @@ object ScoobieUtil {
     },
     publishArtifact in Test := false,
     homepage := Some(url("https://github.com/jacoby6000/scoobie")),
+    apiURL := Some(url("https://github.com/jacoby6000/scoobie/tree/master")),
     pomIncludeRepository := Function.const(false),
     pomExtra :=
     <scm>
@@ -169,7 +171,7 @@ object ScoobieUtil {
   ): DoobiePlugin = {
     val sourceDir = s"./plugins/doobie/doobie-$doobiePluginName"
     val settings = doobieVersionList.map { doobieVersion =>
-      val versionNoDots = doobieVersion.filterNot(_ == '.')
+      val versionNoDots = doobieVersion.filterNot(_ == '.').replaceAll("^0+", "")
       val scoobieArtifactName = s"scoobie-contrib-doobie$versionNoDots-$doobiePluginName"
       scoobieSettings ++ Seq(
         name := scoobieArtifactName,
