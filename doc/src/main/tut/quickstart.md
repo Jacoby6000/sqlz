@@ -1,3 +1,8 @@
+---
+title: Scoobie
+layout: home
+section: home
+---
 [![Join the chat at https://gitter.im/Jacoby6000/Scala-SQL-AST](https://badges.gitter.im/Jacoby6000/Scala-SQL-AST.svg)](https://gitter.im/Jacoby6000/Scala-SQL-AST?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/Jacoby6000/scoobie.svg?branch=master)](https://travis-ci.org/Jacoby6000/scoobie) [![codecov](https://codecov.io/gh/Jacoby6000/scoobie/branch/master/graph/badge.svg)](https://codecov.io/gh/Jacoby6000/scoobie)
 
 ### Querying with [Doobie](https://github.com/tpolecat/doobie), without raw sql
@@ -101,7 +106,7 @@ val xa = DriverManagerTransactor[Task](
   "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"
 )
 
-implicit val logger = LogHandler.jdkLogHandler
+implicit val logger = scoobie.doobie.log.verboseTestLogger
 
 import xa.yolo._
 
