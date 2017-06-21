@@ -186,6 +186,7 @@ lazy val docs =
       micrositeAuthor := "Jacob Barber",
       micrositeHomepage := "scoobie.jacoby6000.com",
       micrositeOrganizationHomepage := "jacoby6000.com",
+      micrositeBaseUrl := "/scoobie",
       micrositeGithubOwner := "jacoby6000",
       micrositeGithubRepo := "scoobie",
       micrositePushSiteWith := GitHub4s,

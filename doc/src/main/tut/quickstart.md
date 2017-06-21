@@ -1,7 +1,7 @@
 ---
-title: Scoobie
-layout: home
-section: home
+title: Quickstart
+layout: docs
+section: docs
 ---
 [![Join the chat at https://gitter.im/Jacoby6000/Scala-SQL-AST](https://badges.gitter.im/Jacoby6000/Scala-SQL-AST.svg)](https://gitter.im/Jacoby6000/Scala-SQL-AST?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/Jacoby6000/scoobie.svg?branch=master)](https://travis-ci.org/Jacoby6000/scoobie) [![codecov](https://codecov.io/gh/Jacoby6000/scoobie/branch/master/graph/badge.svg)](https://codecov.io/gh/Jacoby6000/scoobie)
 
@@ -30,18 +30,9 @@ Add this project as a dependency.
   }
 ```
 
-Refer to the chart below to see what dependencies use what versions of things
-
-| scoobie distribution              | scoobie version | doobie | status | jdk  | scala          | scalaz | scalaz-stream  | shapeless |
-|:---------------------------------:|:---------------:|:------:|:------:|:----:|:--------------:|:------:|:--------------:|:---------:|
-| scoobie-contrib-doobie40-postgres | 0.3.0           |  0.4.0 | stable | 1.8+ | 2.11.8/2.12.1  |   7.2  |      0.8a      |    2.3    |
-| scoobie-contrib-doobie41-postgres | 0.3.0           |  0.4.1 | stable | 1.6+ | 2.11.8/2.12.1  |   7.2  |      0.8a      |    2.3    |
-| scoobie-contrib-doobie40-mysql    | 0.3.0           |  0.4.0 | stable | 1.8+ | 2.11.8/2.12.1  |   7.2  |      0.8a      |    2.3    |
-| scoobie-contrib-doobie41-mysql    | 0.3.0           |  0.4.1 | stable | 1.6+ | 2.11.8/2.12.1  |   7.2  |      0.8a      |    2.3    |
-| scoobie-contrib-mild-sql-dsl      | 0.3.0           |  N/A   | stable | 1.6+ | 2.11.8/2.12.1  |   N/A  |      N/A       |    N/A    |
 ### Using the SQL DSL
 
-Below is a sample query that somebody may want to write. The query below is perfectly valid; try it out!
+Below is a sample query that somebody may want to write.
 
 ```tut
 import scoobie.doobie.doo.postgres._
@@ -51,8 +42,8 @@ val q =
   select (
     p"foo" + 10 as "woozle",
     `*`
-  ) from ( 
-    p"bar" 
+  ) from (
+    p"bar"
   ) leftOuterJoin (
     p"baz" as "b" on (
       p"bar.id" === p"b.barId"
@@ -60,7 +51,7 @@ val q =
   ) innerJoin (
     p"biz" as "c" on (
       p"c.id" === p"bar.bizId"
-    ) 
+    )
   ) where (
     p"c.name" === "LightSaber" and
     p"c.age" > 27
@@ -74,20 +65,20 @@ The formatted output of this is
 ```sql
 SELECT
     "foo" + ? AS woozle,
-    * 
+    *
 FROM
-    "bar" 
+    "bar"
 LEFT OUTER JOIN
-    "baz" AS b 
-        ON "bar"."id" = "b"."barId" 
+    "baz" AS b
+        ON "bar"."id" = "b"."barId"
 INNER JOIN
-    "biz" AS c 
-        ON "c"."id" = "bar"."bizId" 
+    "biz" AS c
+        ON "c"."id" = "bar"."bizId"
 WHERE
     "c"."name" = ?
-    AND  "c"."age" > ? 
+    AND  "c"."age" > ?
 ORDER BY
-    "c"."age" DESC 
+    "c"."age" DESC
 GROUP BY
     "b"."worth" ASC
 ```
@@ -99,14 +90,14 @@ First, lets set up a repl session with our imports, plus what we need to run doo
 ```tut:silent
 import scoobie.doobie.doo.postgres._ // Use postgres with doobie support
 import scoobie.snacks.mild.sql._ // Import the Sql-like weakly (mildly) typed DSL.
-import doobie.imports._ // Import doobie transactor
-import scalaz.concurrent.Task 
+import doobie.imports._ // Import doobie transactors and meta instances
+import scalaz.concurrent.Task
 
 val xa = DriverManagerTransactor[Task](
   "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"
 )
 
-implicit val logger = scoobie.doobie.log.verboseTestLogger
+implicit val logger = scoobie.doobie.log.verboseTestLogger // queries will be logged using this logger.
 
 import xa.yolo._
 
@@ -121,7 +112,7 @@ val baseQuery =
   ) from p"country"
 ```
 
-And now lets run some basic queries (Note, instead of `.queryAndPrint[T](printer)` you can use `.query[T]` if you do not care to see that sql being generated.) 
+And now lets run some basic queries
 
 ```tut
 def biggerThan(n: Int) = {
@@ -139,7 +130,7 @@ def populationIn(r: Range) = {
     p"population" <= r.max
   )).build
     .query[Country]
-} 
+}
 
 populationIn(150000000 to 200000000).quick.unsafePerformSync
 ```
