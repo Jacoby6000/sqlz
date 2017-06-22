@@ -22,8 +22,8 @@ trait select {
                                  filter: QueryComparison[F],
                                  sorts: List[QuerySort[F]],
                                  groupings: List[QuerySort[F]],
-                                 offset: Option[Int],
-                                 limit: Option[Int]
+                                 offset: Option[Long],
+                                 limit: Option[Long]
   ) {
     def leftOuterJoin(tup: (QueryProjection[F], QueryComparison[F])): QueryBuilder[F] =
       this.copy(unions = QueryLeftOuterJoin(tup._1, tup._2) :: unions)
@@ -49,8 +49,8 @@ trait select {
     def orderBy(sorts: QuerySort[F]*) = this.copy(sorts = this.sorts ::: sorts.toList)
     def groupBy(groups: QuerySort[F]*) = this.copy(groupings = this.groupings ::: groups.toList)
 
-    def offset(n: Int): QueryBuilder[F] = this.copy(offset = Some(n))
-    def limit(n: Int): QueryBuilder[F] = this.copy(limit = Some(n))
+    def offset(n: Long): QueryBuilder[F] = this.copy(offset = Some(n))
+    def limit(n: Long): QueryBuilder[F] = this.copy(limit = Some(n))
 
   }
 
