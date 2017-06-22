@@ -3,45 +3,42 @@ title: Quickstart
 layout: docs
 section: docs
 ---
-[![Join the chat at https://gitter.im/Jacoby6000/Scala-SQL-AST](https://badges.gitter.im/Jacoby6000/Scala-SQL-AST.svg)](https://gitter.im/Jacoby6000/Scala-SQL-AST?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/Jacoby6000/scoobie.svg?branch=master)](https://travis-ci.org/Jacoby6000/scoobie) [![codecov](https://codecov.io/gh/Jacoby6000/scoobie/branch/master/graph/badge.svg)](https://codecov.io/gh/Jacoby6000/scoobie)
-
-### Querying with [Doobie](https://github.com/tpolecat/doobie), without raw sql
-
-The goal of this project is to produce an alternative to writing SQL queries for use with Doobie.
-
-As it stands now, there is a quick 'n dirty SQL DSL, implemented with a lightweight AST. Other DSLs may be created in the future.
 
 ### Getting Started
 
+In the quick start samples below, we will be using doobie 0.4.1 with postgres and the sql dsl.
+
+### Artifacts 
+
 Add the sonatype releases resolver
 ```scala
-  resolvers += Resolver.sonatypeRepo("releases")
+resolvers += Resolver.sonatypeRepo("releases")
 ```
 
 Add this project as a dependency.
 ```scala
-  libraryDependencies ++= {
-    val scoobieVersion = "0.3.0"
+libraryDependencies ++= {
+  val scoobieVersion = "0.3.0"
 
-    Seq(
-      "com.github.jacoby6000" %% "scoobie-contrib-doobie41-postgres" % scoobieVersion, // import doobie 4.1 with postgres support
-      "com.github.jacoby6000" %% "scoobie-contrib-mild-sql-dsl" % scoobieVersion // import the weak sql dsl
-    )
-  }
+  Seq(
+    "com.github.jacoby6000" %% "scoobie-contrib-doobie41-postgres" % scoobieVersion, // import doobie 4.1 with postgres support
+    "com.github.jacoby6000" %% "scoobie-contrib-mild-sql-dsl" % scoobieVersion // import the weak sql dsl
+  )
+}
 ```
 
 ### Using the SQL DSL
 
-Below is a sample query that somebody may want to write.
+Import the scoobie DSL. DSLs will exist under the `scoobie.snacks` package.
 
-```tut
-import scoobie.doobie.doo.postgres._
+```tut:book
 import scoobie.snacks.mild.sql._
 
 val q =
   select (
     p"foo" + 10 as "woozle",
-    `*`
+    p"c.age",
+    p"b.worth"
   ) from (
     p"bar"
   ) leftOuterJoin (
@@ -56,16 +53,30 @@ val q =
     p"c.name" === "LightSaber" and
     p"c.age" > 27
   ) orderBy p"c.age".desc groupBy p"b.worth".asc
-
-val sql = q.build.genFragment // Generate the sql fragment associated with this query
 ```
 
-The formatted output of this is
+After this, you will have a `QueryBuilder` which you must transform in to a `QueryExpression`.  This is done via `q.build`
+
+```tut:book
+val queryExpression = q.build
+```
+
+After obtaining the query expression, we can interpret the sql to build a `doobie.imports.Fragment`, or go directly in to a `Query0` from doobie.
+To be able to interpret the expression, we must import an interpreter. Interpreters exist inside of `scoobie.doobie.doo.<database backend>`
+
+```tut:book
+import scoobie.doobie.doo.postgres._
+val doobieFragment = queryExpression.genFragment
+val doobieQuery = queryExpression.query[(Int, Int, Int)]
+```
+
+Both of the above are queries eqivelant to the SQL below
 
 ```sql
 SELECT
     "foo" + ? AS woozle,
-    *
+    "c.age",
+    "b.worth"
 FROM
     "bar"
 LEFT OUTER JOIN
@@ -83,11 +94,11 @@ GROUP BY
     "b"."worth" ASC
 ```
 
-As a proof of concept, here are some examples translated over from the book of doobie
+To see how this might interact with a real database, here are some examples copied over from the [Book Of Doobie](https://tpolecat.github.io/doobie-scalaz-0.4.0/04-Selecting.html).
 
 First, lets set up a repl session with our imports, plus what we need to run doobie.
 
-```tut:silent
+```tut:silent:reset
 import scoobie.doobie.doo.postgres._ // Use postgres with doobie support
 import scoobie.snacks.mild.sql._ // Import the Sql-like weakly (mildly) typed DSL.
 import doobie.imports._ // Import doobie transactors and meta instances
@@ -97,7 +108,8 @@ val xa = DriverManagerTransactor[Task](
   "org.postgresql.Driver", "jdbc:postgresql:world", "postgres", "postgres"
 )
 
-implicit val logger = scoobie.doobie.log.verboseTestLogger // queries will be logged using this logger.
+// queries will be logged using this logger. This logger is only accesible in test packages. You should not try to import it.  Make your own logger!
+implicit val logger = scoobie.doobie.log.verboseTestLogger 
 
 import xa.yolo._
 
@@ -114,7 +126,7 @@ val baseQuery =
 
 And now lets run some basic queries
 
-```tut
+```tut:book
 def biggerThan(n: Int) = {
   (baseQuery where p"population" > n)
     .build
@@ -135,9 +147,9 @@ def populationIn(r: Range) = {
 populationIn(150000000 to 200000000).quick.unsafePerformSync
 ```
 
-And a more complicated example
+And a more contrived and complicated example
 
-```tut
+```tut:book
 case class ComplimentaryCountries(code1: String, name1: String, code2: String, name2: String)
 
 def joined = {
@@ -160,5 +172,3 @@ def joined = {
 
 joined.quick.unsafePerformSync
 ```
-
-Check out [this end to end example](https://github.com/Jacoby6000/scoobie/blob/master/postgres/src/test/scala/scoobie/doobie/PostgresTest.scala#L71) for an idea of how to utilize insert/update/delete as well.
