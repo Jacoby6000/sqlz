@@ -15,12 +15,12 @@ object SqlInterpreter {
   * @param escapeFieldWith
   * @param lifter Something that knows how to use the typeclass F to produce values of B.
   * @param sqlFragmentInterpreter An implementation of F[_] that should not do any augmentation to the query string provided.
-  * @param intInterpreter An implementation of F[_] for handling ints.
+  * @param longInterpreter An implementation of F[_] for handling longs.
   * @tparam F The typeclass used to lift values in to the context of B.  Most important inside of the QueryParameter case of the reduceValue function.
   * @tparam B A type we can produce using an value for F[A] and a value for A. B must be semigroupal.
   */
 case class SqlInterpreter[F[_], B: Semigroup](escapeFieldWith: String)
-                                             (implicit lifter: SqlQueryLifter[F,B], sqlFragmentInterpreter: F[LiteralQueryString], intInterpreter: F[Int]) {
+                                             (implicit lifter: SqlQueryLifter[F,B], sqlFragmentInterpreter: F[LiteralQueryString], longInterpreter: F[Long]) {
   implicit class SqlLitInterpolator(val s: StringContext) {
     def litSql(params: String*): B =
       evaluatedLitSql(s.standardInterpolator(identity, params))
@@ -126,8 +126,8 @@ case class SqlInterpreter[F[_], B: Semigroup](escapeFieldWith: String)
 
         val sqlTable = reduceProjection(table)
 
-        val sqlOffset = offset.map(n => litSql"OFFSET " |+| lifter.liftValue(n, intInterpreter) |+| litSql" ").getOrElse(litSql"")
-        val sqlLimit = limit.map(n => litSql"LIMIT " |+| lifter.liftValue(n, intInterpreter) |+| litSql" ").getOrElse(litSql"")
+        val sqlOffset = offset.map(n => litSql"OFFSET " |+| lifter.liftValue(n, longInterpreter) |+| litSql" ").getOrElse(litSql"")
+        val sqlLimit = limit.map(n => litSql"LIMIT " |+| lifter.liftValue(n, longInterpreter) |+| litSql" ").getOrElse(litSql"")
 
         litSql"SELECT " |+| sqlProjections |+| litSql"FROM " |+| sqlTable |+| sqlJoins |+| sqlFilter |+| sqlSorts |+| sqlGroups |+| sqlLimit |+| sqlOffset
 
