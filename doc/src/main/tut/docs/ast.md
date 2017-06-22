@@ -12,7 +12,7 @@ The Scoobie AST is a very simple construction of nodes which eventually make up 
 
 To get around quickly, use the index below.
 
-* [`QueryExpression`](#query-expression)
+* <code><a href="#query-expression">QueryExpression(#query-expression)</a></code>
   * `QuerySelect`
   * `QueryModify`
     * `QueryInsert`
@@ -111,7 +111,7 @@ A `ModifyField` value is comporised of two parts.
 2. a `QueryValue` representing the value.
 
 `ModifyField` has no sub or super-classes. It's a very specific use case.  It is essentially a specialized tuple which one might view as
-```tut:silent
+```scala
 type ModifyField = (QueryPath, QueryValue)
 ```
 
