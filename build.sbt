@@ -178,7 +178,7 @@ lazy val docs =
   project.in(file("doc"))
     .enablePlugins(TutPlugin, MicrositesPlugin)
     .settings(scoobieSettings ++ noPublishSettings)
-    .dependsOn(doobiePostgres41, weakSqlDsl, doobieSupport41 % "tut->it")
+    .dependsOn(doobiePostgres41, weakSqlDsl, doobieSupport41 % "tut->it;compile->compile;")
     .settings(
       scalacOptions := (scalacOptions in ThisBuild).value.filterNot(_.startsWith("-Ywarn-unused")),
       micrositeName := "Scoobie",

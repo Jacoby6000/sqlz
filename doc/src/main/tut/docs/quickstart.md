@@ -33,6 +33,7 @@ Import the scoobie DSL. DSLs will exist under the `scoobie.snacks` package.
 
 ```tut:book
 import scoobie.snacks.mild.sql._
+import scoobie.doobie.doo.postgres._
 
 val q =
   select (
@@ -62,10 +63,10 @@ val queryExpression = q.build
 ```
 
 After obtaining the query expression, we can interpret the sql to build a `doobie.imports.Fragment`, or go directly in to a `Query0` from doobie.
-To be able to interpret the expression, we must import an interpreter. Interpreters exist inside of `scoobie.doobie.doo.<database backend>`
+To be able to interpret the expression, we must import an interpreter (this has already been done above) 
+Interpreters exist inside of `scoobie.doobie.doo.<database backend>`
 
 ```tut:book
-import scoobie.doobie.doo.postgres._
 val doobieFragment = queryExpression.genFragment
 val doobieQuery = queryExpression.query[(Int, Int, Int)]
 ```

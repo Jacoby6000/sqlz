@@ -1,10 +1,11 @@
 ---
-title: Docs
+title: Documentation
 layout: docs
 section: home
+position: 1
 ---
 
-### Scoobie
+### Purpose
 
 Scoobie at it's core is simply an AST which represents ANSI SQL.
 
@@ -30,3 +31,18 @@ To get going quickly, checkout the [Quickstart](./quickstart.html) page.
 |:---------------------------------:|:---------------:|:-----:|:--------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------:|
 | scoobie-core                      | 0.3.0           |  1.6+ | 2.11.8/2.12.1  | Pulls in the core AST. Use this dependency if you are trying to create additional interpreters or DSLs                                                         |
 | scoobie-contrib-ansi-sql          | 0.3.0           |  1.6+ | 2.11.8/2.12.1  | Pulls in the core AST plus an interpreter for interpreting ANSI SQL. Use this if you're looking to create an additional database driver backed by ANSI SQL.    |
+
+
+
+### Snapshots
+
+| scoobie distribution              | scoobie version | doobie | scala          | scalaz | scalaz-stream  | shapeless | issues-resolved                                       |
+|:---------------------------------:|:---------------:|:------:|:--------------:|:------:|:--------------:|:---------:|:-----------------------------------------------------:|
+| scoobie-contrib-doobie40-postgres | 0.3.1-SNAPSHOT  |  0.4.0 | 2.11.8/2.12.1  |   7.2  |      0.8a      |    2.3    |  [#52](https://github.com/Jacoby6000/scoobie/pull/52) |
+| scoobie-contrib-doobie41-postgres | 0.3.1-SNAPSHOT  |  0.4.1 | 2.11.8/2.12.1  |   7.2  |      0.8a      |    2.3    |  [#52](https://github.com/Jacoby6000/scoobie/pull/52) |
+| scoobie-contrib-doobie40-mysql    | 0.3.1-SNAPSHOT  |  0.4.0 | 2.11.8/2.12.1  |   7.2  |      0.8a      |    2.3    |  [#52](https://github.com/Jacoby6000/scoobie/pull/52) |
+| scoobie-contrib-doobie41-mysql    | 0.3.1-SNAPSHOT  |  0.4.1 | 2.11.8/2.12.1  |   7.2  |      0.8a      |    2.3    |  [#52](https://github.com/Jacoby6000/scoobie/pull/52) |
+| scoobie-contrib-mild-sql-dsl      | 0.3.1-SNAPSHOT  |  N/A   | 2.11.8/2.12.1  |   N/A  |      N/A       |    N/A    |  [#52](https://github.com/Jacoby6000/scoobie/pull/52) |
+| scoobie-contrib-ansi-sql          | 0.3.1-SNAPSHOT  |  N/A   | 2.11.8/2.12.1  |   7.2  |      N/A       |    N/A    |  [#52](https://github.com/Jacoby6000/scoobie/pull/52) |
+| scoobie-core                      | 0.3.1-SNAPSHOT  |  N/A   | 2.11.8/2.12.1  |   N/A  |      N/A       |    N/A    |  [#52](https://github.com/Jacoby6000/scoobie/pull/52) |
+
