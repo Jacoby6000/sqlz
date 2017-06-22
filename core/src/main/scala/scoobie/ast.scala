@@ -104,8 +104,8 @@ object ast {
                                 filter: QueryComparison[F],
                                 sorts: List[QuerySort[F]],
                                 groupings: List[QuerySort[F]],
-                                offset: Option[Int],
-                                limit: Option[Int]
+                                offset: Option[Long],
+                                limit: Option[Long]
   ) extends QueryExpression[F] with QueryValue[F]
 
   case class ModifyField[F[_]](key: QueryPath[F], value: QueryValue[F])
