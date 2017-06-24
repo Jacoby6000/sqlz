@@ -27,6 +27,10 @@ before_script:
   - mysql -e 'CREATE DATABASE IF NOT EXISTS world;'
   - mysql world < ./plugins/doobie/doobie-mysql/src/it/resources/world.sql
 
+after_success:
+  - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" -a "$TEST_SUITE" = "scoobie" ]; then bash scripts/publishSite.sh; fi
+  - if [ "$TRAVIS_PULL_REQUEST" = "true" ]; then echo "Not in master branch, skipping deploy and release"; fi
+
 cache:
   directories:
   - $HOME/.sbt/0.13/dependency
