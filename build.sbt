@@ -80,10 +80,10 @@ lazy val doobieSupport40 =
     .dependsOn(core)
 
 lazy val doobiePostgresPlugin = ScoobieUtil.doobiePlugin(
-    Some(doobiePGDriver),
-    "postgres",
-    "Introduces doobie support to scoobie with postgres."
-  )
+  Some(doobiePGDriver),
+  "postgres",
+  "Introduces doobie support to scoobie with postgres."
+)
 
 lazy val doobiePgFile = doobiePostgresPlugin.dir
 lazy val doobiePgSettings = doobiePostgresPlugin.settings
@@ -115,10 +115,10 @@ lazy val doobiePostgres40 =
     .dependsOn(doobieSupport40 % "compile->compile;it->it;", ansiSql, weakSqlDsl % "it")
 
 lazy val doobieMySqlPlugin = ScoobieUtil.doobiePlugin(
-    None,
-    "mysql",
-    "Introduces doobie support to scoobie with mysql"
-  )
+  None,
+  "mysql",
+  "Introduces doobie support to scoobie with mysql"
+)
 
 lazy val doobieMySqlFile = doobieMySqlPlugin.dir
 lazy val doobieMySqlSettings = doobieMySqlPlugin.settings.map(_ ++ Seq(libraryDependencies += ("mysql" % "mysql-connector-java" % "6.0.6")))
@@ -176,6 +176,30 @@ lazy val ansiSql =
 
 lazy val docs =
   project.in(file("doc"))
-    .enablePlugins(TutPlugin)
+    .enablePlugins(TutPlugin, MicrositesPlugin)
     .settings(scoobieSettings ++ noPublishSettings)
-    .dependsOn(doobiePostgres41, weakSqlDsl)
+    .dependsOn(doobiePostgres41, weakSqlDsl, doobieSupport41 % "tut->it;compile->compile;")
+    .settings(
+      scalacOptions := (scalacOptions in ThisBuild).value.filterNot(_.startsWith("-Ywarn-unused")),
+      micrositeName := "Scoobie",
+      micrositeDescription := "A set of DSLs for querying with Doobie.",
+      micrositeAuthor := "Jacob Barber",
+      micrositeHomepage := "scoobie.jacoby6000.com",
+      micrositeOrganizationHomepage := "jacoby6000.com",
+      micrositeBaseUrl := "/scoobie",
+      micrositeGithubOwner := "jacoby6000",
+      micrositeGithubRepo := "scoobie",
+      micrositePushSiteWith := GitHub4s,
+      micrositeGithubToken := Some(sys.env("GITHUB_MICROSITES_TOKEN")),
+      micrositeHighlightTheme := "atom-one-light",
+      micrositePalette := Map(
+        "brand-primary"     -> "#E05236",
+        "brand-secondary"   -> "#3F3242",
+        "brand-tertiary"    -> "#2D232F",
+        "gray-dark"         -> "#453E46",
+        "gray"              -> "#837F84",
+        "gray-light"        -> "#E3E2E3",
+        "gray-lighter"      -> "#F4F3F4",
+        "white-color"       -> "#FFFFFF"
+      )
+    )
