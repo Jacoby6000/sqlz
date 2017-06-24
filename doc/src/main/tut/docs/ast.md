@@ -18,6 +18,7 @@ To get around quickly, use the index below.
     * <code><a href="#query-insert">QueryInsert</a></code>
     * <code><a href="#query-update">QueryUpdate</a></code>
     * <code><a href="#query-delete">QueryDelete</a></code>
+* <code><a href="#modify-field">ModifyField</a></code>
 * <code><a href="#query-value">QueryValue</a></code>
   * <code><a href="#query-select">QuerySelect</a></code>
   * <code><a href="#query-parameter">QueryParameter</a></code>
@@ -83,7 +84,7 @@ All <code><a href="#query-select">QuerySelect</a></code> values extend <code><a 
 
 A <code><a href="#query-update">QueryUpdate</a></code> is comprised of 3 parts.
 1. a <code><a href="#query-path">QueryPath</a></code> representing the collection to perform the update on.
-2. a `List[ModifyField]` representing the fields to be modified and their associated new values.
+2. a <code>List[<a href="#modify-field">ModifyField</a>]</code> representing the fields to be modified and their associated new values.
 3. a <code><a href="#query-comparison">QueryComparison</a></code> representing the where/filter clause of the update.
 
 All <code><a href="#query-update">QueryUpdate</a></code> values extend <code><a href="#query-expression">QueryExpression</a></code> and <code><a href="#query-modify">QueryModify</a></code>.
@@ -92,7 +93,7 @@ All <code><a href="#query-update">QueryUpdate</a></code> values extend <code><a 
 
 A <code><a href="#query-insert">QueryInsert</a></code> is comprised of 2 parts. 
 1. a <code><a href="#query-path">QueryPath</a></code> representing the collection to perform the insert on.
-2. a `List[ModifyField]` representing the values of each column.
+2. a <code>List[<a href="#modify-field">ModifyField</a>]</code> representing the values of each column.
 
 All <code><a href="#query-insert">QueryInsert</a></code> values extend <code><a href="#query-expression">QueryExpression</a></code> and <code><a href="#query-modify">QueryModify</a></code>.
 
@@ -104,16 +105,16 @@ A <code><a href="#query-delete">QueryDelete</a></code> is comprised of 2 parts.
 
 All <code><a href="#query-delete">QueryDelete</a></code> values extends <code><a href="#query-expression">QueryExpression</a></code> and <code><a href="#query-modify">QueryModify</a></code>.
 
-#### Modify Field
+### Modify Field
 
-A `ModifyField` value is comporised of two parts.
+A <code><a href="#modify-field">ModifyField</a></code> value is comporised of two parts.
 1. a <code><a href="#query-path">QueryPath</a></code> representing the column to be modified.
 2. a <code><a href="#query-value">QueryValue</a></code> representing the value.
 
-`ModifyField` has no sub or super-classes. It's a very specific use case.  It is essentially a specialized tuple which one might view as
-```scala
-type ModifyField = (<a href="#query-path">QueryPath</a>, <a href="#query-value">QueryValue</a>)
-```
+<code><a href="#modify-field">ModifyField</a></code> has no sub or super-classes. It's a very specific use case.  It is essentially a specialized tuple which one might view as
+<code>
+type <a href="#modify-field">ModifyField</a> = (<a href="#query-path">QueryPath</a>, <a href="#query-value">QueryValue</a>)
+</code>
 
 It exists only to pair a path with a value. 
 
@@ -429,3 +430,5 @@ A <code><a href="#query-sort">QuerySort</a></code> represents the sort method to
 
 <code><a href="#query-sort-desc">QuerySortDesc</a></code> has one member.
 1. a <code><a href="#query-path">QueryPath</a></code> representing the column to sort by.
+
+---
