@@ -81,6 +81,6 @@ Using the DSL, you create join clauses just as you would in sql (albeit with a b
 select(p"a.foo", p"b.bar") from (p"table1" as "a") leftOuterJoin ((p"table2" as "b") on (p"a.id" === p"b.a_id"))
 ```
 
-Valid joins include `leftOuterJoin, `rightOuterJoin`, `innerJoin`, `fullOuterJoin`, and `crossJoin`.
+Valid joins include `leftOuterJoin`, `rightOuterJoin`, `innerJoin`, `fullOuterJoin`, and `crossJoin`.
 
 

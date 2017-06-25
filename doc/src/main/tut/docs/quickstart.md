@@ -12,11 +12,13 @@ In the quick start samples below, we will be using doobie 0.4.1 with postgres an
 ### Artifacts 
 
 Add the sonatype releases resolver
+
 ```scala
 resolvers += Resolver.sonatypeRepo("releases")
 ```
 
 Add this project as a dependency.
+
 ```scala
 libraryDependencies ++= {
   val scoobieVersion = "0.3.0"
