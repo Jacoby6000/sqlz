@@ -1,7 +1,7 @@
 ---
 title: Documentation
 layout: docs
-section: home
+section: docs
 position: 1
 ---
 
@@ -28,7 +28,7 @@ To get going quickly, checkout the [Quickstart](./quickstart.html) page.
 ### Other Packages
 
 | scoobie distribution              | scoobie version | jdk   | scala          | description                                                                                                                                                    |
-|:---------------------------------:|:---------------:|:-----:|:--------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+|:---------------------------------:|:---------------:|:-----:|:--------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | scoobie-core                      | 0.3.0           |  1.6+ | 2.11.8/2.12.1  | Pulls in the core AST. Use this dependency if you are trying to create additional interpreters or DSLs                                                         |
 | scoobie-contrib-ansi-sql          | 0.3.0           |  1.6+ | 2.11.8/2.12.1  | Pulls in the core AST plus an interpreter for interpreting ANSI SQL. Use this if you're looking to create an additional database driver backed by ANSI SQL.    |
 

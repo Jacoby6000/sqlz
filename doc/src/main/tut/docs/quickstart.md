@@ -2,6 +2,7 @@
 title: Quickstart
 layout: docs
 section: docs
+position: 2
 ---
 
 ### Getting Started
