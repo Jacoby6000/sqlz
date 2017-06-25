@@ -54,6 +54,13 @@ object PostgresTest extends Specification with AnalysisSpec {
         where (p"code" in ("USA", "BRA", codes))
     ).build.query[String]
 
+  def selectWhereNotInQuery(codes: NonEmptyList[String]): Query0[String] =
+    (
+      select ( p"name" )
+        from p"country"
+        where (p"code" notIn ("USA", "BRA", codes))
+    ).build.query[String]
+
   lazy val insertCityQuery: Update0 =
     (
       insertInto(p"city") values(
@@ -96,6 +103,7 @@ object PostgresTest extends Specification with AnalysisSpec {
     "pass type checks" in {
       "semi-complex select" in check(semiComplexSelectQuery)
       "select where in" in check(selectWhereInQuery(NonEmptyList("a", "b")))
+      "select where not in" in check(selectWhereNotInQuery(NonEmptyList("a", "b")))
       "insert city" in check(insertCityQuery)
       "select district" in check(selectDistrictQuery)
       "update population" in check(updateCityPopulationQuery)

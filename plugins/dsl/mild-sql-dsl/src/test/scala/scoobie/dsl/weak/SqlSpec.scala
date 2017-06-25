@@ -34,6 +34,7 @@ class SqlSpec extends Specification { def is =
     Alias                      $queryAlias
     In (1 param)               $queryIn1
     In (2 params)              $queryIn2
+    Not In (2 params)          $queryNotIn
 
   Query Path Extensions
     As           $pathAs
@@ -87,7 +88,7 @@ class SqlSpec extends Specification { def is =
   }
 
   lazy val queryEquals = (QueryPathEnd("foo") === "bar") mustEqual QueryEqual[DummyHKT](QueryPathEnd("foo"), QueryParameter("bar"))
-  lazy val queryNotEquals1 = (QueryPathEnd("foo") !== "bar") mustEqual QueryNot[DummyHKT](QueryEqual(QueryPathEnd("foo"), QueryParameter("bar")))
+  lazy val queryNotEquals1 = (QueryPathEnd("foo") !== "bar") mustEqual QueryNot(QueryEqual[DummyHKT](QueryPathEnd("foo"), QueryParameter("bar")))
   lazy val queryNotEquals2 = (QueryPathEnd("foo") <> "bar") mustEqual QueryNot(QueryEqual[DummyHKT](QueryPathEnd("foo"), QueryParameter("bar")))
   lazy val queryLessThan = (QueryPathEnd("foo") < "bar") mustEqual QueryLessThan[DummyHKT](QueryPathEnd("foo"), QueryParameter("bar"))
   lazy val queryLessThanOrEqual = (QueryPathEnd("foo") <= "bar") mustEqual QueryLessThanOrEqual[DummyHKT](QueryPathEnd("foo"), QueryParameter("bar"))
@@ -100,6 +101,7 @@ class SqlSpec extends Specification { def is =
   lazy val queryAlias = (QueryPathEnd("foo") as "blah") mustEqual QueryProjectOne(QueryPathEnd("foo"), Some("blah"))
   lazy val queryIn1 = QueryPathEnd("foo") in ("a") mustEqual QueryIn[DummyHKT](QueryPathEnd("foo"), List("a".asParam))
   lazy val queryIn2 = QueryPathEnd("foo") in ("a", "b") mustEqual QueryIn[DummyHKT](QueryPathEnd("foo"), List("a".asParam, "b".asParam))
+  lazy val queryNotIn = QueryPathEnd("foo") notIn ("a", "b") mustEqual QueryNot(QueryIn[DummyHKT](QueryPathEnd("foo"), List("a".asParam, "b".asParam)))
 
   val simpleEquals = p"foo" === "bar"
 
