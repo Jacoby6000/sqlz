@@ -52,6 +52,8 @@ val lt = p"x" < p"y"
 val gte = p"x" >= 30
 val lte = p"x" <= p"y"
 val eq = p"a" === false
+val oneOf = p"a" in ("foo", "bar", "baz")
+val notOneOf = p"a" notIn ("foo", "bar", "baz") // not (p"foo" in ...) works as well.
 val invert = not(p"a" >= 10)
 ```
 

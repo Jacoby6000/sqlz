@@ -22,6 +22,7 @@ trait primitives {
     def *(b: QueryValue[F]): QueryValue[F] = QueryMul(a, b)
 
     def in(values: QueryValue[F]*): QueryComparison[F] = QueryIn(a, values.toList)
+    def notIn(values: QueryValue[F]*): QueryComparison[F] = QueryNot(QueryIn(a, values.toList))
 
     def as(alias: String): QueryProjection[F] = QueryProjectOne(a, Some(alias))
   }

@@ -174,8 +174,6 @@ lazy val ansiSql =
     .settings(scoobieSettings)
     .dependsOn(core, weakSqlDsl % "test")
 
-enablePlugins(MicrositesPlugin)
-
 lazy val docs =
   project.in(file("doc"))
     .enablePlugins(TutPlugin, MicrositesPlugin)
