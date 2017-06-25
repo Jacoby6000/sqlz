@@ -9,4 +9,4 @@ The goal of this project is to produce an alternative to writing SQL queries for
 
 As it stands now, there is a quick 'n dirty SQL DSL, implemented with a lightweight AST. Other DSLs may be created in the future.
 
-Check out the [documentation]("https://jacoby6000.github.io/scoobie") for more information.
+Check out the [documentation](https://jacoby6000.github.io/scoobie) for more information.
