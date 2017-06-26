@@ -35,7 +35,7 @@ before_script:
   - mysql world < ./plugins/doobie/doobie-mysql/src/it/resources/world.sql
 
 after_success:
-  - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" -a "$TEST_SUITE" = "scoobie" ]; then bash scripts/publishSite.sh; fi
+  - if [ "$TEST_SUITE" = "scoobie" -a "$TRAVIS_SCALA_VERSION" = "2.12.1"]; then bash <(curl -s https://codecov.io/bash); fi
   - if [ "$TRAVIS_PULL_REQUEST" = "true" ]; then echo "Not in master branch, skipping deploy and release"; fi
 
 cache:
