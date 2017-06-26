@@ -18,6 +18,7 @@ object ScoobieUtil {
   lazy val specs = "org.specs2" %% "specs2-core" % "3.8.8" % "test,it"
   lazy val doobieSpecs = "org.tpolecat" %% "doobie-specs2"
   lazy val genPackageInfo = settingKey[Boolean]("Should we generate package info?")
+  lazy val publishAllSigned = taskKey[Unit]("Publish all (run with +publishAll for crossbuilds)")
 
   lazy val noPublishSettings = Seq(
     publish := (),
@@ -205,7 +206,7 @@ object ScoobieUtil {
 
   def packageInfoGenerator(packageName: String, artifactName: String) =
     sourceGenerators in Compile += Def.task {
-      if (genPackageInfo.value) { 
+      if (genPackageInfo.value) {
         val outDir = (sourceManaged in Compile).value / artifactName
         val outFile = new File(outDir, "buildinfo.scala")
         outDir.mkdirs

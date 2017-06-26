@@ -6,6 +6,7 @@ import UnidocKeys._
 import ReleaseTransformations._
 import ScoobieUtil._
 
+
 lazy val scoobie =
   project.in(file("."))
     .configs(IntegrationTest)
@@ -16,6 +17,20 @@ lazy val scoobie =
     .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(docs))
     .dependsOn(core, doobieSupport, doobiePostgres, doobieMySql, weakSqlDsl, ansiSql)
     .aggregate(core, doobieSupport, doobiePostgres, doobieMySql, weakSqlDsl, ansiSql)
+    .settings(
+      publishAllSigned :=
+        Def.sequential(
+          (PgpKeys.publishSigned in core),
+          (PgpKeys.publishSigned in doobieSupport40),
+          (PgpKeys.publishSigned in doobieSupport41),
+          (PgpKeys.publishSigned in doobiePostgres40),
+          (PgpKeys.publishSigned in doobiePostgres41),
+          (PgpKeys.publishSigned in doobieMySql41),
+          (PgpKeys.publishSigned in doobieMySql40),
+          (PgpKeys.publishSigned in weakSqlDsl),
+          (PgpKeys.publishSigned in ansiSql)
+        ).value
+    )
 
 lazy val scoobieDoobie40 =
   project.in(file("./.dummy/scoobieDoobie40"))

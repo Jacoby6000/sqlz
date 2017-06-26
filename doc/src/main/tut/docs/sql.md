@@ -6,7 +6,7 @@ section: docs
 
 ### The SQL DSL
 
-The SQL dsl attempts to closely mimic standard SQL syntax. 
+The SQL dsl attempts to closely mimic standard SQL syntax.
 
 To get started with the DSL, import the scoobie DSL, and an interpreter.
 
@@ -15,7 +15,7 @@ import scoobie.doobie.doo.postgres._
 import scoobie.snacks.mild.sql._
 ```
 
-From here, you can start throwing queries together. 
+From here, you can start throwing queries together.
 
 ```tut:book
 val simpleSelect = select(p"foo", p"baz") from p"bar"
@@ -78,7 +78,7 @@ val foo = p"x" > 30 and p"y" < 10
 Using the DSL, you create join clauses just as you would in sql (albeit with a bit more syntax)
 
 ```tut:book
-select(p"a.foo", p"b.bar") from (p"table1" as "a") leftOuterJoin ((p"table2" as "b") on (p"a.id" === p"b.a_id"))
+select(p"a.foo", p"b.bar") from (p"table1" as "a") leftOuterJoin (p"table2" as "b") on (p"a.id" === p"b.a_id")
 ```
 
 Valid joins include `leftOuterJoin`, `rightOuterJoin`, `innerJoin`, `fullOuterJoin`, and `crossJoin`.
