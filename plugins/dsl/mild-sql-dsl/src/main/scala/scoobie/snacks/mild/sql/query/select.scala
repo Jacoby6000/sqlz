@@ -68,6 +68,7 @@ trait select {
     def offset(n: Long): QueryBuilder[F] = this.copy(offset = Some(n))
     def limit(n: Long): QueryBuilder[F] = this.copy(limit = Some(n))
 
+    def as(alias: String): QueryProjection[F] = QueryProjectOne(this.build, Some(alias))
   }
 
   case class JoinBuilder[F[_]](queryBuilder: QueryBuilder[F], f: QueryComparison[F] => QueryJoin[F]) {

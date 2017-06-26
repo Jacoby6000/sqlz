@@ -30,13 +30,17 @@ package object sql extends query.modify with query.select with primitives {
   implicit def toQueryValue[F[_], A](a: A)(
     implicit
     $e: Coerce[F],
-    ev: A =:!= QueryParameter[F, _],
     ev2: A =:!= QueryComparison[F],
     ev3: F[A]
   ): QueryValue[F] =
     QueryParameter(a)
 
-  implicit def toQueryProjection[F[_]](queryPath: QueryPath[F])(implicit coerce: Coerce[F]): QueryProjection[F] =
+  implicit def pathToQueryProjection[F[_]](queryPath: QueryPath[F]): QueryProjection[F] =
     QueryProjectOne(queryPath, None)
 
+  implicit def valueToQueryProjection[F[_]](value: QueryValue[F]): QueryProjection[F] =
+    QueryProjectOne(value, None)
+
+  implicit def queryBuilderToProjection[F[_]](builder: QueryBuilder[F]): QueryProjection[F] =
+    QueryProjectOne(builder.build, None)
 }

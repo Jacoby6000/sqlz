@@ -52,6 +52,8 @@ class SqlSpec extends Specification { def is =
 
   Query Builder
     Basic Builder                    $basicBuilder
+    From Subquery                    $fromSubquery
+    Select Scalar Subquery           $selectScalarSubquery
     Offset                           $offset
     Limit                            $limit
     Offset And Limit                 $offsetAndLimit
@@ -67,6 +69,8 @@ class SqlSpec extends Specification { def is =
     Left Outer Join Builder          $leftOuterJoinBuilder
     Right Outer Join Builder         $rightOuterJoinBuilder
     Cross Join Builder               $crossJoinBuilder
+    Inner Join Subquery              $innerJoinSubquery
+    Inner Join Builder Subquery      $innerJoinBuilderSubquery
     """
 
 
@@ -144,6 +148,40 @@ class SqlSpec extends Specification { def is =
     )
   )
 
+  val selectFromSub = select(p"foo", p"bar") from (select(p"foo", p"bar") from p"baz")
+
+  lazy val fromSubquery = selectFromSub.build mustEqual (
+    QuerySelect(
+      QuerySelect(
+        QueryProjectOne[DummyHKT](QueryPathEnd("baz"), None),
+        QueryProjectOne[DummyHKT](QueryPathEnd("foo"), None) ::
+        QueryProjectOne[DummyHKT](QueryPathEnd("bar"), None) ::
+        Nil,
+        List.empty, QueryComparisonNop[DummyHKT], List.empty, List.empty, None, None
+      ),
+      QueryProjectOne[DummyHKT](QueryPathEnd("foo"), None) ::
+      QueryProjectOne[DummyHKT](QueryPathEnd("bar"), None) ::
+      Nil,
+      List.empty, QueryComparisonNop[DummyHKT], List.empty, List.empty, None, None
+    )
+  )
+
+  val scalarSubquery = select(baseQuery) from p"baz"
+
+  lazy val selectScalarSubquery = scalarSubquery.build mustEqual (
+    QuerySelect(
+      QueryProjectOne[DummyHKT](QueryPathEnd("baz"), None),
+      QueryProjectOne[DummyHKT](QuerySelect(
+        QueryProjectOne[DummyHKT](QueryPathEnd("baz"), None),
+        QueryProjectOne[DummyHKT](QueryPathEnd("foo"), None) ::
+        QueryProjectOne[DummyHKT](QueryPathEnd("bar"), None) ::
+        Nil,
+        List.empty, QueryComparisonNop[DummyHKT], List.empty, List.empty, None, None
+      ), None) ::
+      Nil,
+      List.empty, QueryComparisonNop[DummyHKT], List.empty, List.empty, None, None
+    )
+  )
   lazy val offset = (baseQuery offset 5).build mustEqual (
     QuerySelect(
       QueryProjectOne[DummyHKT](QueryPathEnd("baz"), None),
@@ -349,4 +387,33 @@ class SqlSpec extends Specification { def is =
     )
   )
 
+  lazy val innerJoinSubquery = (baseQuery innerJoin ((baseQuery as "foo") on joinCondition)).build mustEqual (
+    QuerySelect(
+      QueryProjectOne[DummyHKT](QueryPathEnd("baz"), None),
+      QueryProjectOne[DummyHKT](QueryPathEnd("foo"), None) ::
+      QueryProjectOne[DummyHKT](QueryPathEnd("bar"), None) ::
+      Nil,
+      (QueryInnerJoin(QueryProjectOne(baseQuery.build, Some("foo")), QueryPathEnd[DummyHKT]("whatever") <> `null`)) :: Nil,
+      QueryComparisonNop[DummyHKT],
+      List.empty,
+      List.empty,
+      None,
+      None
+    )
+  )
+
+  lazy val innerJoinBuilderSubquery = (baseQuery innerJoin baseQuery on joinCondition).build mustEqual (
+    QuerySelect(
+      QueryProjectOne[DummyHKT](QueryPathEnd("baz"), None),
+      QueryProjectOne[DummyHKT](QueryPathEnd("foo"), None) ::
+      QueryProjectOne[DummyHKT](QueryPathEnd("bar"), None) ::
+      Nil,
+      (QueryInnerJoin(QueryProjectOne(baseQuery.build, None), QueryPathEnd[DummyHKT]("whatever") <> `null`)) :: Nil,
+      QueryComparisonNop[DummyHKT],
+      List.empty,
+      List.empty,
+      None,
+      None
+    )
+  )
 }
