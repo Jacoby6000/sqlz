@@ -1,8 +1,2 @@
 #! /bin/bash
-
-if [ "$1" = "scoobie" ]; then
-    sbt clean coverage $2 coverageReport $3 coverageReport coverageAggregate
-    bash <(curl -s https://codecov.io/bash)
-else
-    sbt $1/clean $1/$2
-fi
+sbt ++$TRAVIS_SCALA_VERSION scoobieDoobie40/it:test && sbt ++$TRAVIS_SCALA_VERSION scoobieDoobie41/it:test && sbt ++$TRAVIS_SCALA_VERSION docs/tut && sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport it:test coverageReport coverageAggregate

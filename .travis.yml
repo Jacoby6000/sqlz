@@ -4,13 +4,8 @@ jdk:
   - oraclejdk8
 
 scala:
-  - 2.12.1
-  - 2.11.8
-
-env:
-  - TEST_SUITE=scoobie ACTION=test AND=it:test
-  - TEST_SUITE=scoobieDoobie40 ACTION=it:test
-  - TEST_SUITE=scoobieDoobie41 ACTION=it:test
+  - 2.12.2
+  - 2.11.11
 
 script:
   - bash scripts/build.sh $TEST_SUITE $ACTION $AND
@@ -34,7 +29,7 @@ before_script:
   - mysql world < ./plugins/doobie/doobie-mysql/src/it/resources/world.sql
 
 after_success:
-  - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" -a "$TEST_SUITE" = "scoobie" ]; then bash scripts/publishSite.sh; fi
+  - if [ "$TRAVIS_SCALA_VERSION" = "2.12.2" ]; then bash <(curl -s https://codecov.io/bash); fi
   - if [ "$TRAVIS_PULL_REQUEST" = "true" ]; then echo "Not in master branch, skipping deploy and release"; fi
 
 cache:
@@ -47,8 +42,8 @@ cache:
 before_cache:
   - du -h -d 1 $HOME/.ivy2/cache
   - du -h -d 2 $HOME/.sbt/
-  - find $HOME/.sbt -name “*.lock” -type f -delete
-  - find $HOME/.ivy2/cache -name “ivydata-*.properties” -type f -delete
+  - find $HOME/.sbt -name "*.lock" -type f -delete
+  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -type f -delete
 
 notifications:
   webhooks:

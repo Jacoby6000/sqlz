@@ -9,7 +9,7 @@ position: 2
 
 In the quick start samples below, we will be using doobie 0.4.1 with postgres and the sql dsl.
 
-### Artifacts 
+### Artifacts
 
 Add the sonatype releases resolver
 
@@ -49,14 +49,12 @@ val q =
     p"baz" as "b" on (
       p"bar.id" === p"b.barId"
     )
-  ) innerJoin (
-    p"biz" as "c" on (
-      p"c.id" === p"bar.bizId"
-    )
+  ) innerJoin p"biz" on (
+    p"biz.id" === p"bar.bizId"
   ) where (
-    p"c.name" === "LightSaber" and
-    p"c.age" > 27
-  ) orderBy p"c.age".desc groupBy p"b.worth".asc
+    p"biz.name" === "LightSaber" and
+    p"biz.age" > 27
+  ) orderBy p"biz.age".desc groupBy p"b.worth".asc
 ```
 
 After this, you will have a `QueryBuilder` which you must transform in to a `QueryExpression`.  This is done via `q.build`
@@ -66,7 +64,7 @@ val queryExpression = q.build
 ```
 
 After obtaining the query expression, we can interpret the sql to build a `doobie.imports.Fragment`, or go directly in to a `Query0` from doobie.
-To be able to interpret the expression, we must import an interpreter (this has already been done above) 
+To be able to interpret the expression, we must import an interpreter (this has already been done above)
 Interpreters exist inside of `scoobie.doobie.doo.<database backend>`
 
 ```tut:book
@@ -87,13 +85,13 @@ LEFT OUTER JOIN
     "baz" AS b
         ON "bar"."id" = "b"."barId"
 INNER JOIN
-    "biz" AS c
-        ON "c"."id" = "bar"."bizId"
+    "biz"
+        ON "biz"."id" = "bar"."bizId"
 WHERE
-    "c"."name" = ?
-    AND  "c"."age" > ?
+    "biz"."name" = ?
+    AND  "biz"."age" > ?
 ORDER BY
-    "c"."age" DESC
+    "biz"."age" DESC
 GROUP BY
     "b"."worth" ASC
 ```
@@ -113,7 +111,7 @@ val xa = DriverManagerTransactor[Task](
 )
 
 // queries will be logged using this logger. This logger is only accesible in test packages. You should not try to import it.  Make your own logger!
-implicit val logger = scoobie.doobie.log.verboseTestLogger 
+implicit val logger = scoobie.doobie.log.verboseTestLogger
 
 import xa.yolo._
 

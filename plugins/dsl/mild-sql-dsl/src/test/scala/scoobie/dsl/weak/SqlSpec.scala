@@ -35,6 +35,7 @@ class SqlSpec extends Specification { def is =
     In (1 param)               $queryIn1
     In (2 params)              $queryIn2
     Not In (2 params)          $queryNotIn
+    Not                        $queryNot
 
   Query Path Extensions
     As           $pathAs
@@ -47,7 +48,7 @@ class SqlSpec extends Specification { def is =
 
   Query Projection Extensions
     As         $projectionAs
-    On         $on
+    On         $projectionOn
 
   Query Builder
     Basic Builder                    $basicBuilder
@@ -61,6 +62,11 @@ class SqlSpec extends Specification { def is =
     Left Outer Join                  $leftOuterJoin
     Right Outer Join                 $rightOuterJoin
     Cross Join                       $crossJoin
+    Inner Join Builder               $innerJoinBuilder
+    Full Outer Join Builder          $fullOuterJoinBuilder
+    Left Outer Join Builder          $leftOuterJoinBuilder
+    Right Outer Join Builder         $rightOuterJoinBuilder
+    Cross Join Builder               $crossJoinBuilder
     """
 
 
@@ -102,20 +108,22 @@ class SqlSpec extends Specification { def is =
   lazy val queryIn1 = QueryPathEnd("foo") in ("a") mustEqual QueryIn[DummyHKT](QueryPathEnd("foo"), List("a".asParam))
   lazy val queryIn2 = QueryPathEnd("foo") in ("a", "b") mustEqual QueryIn[DummyHKT](QueryPathEnd("foo"), List("a".asParam, "b".asParam))
   lazy val queryNotIn = QueryPathEnd("foo") notIn ("a", "b") mustEqual QueryNot(QueryIn[DummyHKT](QueryPathEnd("foo"), List("a".asParam, "b".asParam)))
+  lazy val queryNot = sql.not(QueryLit(QueryPathEnd("foo"))) mustEqual QueryNot(QueryLit[DummyHKT](QueryPathEnd("foo")))
 
   val simpleEquals = p"foo" === "bar"
 
   lazy val and = (simpleEquals and simpleEquals) mustEqual QueryAnd(simpleEquals, simpleEquals)
   lazy val or = (simpleEquals or simpleEquals) mustEqual QueryOr(simpleEquals, simpleEquals)
 
-  val simpleProjection = p"foo"
+  val simpleProjection = p"foo" as "foob"
   val projectAll: QueryProjection[DummyHKT] = QueryProjectAll[DummyHKT]
 
   lazy val projectionAs = {
     (simpleProjection as "bar") mustEqual QueryProjectOne(QueryPathEnd("foo"), Some("bar"))
     (projectAll as "bar") mustEqual QueryProjectAll[DummyHKT]
   }
-  lazy val on = (simpleProjection as "t" on simpleEquals) mustEqual ((simpleProjection as "t") -> simpleEquals)
+
+  lazy val projectionOn = (simpleProjection as "t" on simpleEquals) mustEqual ((simpleProjection as "t") -> simpleEquals)
 
   lazy val pathAs = {
     (QueryPathEnd("foo") as "bar") mustEqual QueryProjectOne(QueryPathEnd("foo"), Some("bar"))
@@ -183,6 +191,84 @@ class SqlSpec extends Specification { def is =
       QueryProjectOne[DummyHKT](QueryPathEnd("bar"), None) ::
       Nil,
       List.empty, QueryComparisonNop[DummyHKT], List.empty, List(QuerySortAsc(QueryPathEnd[DummyHKT]("foo"))), None, None
+    )
+  )
+
+  val joinTable = p"inner"
+  val joinCondition = p"whatever" <> `null`
+
+  lazy val innerJoinBuilder = (baseQuery innerJoin joinTable on joinCondition).build mustEqual (
+    QuerySelect(
+      QueryProjectOne[DummyHKT](QueryPathEnd("baz"), None),
+      QueryProjectOne[DummyHKT](QueryPathEnd("foo"), None) ::
+      QueryProjectOne[DummyHKT](QueryPathEnd("bar"), None) ::
+      Nil,
+      (QueryInnerJoin(QueryProjectOne(QueryPathEnd[DummyHKT]("inner"), None), QueryPathEnd[DummyHKT]("whatever") <> `null`)) :: Nil,
+      QueryComparisonNop[DummyHKT],
+      List.empty,
+      List.empty,
+      None,
+      None
+    )
+  )
+
+  lazy val leftOuterJoinBuilder = (baseQuery leftOuterJoin joinTable on joinCondition).build mustEqual (
+    QuerySelect(
+      QueryProjectOne[DummyHKT](QueryPathEnd("baz"), None),
+      QueryProjectOne[DummyHKT](QueryPathEnd("foo"), None) ::
+      QueryProjectOne[DummyHKT](QueryPathEnd("bar"), None) ::
+      Nil,
+      (QueryLeftOuterJoin(QueryProjectOne(QueryPathEnd[DummyHKT]("inner"), None), QueryPathEnd[DummyHKT]("whatever") <> `null`)) :: Nil,
+      QueryComparisonNop[DummyHKT],
+      List.empty,
+      List.empty,
+      None,
+      None
+    )
+  )
+
+  lazy val rightOuterJoinBuilder = (baseQuery rightOuterJoin joinTable on joinCondition).build mustEqual (
+    QuerySelect(
+      QueryProjectOne(QueryPathEnd[DummyHKT]("baz"), None),
+      QueryProjectOne(QueryPathEnd[DummyHKT]("foo"), None) ::
+      QueryProjectOne(QueryPathEnd[DummyHKT]("bar"), None) ::
+      Nil,
+      QueryRightOuterJoin(QueryProjectOne(QueryPathEnd[DummyHKT]("inner"), None), QueryPathEnd[DummyHKT]("whatever") <> `null`) :: Nil,
+      QueryComparisonNop[DummyHKT],
+      List.empty,
+      List.empty,
+      None,
+      None
+    )
+  )
+
+  lazy val fullOuterJoinBuilder = (baseQuery fullOuterJoin joinTable on joinCondition).build mustEqual (
+    QuerySelect(
+      QueryProjectOne(QueryPathEnd[DummyHKT]("baz"), None),
+      QueryProjectOne(QueryPathEnd[DummyHKT]("foo"), None) ::
+      QueryProjectOne(QueryPathEnd[DummyHKT]("bar"), None) ::
+      Nil,
+      QueryFullOuterJoin(QueryProjectOne(QueryPathEnd[DummyHKT]("inner"), None), QueryPathEnd[DummyHKT]("whatever") <> `null`) :: Nil,
+      QueryComparisonNop[DummyHKT],
+      List.empty,
+      List.empty,
+      None,
+      None
+    )
+  )
+
+  lazy val crossJoinBuilder = (baseQuery crossJoin joinTable on joinCondition).build mustEqual (
+    QuerySelect(
+      QueryProjectOne(QueryPathEnd[DummyHKT]("baz"), None),
+      QueryProjectOne(QueryPathEnd[DummyHKT]("foo"), None) ::
+      QueryProjectOne(QueryPathEnd[DummyHKT]("bar"), None) ::
+      Nil,
+      QueryCrossJoin(QueryProjectOne(QueryPathEnd[DummyHKT]("inner"), None), QueryPathEnd[DummyHKT]("whatever") <> `null`) :: Nil,
+      QueryComparisonNop[DummyHKT],
+      List.empty,
+      List.empty,
+      None,
+      None
     )
   )
 
@@ -262,4 +348,5 @@ class SqlSpec extends Specification { def is =
       None
     )
   )
+
 }
