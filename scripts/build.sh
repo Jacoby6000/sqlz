@@ -1,5 +1,7 @@
 #! /bin/bash
 
+export
+
 if [ "$1" = "scoobie" ]; then
     sbt clean coverage $2 coverageReport $3 coverageReport coverageAggregate
 elif [ "$1" = "tut" ]; then
