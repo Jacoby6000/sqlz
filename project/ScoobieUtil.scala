@@ -7,6 +7,7 @@ import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 import tut.TutPlugin.autoImport._
 import com.typesafe.sbt.SbtPgp.autoImport._
+import sbtbuildinfo.BuildInfoPlugin.autoImport._
 
 object ScoobieUtil {
 
@@ -109,7 +110,15 @@ object ScoobieUtil {
     addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3")
   )
 
-  lazy val publishSettings = osgiSettings ++ Seq(
+  def publishSettings(packageName: String) = osgiSettings ++ Seq(
+    //buildInfoKeys := Seq(name, version, scalaVersion, sbtVersion),
+    //buildInfoPackage := packageName + ".build",
+    //buildInfoKeys ++= Seq[BuildInfoKey](
+      //resolvers,
+      //libraryDependencies in Test,
+      //BuildInfoKey.map(name) { case (k, v) => "project" + k.capitalize -> v.capitalize },
+      //BuildInfoKey.action("buildTime") { System.currentTimeMillis }
+    //),
     exportPackage := Seq("scoobie.*"),
     privatePackage := Seq(),
     dynamicImportPackage := Seq("*"),
