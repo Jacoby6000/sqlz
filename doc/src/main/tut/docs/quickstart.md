@@ -21,7 +21,7 @@ Add this project as a dependency.
 
 ```scala
 libraryDependencies ++= {
-  val scoobieVersion = "0.3.0"
+  val scoobieVersion = "0.3.1"
 
   Seq(
     "com.github.jacoby6000" %% "scoobie-contrib-doobie41-postgres" % scoobieVersion, // import doobie 4.1 with postgres support
