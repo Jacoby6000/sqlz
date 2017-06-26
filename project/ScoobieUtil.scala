@@ -17,14 +17,12 @@ object ScoobieUtil {
   lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.10"
   lazy val specs = "org.specs2" %% "specs2-core" % "3.8.8" % "test,it"
   lazy val doobieSpecs = "org.tpolecat" %% "doobie-specs2"
-  lazy val genPackageInfo = settingKey[Boolean]("Should we generate package info?")
   lazy val publishAllSigned = taskKey[Unit]("Publish all (run with +publishAll for crossbuilds)")
 
   lazy val noPublishSettings = Seq(
     publish := (),
     publishLocal := (),
-    publishArtifact := false,
-    genPackageInfo := false
+    publishArtifact := false
   )
 
 
@@ -114,7 +112,6 @@ object ScoobieUtil {
   lazy val publishSettings = osgiSettings ++ Seq(
     exportPackage := Seq("scoobie.*"),
     privatePackage := Seq(),
-    genPackageInfo := true,
     dynamicImportPackage := Seq("*"),
     publishMavenStyle := true,
     publishTo := {
@@ -179,7 +176,6 @@ object ScoobieUtil {
         name := scoobieArtifactName,
         description := projectDescription,
         libraryDependencies ++= doobieArtifact.map(_ % doobieVersion).toList ++ Seq(specs, doobieSpecs % doobieVersion % "it"),
-        packageInfoGenerator(s"scoobie.doobie.$doobiePluginName", scoobieArtifactName),
         target := file(sourceDir).getAbsoluteFile / s"target$versionNoDots"
       )
     }
@@ -202,30 +198,5 @@ object ScoobieUtil {
 
     result
   }
-
-
-  def packageInfoGenerator(packageName: String, artifactName: String) =
-    sourceGenerators in Compile += Def.task {
-      if (genPackageInfo.value) {
-        val outDir = (sourceManaged in Compile).value / artifactName
-        val outFile = new File(outDir, "buildinfo.scala")
-        outDir.mkdirs
-        val v = version.value
-        val t = System.currentTimeMillis
-        IO.write(outFile,
-          s"""|package $packageName
-              |
-              |/** Auto-generated build information. */
-              |object buildinfo {
-              |  /** Current version of $artifactName ($v). */
-              |  val version = "$v"
-              |  /** Build date (${new java.util.Date(t)}). */
-              |  val date    = new java.util.Date(${t}L)
-              |}
-              |""".stripMargin)
-        Seq(outFile)
-      } else Seq()
-    }.taskValue
-
 }
 

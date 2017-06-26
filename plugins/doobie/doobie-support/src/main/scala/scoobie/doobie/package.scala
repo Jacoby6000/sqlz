@@ -8,7 +8,7 @@ import scalaz._, Scalaz._
   * Created by jacob.barber on 5/25/16.
   */
 package object doobie {
-  val doobieCoercer: Coerce[ScoobieFragmentProducer] = new Coerce[ScoobieFragmentProducer] {}
+  val doobieCoercer: Coerce[ScoobieFragmentProducer] = Coerce[ScoobieFragmentProducer]
 
   implicit def producerFromMeta[A: Meta]: ScoobieFragmentProducer[A] =
     ScoobieFragmentProducer[A](a => fr"$a")

@@ -35,6 +35,7 @@ class SqlSpec extends Specification { def is =
     In (1 param)               $queryIn1
     In (2 params)              $queryIn2
     Not In (2 params)          $queryNotIn
+    Not                        $queryNot
 
   Query Path Extensions
     As           $pathAs
@@ -107,13 +108,14 @@ class SqlSpec extends Specification { def is =
   lazy val queryIn1 = QueryPathEnd("foo") in ("a") mustEqual QueryIn[DummyHKT](QueryPathEnd("foo"), List("a".asParam))
   lazy val queryIn2 = QueryPathEnd("foo") in ("a", "b") mustEqual QueryIn[DummyHKT](QueryPathEnd("foo"), List("a".asParam, "b".asParam))
   lazy val queryNotIn = QueryPathEnd("foo") notIn ("a", "b") mustEqual QueryNot(QueryIn[DummyHKT](QueryPathEnd("foo"), List("a".asParam, "b".asParam)))
+  lazy val queryNot = sql.not(QueryLit(QueryPathEnd("foo"))) mustEqual QueryNot(QueryLit[DummyHKT](QueryPathEnd("foo")))
 
   val simpleEquals = p"foo" === "bar"
 
   lazy val and = (simpleEquals and simpleEquals) mustEqual QueryAnd(simpleEquals, simpleEquals)
   lazy val or = (simpleEquals or simpleEquals) mustEqual QueryOr(simpleEquals, simpleEquals)
 
-  val simpleProjection = p"foo"
+  val simpleProjection = p"foo" as "foob"
   val projectAll: QueryProjection[DummyHKT] = QueryProjectAll[DummyHKT]
 
   lazy val projectionAs = {

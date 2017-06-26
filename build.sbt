@@ -15,8 +15,8 @@ lazy val scoobie =
     .settings(scoobieSettings ++ noPublishSettings)
     .settings(unidocSettings)
     .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(docs))
-    .dependsOn(core, doobieSupport, doobiePostgres, doobieMySql, weakSqlDsl, ansiSql)
-    .aggregate(core, doobieSupport, doobiePostgres, doobieMySql, weakSqlDsl, ansiSql)
+    .dependsOn(core, doobieSupport, doobiePostgres, weakSqlDsl, ansiSql)
+    .aggregate(core, doobieSupport, doobiePostgres, weakSqlDsl, ansiSql)
     .settings(
       publishAllSigned :=
         Def.sequential(
@@ -57,7 +57,6 @@ lazy val core =
     .settings(description := "AST for making convenient SQL DSLs in Scala.")
     .settings(scoobieSettings ++ publishSettings)
     .settings(libraryDependencies ++= Seq(specs))
-    .settings(packageInfoGenerator("scoobie", "scoobie-core"))
 
 lazy val doobieCorePlugin = ScoobieUtil.doobiePlugin(
   Some(doobieCore),
@@ -173,7 +172,6 @@ lazy val weakSqlDsl =
     .settings(name := "scoobie-contrib-mild-sql-dsl")
     .settings(description := "Introduces a weakly typed SQL DSL to scoobie.")
     .settings(libraryDependencies += specs)
-    .settings(packageInfoGenerator("scoobie.dsl.weaksql", "scoobie-contrib-mild-sql-dsl"))
     .dependsOn(core)
 
 lazy val ansiSql =
@@ -185,7 +183,6 @@ lazy val ansiSql =
     .settings(name := "scoobie-contrib-ansi-sql")
     .settings(description := "Provides an ANSI-SQL interpreter for use with the Scoobie AST.")
     .settings(libraryDependencies ++= Seq(scalaz, specs))
-    .settings(packageInfoGenerator("scoobie.doobie.doo.ansi", "scoobie-ansi-sql"))
     .settings(scoobieSettings)
     .dependsOn(core, weakSqlDsl % "test")
 
