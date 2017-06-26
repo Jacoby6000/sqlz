@@ -1,0 +1,554 @@
+<html><head><title>Scoobie</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Jacob Barber" /><meta name="description" content="A set of DSLs for querying with Doobie." /><meta name="og:image" content="/scoobie/img/poster.png" /><meta name="og:title" content="Scoobie" /><meta name="og:site_name" content="Scoobie" /><meta name="og:url" content="scoobie.jacoby6000.com" /><meta name="og:type" content="website" /><meta name="og:description" content="A set of DSLs for querying with Doobie." /><link rel="icon" type="image/png" href="/scoobie/img/favicon.png" /><meta name="twitter:title" content="Scoobie" /><meta name="twitter:image" content="scoobie.jacoby6000.comimg/poster.png" /><meta name="twitter:description" content="A set of DSLs for querying with Doobie." /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/scoobie/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/scoobie/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/scoobie/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/scoobie/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/scoobie/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/scoobie/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/scoobie/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/scoobie/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/scoobie/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/scoobie/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/scoobie/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/scoobie/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/scoobie/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/scoobie/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/scoobie/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/scoobie/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/scoobie/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/scoobie/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/scoobie/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/scoobie/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/scoobie/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/scoobie/css/style.css" /><link rel="stylesheet" href="/scoobie/css/palette.css" /><link rel="stylesheet" href="/scoobie/css/codemirror.css" /><link rel="stylesheet" href="/scoobie/css/kazari-style.css" /><link rel="stylesheet" href="/scoobie/css/monokai.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/scoobie/" class="brand"><div class="brand-wrapper"><span>Scoobie</span></div></a></li><li><a href="/scoobie/docs/documentation.html" class="">Documentation</a></li><li><a href="/scoobie/docs/doobie.html" class="">Doobie</a></li><li><a href="/scoobie/docs/quickstart.html" class="">Quickstart</a></li><li><a href="/scoobie/docs/sql.html" class="">SQL DSL</a></li><li><a href="/scoobie/docs/ast.html" class=" active ">AST</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/jacoby6000/scoobie"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/jacoby6000/scoobie"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Scoobie A set of DSLs for querying with Doobie.');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Scoobie A set of DSLs for querying with Doobie.');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="jacoby6000" data-github-repo="scoobie"><div class="content-wrapper"><section><h3 id="the-scoobie-ast">The Scoobie AST</h3>
+
+<p>The Scoobie AST is a very simple construction of nodes which eventually make up a sql query. If you’re looking to build DSLs or just want to understand the AST better, then keep reading.</p>
+
+<h4 id="index">Index</h4>
+
+<p>To get around quickly, use the index below.</p>
+
+<ul>
+  <li><code><a href="#query-expression">QueryExpression</a></code>
+    <ul>
+      <li><code><a href="#query-select">QuerySelect</a></code></li>
+      <li><code><a href="#query-modify">QueryModify</a></code>
+        <ul>
+          <li><code><a href="#query-insert">QueryInsert</a></code></li>
+          <li><code><a href="#query-update">QueryUpdate</a></code></li>
+          <li><code><a href="#query-delete">QueryDelete</a></code></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><code><a href="#modify-field">ModifyField</a></code></li>
+  <li><code><a href="#query-value">QueryValue</a></code>
+    <ul>
+      <li><code><a href="#query-select">QuerySelect</a></code></li>
+      <li><code><a href="#query-parameter">QueryParameter</a></code></li>
+      <li><code><a href="#query-null">QueryNull</a></code></li>
+      <li><code><a href="#query-raw-expression">QueryRawExpression</a></code></li>
+      <li><code><a href="#query-function">QueryFunction</a></code></li>
+      <li><code><a href="#query-arithmetic">QueryArithmetic</a></code>
+        <ul>
+          <li><code><a href="#query-add">QueryAdd</a></code></li>
+          <li><code><a href="#query-sub">QuerySub</a></code></li>
+          <li><code><a href="#query-div">QueryDiv</a></code></li>
+          <li><code><a href="#query-div">QueryMul</a></code></li>
+        </ul>
+      </li>
+      <li><code><a href="#query-path">QueryPath</a></code>
+        <ul>
+          <li><code><a href="#query-path-cons">QueryPathCons</a></code></li>
+          <li><code><a href="#query-path-end">QueryPathEnd</a></code></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><code><a href="#query-comparison">QueryComparison</a></code>
+    <ul>
+      <li><code><a href="#query-comparison-no-op">QueryComparisonNop</a></code></li>
+      <li><code><a href="#query-equal">QueryEqual</a></code></li>
+      <li><code><a href="#query-greater-than">QueryGreaterThan</a></code></li>
+      <li><code><a href="#query-greater-than-or-equal">QueryGreaterThanOrEqual</a></code></li>
+      <li><code><a href="#query-less-than">QueryLessThan</a></code></li>
+      <li><code><a href="#query-less-than-or-equal">QueryLessThanOrEqual</a></code></li>
+      <li><code><a href="#query-and">QueryAnd</a></code></li>
+      <li><code><a href="#query-or">QueryOr</a></code></li>
+      <li><code><a href="#query-in">QueryIn</a></code></li>
+      <li><code><a href="#query-lit">QueryLit</a></code></li>
+      <li><code><a href="#query-not">QueryNot</a></code></li>
+    </ul>
+  </li>
+  <li><code><a href="#query-projection">QueryProjection</a></code>
+    <ul>
+      <li><code><a href="#query-project-one">QueryProjectOne</a></code></li>
+      <li><code><a href="#query-project-all">QueryProjectAll</a></code></li>
+    </ul>
+  </li>
+  <li><code><a href="#query-join">QueryJoin</a></code>
+    <ul>
+      <li><code><a href="#query-inner-join">QueryInnerJoin</a></code></li>
+      <li><code><a href="#query-full-outer-join">QueryFullOuterJoin</a></code></li>
+      <li><code><a href="#query-left-outer-join">QueryLeftOuterJoin</a></code></li>
+      <li><code><a href="#query-right-outer-join">QueryRightOuterJoin</a></code></li>
+      <li><code><a href="#query-cross-join">QueryCrossJoin</a></code></li>
+    </ul>
+  </li>
+  <li><code><a href="#query-sort">QuerySort</a></code>
+    <ul>
+      <li><code><a href="#query-sort-asc">QuerySortAsc</a></code></li>
+      <li><code><a href="#query-sort-desc">QuerySortDesc</a></code></li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="query-expression">Query Expression</h3>
+
+<p>The highest level node that exists in the Scoobie AST is <code><a href="#query-expression">QueryExpression</a></code>. Where ever you have a <code><a href="#query-expression">QueryExpression</a></code>, you have a complete and executable query. 
+At the same level as <code><a href="#query-expression">QueryExpression</a></code> is <code><a href="#query-modify">QueryModify</a></code> and <code><a href="#query-select">QuerySelect</a></code>.</p>
+
+<ul>
+  <li><code><a href="#query-select">QuerySelect</a></code> exclusively represents Select statements.</li>
+  <li><code><a href="#query-modify">QueryModify</a></code> represents Inserts (<code><a href="#query-insert">QueryInsert</a></code>), Updates (<code><a href="#query-update">QueryUpdate</a></code>), and Deletes (<code><a href="#query-delete">QueryDelete</a></code>).</li>
+</ul>
+
+<h4 id="query-select">Query Select</h4>
+
+<p>A <code><a href="#query-select">QuerySelect</a></code> is comprised of 8 parts.</p>
+<ol>
+  <li>a <code><a href="#query-projection">QueryProjection</a></code> representing the table that is being selected from.</li>
+  <li>a <code>List[<a href="#query-projection">QueryProjection</a>]</code> of all the datums to be selected.</li>
+  <li>a <code>List[<a href="#query-join">QueryJoin</a>]</code> of all the joins to be performed.</li>
+  <li>a <code><a href="#query-comparison">QueryComparison</a></code> representing the where/filter clause of a query.</li>
+  <li>a <code>List[<a href="#query-sort">QuerySort</a>]</code> representing the sort actions.</li>
+  <li>a <code>List[<a href="#query-sort">QuerySort</a>]</code> representing the groupBy actions.</li>
+  <li>a <code class="highlighter-rouge">Option[Long]</code> representing the query offset.</li>
+  <li>a <code class="highlighter-rouge">Option[Long]</code> representing the limit.</li>
+</ol>
+
+<p>All <code><a href="#query-select">QuerySelect</a></code> values extend <code><a href="#query-expression">QueryExpression</a></code> and <code><a href="#query-value">QueryValue</a></code>. <code><a href="#query-select">QuerySelect</a></code> extending <code><a href="#query-value">QueryValue</a></code> has great significance regarding subqueries.</p>
+
+<h4 id="query-update">Query Update</h4>
+
+<p>A <code><a href="#query-update">QueryUpdate</a></code> is comprised of 3 parts.</p>
+<ol>
+  <li>a <code><a href="#query-path">QueryPath</a></code> representing the collection to perform the update on.</li>
+  <li>a <code>List[<a href="#modify-field">ModifyField</a>]</code> representing the fields to be modified and their associated new values.</li>
+  <li>a <code><a href="#query-comparison">QueryComparison</a></code> representing the where/filter clause of the update.</li>
+</ol>
+
+<p>All <code><a href="#query-update">QueryUpdate</a></code> values extend <code><a href="#query-expression">QueryExpression</a></code> and <code><a href="#query-modify">QueryModify</a></code>.</p>
+
+<h4 id="query-insert">Query Insert</h4>
+
+<p>A <code><a href="#query-insert">QueryInsert</a></code> is comprised of 2 parts.</p>
+<ol>
+  <li>a <code><a href="#query-path">QueryPath</a></code> representing the collection to perform the insert on.</li>
+  <li>a <code>List[<a href="#modify-field">ModifyField</a>]</code> representing the values of each column.</li>
+</ol>
+
+<p>All <code><a href="#query-insert">QueryInsert</a></code> values extend <code><a href="#query-expression">QueryExpression</a></code> and <code><a href="#query-modify">QueryModify</a></code>.</p>
+
+<h4 id="query-delete">Query Delete</h4>
+
+<p>A <code><a href="#query-delete">QueryDelete</a></code> is comprised of 2 parts.</p>
+<ol>
+  <li>a <code><a href="#query-path">QueryPath</a></code> representing the collection to perform the delete on.</li>
+  <li>a <code><a href="#query-comparison">QueryComparison</a></code> representing the where/filter clause of the delete.</li>
+</ol>
+
+<p>All <code><a href="#query-delete">QueryDelete</a></code> values extends <code><a href="#query-expression">QueryExpression</a></code> and <code><a href="#query-modify">QueryModify</a></code>.</p>
+
+<h3 id="modify-field">Modify Field</h3>
+
+<p>A <code><a href="#modify-field">ModifyField</a></code> value is comporised of two parts.</p>
+<ol>
+  <li>a <code><a href="#query-path">QueryPath</a></code> representing the column to be modified.</li>
+  <li>a <code><a href="#query-value">QueryValue</a></code> representing the value.</li>
+</ol>
+
+<p><code><a href="#modify-field">ModifyField</a></code> has no sub or super-classes. It’s a very specific use case.  It is essentially a specialized tuple which one might view as
+<code>
+type <a href="#modify-field">ModifyField</a> = (<a href="#query-path">QueryPath</a>, <a href="#query-value">QueryValue</a>)
+</code></p>
+
+<p>It exists only to pair a path with a value.</p>
+
+<h3 id="query-value">Query Value</h3>
+
+<p>A <code><a href="#query-value">QueryValue</a></code> is the super-type for anything that can be used in a SQL ast in a value position. This means much of the AST extends it.</p>
+
+<p>Members of <a href="#query-value">QueryValue</a> include:</p>
+<ul>
+  <li><code><a href="#query-parameter">QueryParameter</a></code></li>
+  <li><code><a href="#query-null">QueryNull</a></code></li>
+  <li><code><a href="#query-raw-expression">QueryRawExpression</a></code></li>
+  <li><code><a href="#query-function">QueryFunction</a></code></li>
+  <li><code><a href="#query-add">QueryAdd</a></code></li>
+  <li><code><a href="#query-sub">QuerySub</a></code></li>
+  <li><code><a href="#query-div">QueryDiv</a></code></li>
+  <li><code><a href="#query-div">QueryMul</a></code></li>
+  <li><code><a href="#query-select">QuerySelect</a></code></li>
+  <li><code><a href="#query-path">QueryPath</a></code></li>
+</ul>
+
+<h4 id="query-raw-expression">Query Raw Expression</h4>
+
+<p>A <code><a href="#query-raw-expression">QueryRawExpression</a></code> simply represents a value who should not be evaluated in to a prepared statement. These are typically dangerous, but useful if you need to insert some custom sql that the AST does not support.</p>
+
+<p>A <code><a href="#query-raw-expression">QueryRawExpression</a></code> is comprised of two elements.</p>
+<ol>
+  <li>Some type <code class="highlighter-rouge">T</code> which represents the value to be raw-ly interpreted</li>
+  <li>Some evidence <code class="highlighter-rouge">RawExpressionHandler[T]</code> which represents the method for which to express <code class="highlighter-rouge">T</code> as a query string.</li>
+</ol>
+
+<h4 id="query-parameter">Query Parameter</h4>
+
+<p>A <code><a href="#query-parameter">QueryParameter</a></code> represents any value that can be used in a prepared statement. For example with scoobie, this can be any type <code class="highlighter-rouge">T</code> for which there exists a <code class="highlighter-rouge">Meta[T]</code> instance.</p>
+
+<p>All of the <code class="highlighter-rouge">F[_]</code> schenanigans that have gone unmentioned thus far stem from <code><a href="#query-parameter">QueryParameter</a></code>. Since <code><a href="#query-parameter">QueryParameter</a></code> is generic and the AST knows nothing about type <code class="highlighter-rouge">T</code>, we must be provided a method for converting <code class="highlighter-rouge">T</code> in to useful values. That’s where <code class="highlighter-rouge">F[T]</code> comes in.</p>
+
+<p>A <code><a href="#query-parameter">QueryParameter</a></code> is comprised of two elements.</p>
+<ol>
+  <li>Some type <code class="highlighter-rouge">T</code> which represents the value.</li>
+  <li>Some evidence <code class="highlighter-rouge">F[T]</code> which will later be used in an interpreter to generate useful interpretations of <code class="highlighter-rouge">T</code>. In the context of Scoobie with Doobie, <code class="highlighter-rouge">F</code> would represent a <code class="highlighter-rouge">ScoobieFragmentProducer</code>. Scoobie can produce a <code class="highlighter-rouge">ScoobieFragmentProducer</code> for any <code class="highlighter-rouge">T</code> which has an implicit <code class="highlighter-rouge">Meta[T]</code> in scope.</li>
+</ol>
+
+<h4 id="query-function">Query Function</h4>
+
+<p>A <code><a href="#query-function">QueryFunction</a></code> represents a sql function to be run.</p>
+
+<p>A <code><a href="#query-function">QueryFunction</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-path">QueryPath</a></code> which represents the function to be called.</li>
+  <li>a <code>List[<a href="#query-value">QueryValue</a>]</code> representing each parameter to be passed in to the given function.</li>
+</ol>
+
+<p><code><a href="#query-function">QueryFunction</a></code> is unsafe if you are not careful, because Scoobie doesn’t know how many parameters a function should accept.<br />
+When creating a DSL it’s fine to expose <a href="#query-function">QueryFunction</a> with varargs, but try to create specializations so that users are less likely to generate invalid queries.</p>
+
+<h4 id="query-null">Query Null</h4>
+
+<p>A <code><a href="#query-null">QueryNull</a></code> represents a SQL null.</p>
+
+<h3 id="query-arithmetic">Query Arithmetic</h3>
+
+<p>All Arithmetic instances extend <code><a href="#query-value">QueryValue</a></code>, and accept <code><a href="#query-value">QueryValue</a></code>s as input. This means that all <code><a href="#query-arithmetic">QueryArithmetic</a></code> composes.</p>
+
+<p>There are currently 4 members in Query Arithmetic.</p>
+<ul>
+  <li><code><a href="#query-add">QueryAdd</a></code></li>
+  <li><code><a href="#query-sub">QuerySub</a></code></li>
+  <li><code><a href="#query-div">QueryDiv</a></code></li>
+  <li><code><a href="#query-div">QueryMul</a></code></li>
+</ul>
+
+<h4 id="query-add">Query Add</h4>
+
+<p>A <code><a href="#query-add">QueryAdd</a></code> represents a simple addition operation.</p>
+
+<p>A <code><a href="#query-add">QueryAdd</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-value">QueryValue</a></code> which represents the left side of the addition.</li>
+  <li>a <code><a href="#query-value">QueryValue</a></code> which represents the right side of the addition.</li>
+</ol>
+
+<h4 id="query-subtract">Query Subtract</h4>
+
+<p>A <code><a href="#query-sub">QuerySub</a></code> represents a simple addition operation.</p>
+
+<p>A <code><a href="#query-sub">QuerySub</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-value">QueryValue</a></code> which represents the left side of the addition.</li>
+  <li>a <code><a href="#query-value">QueryValue</a></code> which represents the right side of the addition.</li>
+</ol>
+
+<h4 id="query-divide">Query Divide</h4>
+
+<p>A <code><a href="#query-div">QueryDiv</a></code> represents a simple addition operation.</p>
+
+<p>A <code><a href="#query-div">QueryDiv</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-value">QueryValue</a></code> which represents the left side of the addition.</li>
+  <li>a <code><a href="#query-value">QueryValue</a></code> which represents the right side of the addition.</li>
+</ol>
+
+<h4 id="query-multiply">Query Multiply</h4>
+
+<p>A <code><a href="#query-div">QueryMul</a></code> represents a simple addition operation.</p>
+
+<p>A <code><a href="#query-div">QueryMul</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-value">QueryValue</a></code> which represents the left side of the addition.</li>
+  <li>a <code><a href="#query-value">QueryValue</a></code> which represents the right side of the addition.</li>
+</ol>
+
+<h3 id="query-path">Query Path</h3>
+
+<p>A <code><a href="#query-path">QueryPath</a></code> represents a path to a location in the database. All <code><a href="#query-path">QueryPath</a></code>s extend <code><a href="#query-value">QueryValue</a></code></p>
+
+<p><code><a href="#query-path">QueryPath</a></code> has two sub-classes.</p>
+<ul>
+  <li><code><a href="#query-path-cons">QueryPathCons</a></code></li>
+  <li><code><a href="#query-path-end">QueryPathEnd</a></code></li>
+</ul>
+
+<p>A query path like <code class="highlighter-rouge">foo.bar</code> may be represented by <code><a href="#query-path-cons">QueryPathCons</a>("foo", <a href="#query-path-end">QueryPathEnd</a>("bar"))</code>. A good way to think of a <code><a href="#query-path">QueryPath</a></code> in the context of the Scoobie AST is as a type of <code class="highlighter-rouge">Cons</code> list. <code><a href="#query-path-end">QueryPathEnd</a></code> represents <code class="highlighter-rouge">Nil</code>, and <code><a href="#query-path-cons">QueryPathCons</a></code> represents a piece that is not yet the end.</p>
+
+<h4 id="query-path-cons">Query Path Cons</h4>
+
+<p>A <code><a href="#query-path-cons">QueryPathCons</a></code> represents any part of the path that is not the end.</p>
+
+<p>A <code><a href="#query-path-cons">QueryPathCons</a></code> has two members.</p>
+<ol>
+  <li>a <code class="highlighter-rouge">String</code> representing this portion of the path.</li>
+  <li>a <code><a href="#query-path">QueryPath</a></code> representing the next part of the path.</li>
+</ol>
+
+<h4 id="query-path-end">Query Path End</h4>
+
+<p>A <code><a href="#query-path-end">QueryPathEnd</a></code> simply represents the end of a path.</p>
+
+<p>A <code><a href="#query-path-end">QueryPathEnd</a></code> has a single member.</p>
+<ol>
+  <li>a <code class="highlighter-rouge">String</code> representing the path’s final piece.</li>
+</ol>
+
+<h3 id="query-projection">Query Projection</h3>
+
+<p>A <code><a href="#query-projection">QueryProjection</a></code> represents a projected piece of data. This could be anything that is aliased, like a column name, or a derived query.</p>
+
+<p><code><a href="#query-projection">QueryProjection</a></code> has two sub-classes</p>
+<ul>
+  <li><code><a href="#query-project-one">QueryProjectOne</a></code></li>
+  <li><code><a href="#query-project-all">QueryProjectAll</a></code></li>
+</ul>
+
+<h4 id="query-project-all">Query Project All</h4>
+
+<p><code><a href="#query-project-all">QueryProjectAll</a></code> simply represents <code class="highlighter-rouge">*</code> in a select statement.</p>
+
+<h4 id="query-project-one">Query Project One</h4>
+
+<p><code><a href="#query-project-one">QueryProjectOne</a></code> can represent a column, a derived query, or a function result.</p>
+
+<p><code><a href="#query-project-one">QueryProjectOne</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-value">QueryValue</a></code> representing the selection to be projected</li>
+  <li>an <code class="highlighter-rouge">Option[String]</code> representing the alias for the projection. Note that the alias is not required.</li>
+</ol>
+
+<h3 id="query-comparison">Query Comparison</h3>
+
+<p>A <code><a href="#query-comparison">QueryComparison</a></code> is a node representing a where/filter clause in a SQL query.</p>
+
+<p><code><a href="#query-comparison">QueryComparison</a></code> has 11 sub-classes.</p>
+<ul>
+  <li><code><a href="#query-comparison-no-op">QueryComparisonNop</a></code></li>
+  <li><code><a href="#query-equal">QueryEqual</a></code></li>
+  <li><code><a href="#query-greater-than">QueryGreaterThan</a></code></li>
+  <li><code><a href="#query-greater-than-or-equal">QueryGreaterThanOrEqual</a></code></li>
+  <li><code><a href="#query-less-than">QueryLessThan</a></code></li>
+  <li><code><a href="#query-less-than-or-equal">QueryLessThanOrEqual</a></code></li>
+  <li><code><a href="#query-and">QueryAnd</a></code><sup id="fnref:1"><a href="#fn:1" class="footnote">1</a></sup></li>
+  <li><code><a href="#query-or">QueryOr</a></code><sup id="fnref:1:1"><a href="#fn:1" class="footnote">1</a></sup></li>
+  <li><code><a href="#query-in">QueryIn</a></code></li>
+  <li><code><a href="#query-lit">QueryLit</a></code></li>
+  <li><code><a href="#query-not">QueryNot</a></code><sup id="fnref:1:2"><a href="#fn:1" class="footnote">1</a></sup></li>
+</ul>
+
+<h4 id="query-comparison-noop">Query Comparison NoOp</h4>
+
+<p>A <code><a href="#query-comparison-no-op">QueryComparisonNop</a></code> represents a NoOp. It does nothing. For example</p>
+<ul>
+  <li><code><a href="#query-and">QueryAnd</a>(<a href="#query-comparison-no-op">QueryComparisonNop</a>, foo) === foo</code></li>
+  <li><code><a href="#query-or">QueryOr</a>(<a href="#query-comparison-no-op">QueryComparisonNop</a>, foo) === foo</code></li>
+  <li><code><a href="#query-not">QueryNot</a>(<a href="#query-comparison-no-op">QueryComparisonNop</a>) === <a href="#query-comparison-no-op">QueryComparisonNop</a></code></li>
+</ul>
+
+<h4 id="query-equal">Query Equal</h4>
+
+<p>A <code><a href="#query-equal">QueryEqual</a></code> instance compares two query values, asserting that they must be eqivelant.</p>
+
+<p><code><a href="#query-equal">QueryEqual</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-value">QueryValue</a></code> representing the left side of the comparison.</li>
+  <li>a <code><a href="#query-value">QueryValue</a></code> representing the right side of the comparison.</li>
+</ol>
+
+<h4 id="query-greater-than">Query Greater Than</h4>
+
+<p>A <code><a href="#query-greater-than">QueryGreaterThan</a></code> instance compares two query values, asserting that the left side must be greater than the right side.</p>
+
+<p><code><a href="#query-greater-than">QueryGreaterThan</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-value">QueryValue</a></code> representing the left side of the comparison.</li>
+  <li>a <code><a href="#query-value">QueryValue</a></code> representing the right side of the comparison.</li>
+</ol>
+
+<h4 id="query-greater-than-or-equal">Query Greater Than Or Equal</h4>
+
+<p>A <code><a href="#query-greater-than-or-equal">QueryGreaterThanOrEqual</a></code> instance compares two query values, asserting that the left side must be greater than or equal to the right side.</p>
+
+<p><code><a href="#query-greater-than-or-equal">QueryGreaterThanOrEqual</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-value">QueryValue</a></code> representing the left side of the comparison.</li>
+  <li>a <code><a href="#query-value">QueryValue</a></code> representing the right side of the comparison.</li>
+</ol>
+
+<h4 id="query-less-than">Query Less Than</h4>
+
+<p>A <code><a href="#query-less-than">QueryLessThan</a></code> instance compares two query values, asserting that the left side must be less than the right side.</p>
+
+<p><code><a href="#query-less-than">QueryLessThan</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-value">QueryValue</a></code> representing the left side of the comparison.</li>
+  <li>a <code><a href="#query-value">QueryValue</a></code> representing the right side of the comparison.</li>
+</ol>
+
+<h4 id="query-less-than-or-equal">Query Less Than Or Equal</h4>
+
+<p>A <code><a href="#query-less-than-or-equal">QueryLessThanOrEqual</a></code> instance compares two query values, asserting that the left side must be less than or equal to the right side.</p>
+
+<p><code><a href="#query-less-than-or-equal">QueryLessThanOrEqual</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-value">QueryValue</a></code> representing the left side of the comparison.</li>
+  <li>a <code><a href="#query-value">QueryValue</a></code> representing the right side of the comparison.</li>
+</ol>
+
+<h4 id="query-in">Query In</h4>
+
+<p>A <code><a href="#query-in">QueryIn</a></code> checks to see if the left side value is in the right side collection</p>
+
+<p><code><a href="#query-in">QueryIn</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-value">QueryValue</a></code> representing the left side of the comparison.</li>
+  <li>a <code>List[<a href="#query-value">QueryValue</a>]</code> representing the collection of things to compare the left side to.</li>
+</ol>
+
+<h4 id="query-and">Query And</h4>
+
+<p>A <code><a href="#query-and">QueryAnd</a></code> instance asserts that the left and right side comparisons must both be true.</p>
+
+<p><code><a href="#query-and">QueryAnd</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-comparison">QueryComparison</a></code> representing the left comparison.</li>
+  <li>a <code><a href="#query-comparison">QueryComparison</a></code> representing the right comparison.</li>
+</ol>
+
+<h4 id="query-or">Query Or</h4>
+
+<p>A <code><a href="#query-or">QueryOr</a></code> instance asserts that the either the left or right side comparison must be true.</p>
+
+<p><code><a href="#query-or">QueryOr</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-comparison">QueryComparison</a></code> representing the left comparison.</li>
+  <li>a <code><a href="#query-comparison">QueryComparison</a></code> representing the right comparison.</li>
+</ol>
+
+<h4 id="query-literal">Query Literal</h4>
+
+<p>A <code><a href="#query-lit">QueryLit</a></code> simply promotes a <code><a href="#query-value">QueryValue</a></code> to the context of a <code><a href="#query-comparison">QueryComparison</a></code>. This is useful for things like boolean values, or bool-ish support that different SQL backends might have.</p>
+
+<p><code><a href="#query-lit">QueryLit</a></code> has a single member.</p>
+<ol>
+  <li>a <code><a href="#query-value">QueryValue</a></code> to be promoted to <code><a href="#query-comparison">QueryComparison</a></code> as <code><a href="#query-lit">QueryLit</a></code></li>
+</ol>
+
+<h4 id="query-not">Query Not</h4>
+
+<p>A <code><a href="#query-not">QueryNot</a></code> inverts the result of the inner comparison.</p>
+
+<p><code><a href="#query-not">QueryNot</a></code> has a single member.</p>
+<ol>
+  <li>a <code><a href="#query-comparison">QueryComparison</a></code> whose result should be inverted.</li>
+</ol>
+
+<h3 id="query-join">Query Join</h3>
+
+<p>A <code><a href="#query-join">QueryJoin</a></code> represents any of the join operations for a database.</p>
+
+<p><code><a href="#query-join">QueryJoin</a></code> has 5 sub-classes.</p>
+<ul>
+  <li><code><a href="#query-inner-join">QueryInnerJoin</a></code></li>
+  <li><code><a href="#query-full-outer-join">QueryFullOuterJoin</a></code></li>
+  <li><code><a href="#query-left-outer-join">QueryLeftOuterJoin</a></code></li>
+  <li><code><a href="#query-right-outer-join">QueryRightOuterJoin</a></code></li>
+  <li><code><a href="#query-cross-join">QueryCrossJoin</a></code></li>
+</ul>
+
+<h4 id="query-inner-join">Query Inner Join</h4>
+
+<p>A <code><a href="#query-inner-join">QueryInnerJoin</a></code> represents an inner join action on a database.</p>
+
+<p><code><a href="#query-inner-join">QueryInnerJoin</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-projection">QueryProjection</a></code> representing the dataset being joined with.</li>
+  <li>a <code><a href="#query-comparison">QueryComparison</a></code> representing the condition to join with.</li>
+</ol>
+
+<h4 id="query-full-outer-join">Query Full Outer Join</h4>
+
+<p>A <code><a href="#query-full-outer-join">QueryFullOuterJoin</a></code> represents an outer join action on a database.</p>
+
+<p><code><a href="#query-full-outer-join">QueryFullOuterJoin</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-projection">QueryProjection</a></code> representing the dataset being joined with.</li>
+  <li>a <code><a href="#query-comparison">QueryComparison</a></code> representing the condition to join with.</li>
+</ol>
+
+<h4 id="query-left-outer-join">Query Left Outer Join</h4>
+
+<p>A <code><a href="#query-left-outer-join">QueryLeftOuterJoin</a></code> represents a left outer join action on a database.</p>
+
+<p><code><a href="#query-left-outer-join">QueryLeftOuterJoin</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-projection">QueryProjection</a></code> representing the dataset being joined with.</li>
+  <li>a <code><a href="#query-comparison">QueryComparison</a></code> representing the condition to join with.</li>
+</ol>
+
+<h4 id="query-right-outer-join">Query Right Outer Join</h4>
+
+<p>A <code><a href="#query-right-outer-join">QueryRightOuterJoin</a></code> represents a right outer join action on a database.</p>
+
+<p><code><a href="#query-right-outer-join">QueryRightOuterJoin</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-projection">QueryProjection</a></code> representing the dataset being joined with.</li>
+  <li>a <code><a href="#query-comparison">QueryComparison</a></code> representing the condition to join with.</li>
+</ol>
+
+<h4 id="query-cross-join">Query Cross Join</h4>
+
+<p>A <code><a href="#query-cross-join">QueryCrossJoin</a></code> represents a cross join action on a database.</p>
+
+<p><code><a href="#query-cross-join">QueryCrossJoin</a></code> has two members.</p>
+<ol>
+  <li>a <code><a href="#query-projection">QueryProjection</a></code> representing the dataset being joined with.</li>
+  <li>a <code><a href="#query-comparison">QueryComparison</a></code> representing the condition to join with.</li>
+</ol>
+
+<h3 id="query-sort">Query Sort</h3>
+
+<p>A <code><a href="#query-sort">QuerySort</a></code> represents the sort method to use on some database column.</p>
+
+<p><code><a href="#query-sort">QuerySort</a></code> has two sub-classes.</p>
+<ul>
+  <li><code><a href="#query-sort-asc">QuerySortAsc</a></code></li>
+  <li><code><a href="#query-sort-desc">QuerySortDesc</a></code></li>
+</ul>
+
+<h4 id="query-sort-ascending">Query Sort Ascending</h4>
+
+<p><code><a href="#query-sort-asc">QuerySortAsc</a></code> represents an ascending sort.</p>
+
+<p><code><a href="#query-sort-asc">QuerySortAsc</a></code> has one member.</p>
+<ol>
+  <li>a <code><a href="#query-path">QueryPath</a></code> representing the column to sort by.</li>
+</ol>
+
+<h4 id="query-sort-descending">Query Sort Descending</h4>
+
+<p><code><a href="#query-sort-desc">QuerySortDesc</a></code> represents a descending sort.</p>
+
+<p><code><a href="#query-sort-desc">QuerySortDesc</a></code> has one member.</p>
+<ol>
+  <li>a <code><a href="#query-path">QueryPath</a></code> representing the column to sort by.</li>
+</ol>
+
+<hr />
+<div class="footnotes">
+  <ol>
+    <li id="fn:1">
+      <p>Is composable with other comparisons.&nbsp;<a href="#fnref:1" class="reversefootnote">&#8617;</a>&nbsp;<a href="#fnref:1:1" class="reversefootnote">&#8617;<sup>2</sup></a>&nbsp;<a href="#fnref:1:2" class="reversefootnote">&#8617;<sup>3</sup></a></p>
+    </li>
+  </ol>
+</div>
+</section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/scoobie/highlight/highlight.pack.js"></script><script>hljs.configure({
+languages:['scala','java','bash']
+});
+hljs.initHighlighting();
+             </script><script>((window.gitter = {}).chat = {}).options = {
+room: 'jacoby6000/scoobie'};</script><script src="https://sidecar.gitter.im/dist/sidecar.v1.js"></script><script src="/scoobie/js/main.js"></script><script src="/scoobie/js/kazari.js"></script><script>
+$(document).ready(function() {
+	kazari.KazariPlugin().decorateCode('https://scala-evaluator-212.herokuapp.com/eval', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.S2F6YXJp.Jl2eqMfw8IakJF93PjxTbrf-8YUJgX5OoOfy5JHE8Yw', '', 'monokai')
+})
+    </script></body></html>
