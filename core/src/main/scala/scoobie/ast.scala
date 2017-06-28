@@ -24,7 +24,7 @@ object ast {
   case class QueryMul[F[_], A] private (left: A, right: A) extends QueryValue[F, A]
   class QueryNull[F[_], A] extends QueryValue[F, A] {
     override def equals(obj: scala.Any): Boolean = obj match {
-      case _: QueryNull[_] => true
+      case _: QueryNull[_, _] => true
       case _ => false
     }
 
@@ -32,20 +32,20 @@ object ast {
   }
 
   object QueryNull {
-    def apply[F[_], A]: QueryNull[F, A] = new QueryNull[F]
+    def apply[F[_], A]: QueryNull[F, A] = new QueryNull[F, A]
   }
 
-  sealed trait QueryComparison[F[_], G[_], A]
-  class QueryComparisonNop[F[_], G[_], A] extends QueryComparison[F, G, A] {
+  sealed trait QueryComparison[F[_], A]
+  class QueryComparisonNop[F[_], A] extends QueryComparison[F, A] {
     override def equals(obj: scala.Any): Boolean = obj match {
-      case _: QueryComparisonNop[_, _, _] => true
+      case _: QueryComparisonNop[_, _] => true
       case _ => false
     }
 
     override def toString: String = "QueryComparisonNop"
   }
   object QueryComparisonNop {
-    def apply[F[_], G[_], A]: QueryComparisonNop[F, G, A] = new QueryComparisonNop[F, G, A]
+    def apply[F[_], A]: QueryComparisonNop[F, A] = new QueryComparisonNop[F, A]
   }
 
   case class QueryEqual[F[_], A, B](left: B, right: B)(implicit val ev: F[B]) extends QueryComparison[F, A]
