@@ -93,16 +93,16 @@ object ast {
   sealed trait QueryExpression[F[_], G[_]]
   sealed trait QueryModify[F[_], G[_]] extends QueryExpression[F, G]
 
-  case class QuerySelect[F[_], G[_], A, B, C, D, E](
+  case class QuerySelect[F[_], G[_], A, B, C, D, E, X](
                                 table: QueryProjection[A],
                                 values: List[QueryProjection[A]],
-                                unions: List[QueryJoin[A, B]],
-                                filter: QueryComparison[G, C],
-                                sorts: List[QuerySort[D]],
-                                groupings: List[QuerySort[D]],
+                                unions: List[QueryJoin[B, C]],
+                                filter: QueryComparison[G, D],
+                                sorts: List[QuerySort[E]],
+                                groupings: List[QuerySort[E]],
                                 offset: Option[Long],
                                 limit: Option[Long]
-  ) extends QueryExpression[F, G] with QueryValue[F, E]
+  ) extends QueryExpression[F, G] with QueryValue[F, X]
 
   case class ModifyField[K, V](key: K, value: V)
   case class QueryInsert[F[_], G[_], A, K, V](collection: QueryPath[F, A], values: List[ModifyField[K, V]]) extends QueryExpression[F, G] with QueryModify[F, G]
