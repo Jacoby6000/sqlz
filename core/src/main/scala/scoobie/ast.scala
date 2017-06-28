@@ -55,9 +55,9 @@ object ast {
   case class QueryLessThanOrEqual[F[_], A, B](left: B, right: B)(implicit val ev: F[B]) extends QueryComparison[F, A]
   case class QueryIn[F[_], A, B](left: B, rights: List[B])(implicit val ev: F[B]) extends QueryComparison[F, A]
   case class QueryLit[F[_], A, B](value: B)(implicit val ev: F[B]) extends QueryComparison[F, A]
-  case class QueryAnd[F[_], G[_], A](left: A, right: A) extends QueryComparison[F, A]
-  case class QueryOr[F[_], G[_], A](left: A, right: A) extends QueryComparison[F, A]
-  case class QueryNot[F[_], G[_], A](value: A) extends QueryComparison[F, A]
+  case class QueryAnd[F[_], A](left: A, right: A) extends QueryComparison[F, A]
+  case class QueryOr[F[_], A](left: A, right: A) extends QueryComparison[F, A]
+  case class QueryNot[F[_], A](value: A) extends QueryComparison[F, A]
 
   sealed trait QueryPath[F[_], A] extends QueryValue[F, A]
   case class QueryPathEnd[F[_], A](path: String) extends QueryPath[F, A] with QueryValue[F, A]
