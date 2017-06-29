@@ -1,11 +1,9 @@
 package scoobie
 
-/**
-  * Created by jacob.barber on 3/7/17.
-  */
 object coercion {
-  trait Coerce[F[_], G[_], A, B]
+  trait Coerce[A, B, C]
   object Coerce {
-    def apply[F[_], G[_], A, B] = new Coerce[F, G, A, B] {}
+    def apply[A, B, C](implicit ev: Coerce[A, B, C]) = ev
+    def instance[A, B, C] = new Coerce[A, B, C] {}
   }
 }

@@ -11,69 +11,69 @@ trait select {
   }
 
   case class SelectBuilder[A](projections: Vector[QueryProjection[A]]) {
-    def from[F[_], G[_], B](path: QueryProjection[A])(implicit coercion: Coerce[F, G, A, B]) =
-      QueryBuilder[F, G, A, B](path, projections, Vector.empty, QueryComparisonNop[G, B], Vector.empty, Vector.empty, None, None)
+    def from[B, C](path: QueryProjection[A])(implicit coercion: Coerce[A, B, C]) =
+      QueryBuilder[A, B, C](path, projections, Vector.empty, QueryComparisonNop[C, A], Vector.empty, Vector.empty, None, None)
   }
 
-  case class QueryBuilder[F[_], G[_], A, B](
+  case class QueryBuilder[A, B, C](
                                  table: QueryProjection[A],
                                  values: Vector[QueryProjection[A]],
-                                 joins: Vector[QueryJoin[G, A, B]],
-                                 filter: QueryComparison[G, B],
+                                 joins: Vector[QueryJoin[A, C]],
+                                 filter: QueryComparison[C, A],
                                  sorts: Vector[QuerySort],
                                  groupings: Vector[QuerySort],
                                  offset: Option[Long],
                                  limit: Option[Long]
   ) {
     import JoinOp._
-    def leftOuterJoin(projection: QueryProjection[A]): JoinBuilder[F, G, A, B] =
+    def leftOuterJoin(projection: QueryProjection[A]): JoinBuilder[A, B, C] =
       JoinBuilder(this, QueryJoin(projection, _, LeftOuter))
 
-    def rightOuterJoin(projection: QueryProjection[A]): JoinBuilder[F, G, A, B] =
+    def rightOuterJoin(projection: QueryProjection[A]): JoinBuilder[A, B, C] =
       JoinBuilder(this, QueryJoin(projection, _, RightOuter))
 
-    def innerJoin(projection: QueryProjection[A]): JoinBuilder[F, G, A, B] =
+    def innerJoin(projection: QueryProjection[A]): JoinBuilder[A, B, C] =
       JoinBuilder(this, QueryJoin(projection, _, Inner))
 
-    def crossJoin(projection: QueryProjection[A]): JoinBuilder[F, G, A, B] =
+    def crossJoin(projection: QueryProjection[A]): JoinBuilder[A, B, C] =
       JoinBuilder(this, QueryJoin(projection, _, Cartesian))
 
-    def fullOuterJoin(projection: QueryProjection[A]): JoinBuilder[F, G, A, B] =
+    def fullOuterJoin(projection: QueryProjection[A]): JoinBuilder[A, B, C] =
       JoinBuilder(this, QueryJoin(projection, _, FullOuter))
 
-    def where(queryComparison: QueryComparison[G, B]): QueryBuilder[F, G, A, B] = {
-      this.copy(filter = QueryComparisonBinOp(filter, queryComparison, And))
+    def where(queryComparison: QueryComparison[C, A]): QueryBuilder[A, B, QueryComparison[C, A]] = {
+      this.copy(filter = QueryComparisonBinOp(filter, queryComparison, QueryComparisonOperator.And))
     }
 
-    def leftOuterJoin(tup: (QueryProjection[A], QueryComparison[G, B])): QueryBuilder[F, G, A, B] =
+    def leftOuterJoin(tup: (QueryProjection[A], QueryComparison[C, A])): QueryBuilder[A, B, C] =
       this.copy(joins = joins :+ QueryJoin(tup._1, tup._2, LeftOuter))
 
-    def rightOuterJoin(tup: (QueryProjection[A], QueryComparison[G, B])): QueryBuilder[F, G, A, B] =
+    def rightOuterJoin(tup: (QueryProjection[A], QueryComparison[C, A])): QueryBuilder[A, B, C] =
       this.copy(joins = joins :+ QueryJoin(tup._1, tup._2, RightOuter))
 
-    def innerJoin(tup: (QueryProjection[A], QueryComparison[G, B])): QueryBuilder[F, G, A, B] =
+    def innerJoin(tup: (QueryProjection[A], QueryComparison[C, A])): QueryBuilder[A, B, C] =
       this.copy(joins = joins :+ QueryJoin(tup._1, tup._2, Inner))
 
-    def crossJoin(tup: (QueryProjection[A], QueryComparison[G, B])): QueryBuilder[F, G, A, B] =
+    def crossJoin(tup: (QueryProjection[A], QueryComparison[C, A])): QueryBuilder[A, B, C] =
       this.copy(joins = joins :+ QueryJoin(tup._1, tup._2, Cartesian))
 
-    def fullOuterJoin(tup: (QueryProjection[A], QueryComparison[G, B])): QueryBuilder[F, G, A, B] =
+    def fullOuterJoin(tup: (QueryProjection[A], QueryComparison[C, A])): QueryBuilder[A, B, C] =
       this.copy(joins = joins :+ QueryJoin(tup._1, tup._2, FullOuter))
 
-    def build: QuerySelect[F, G, A, B] =
+    def build: QuerySelect[A, B, C] =
       QuerySelect(table, values.toList, joins.toList, filter, sorts.toList, groupings.toList, offset, limit)
 
     def orderBy(sorts: QuerySort*) = this.copy(sorts = this.sorts ++ sorts.toVector)
     def groupBy(groups: QuerySort*) = this.copy(groupings = this.groupings ++ groups.toVector)
 
-    def offset(n: Long): QueryBuilder[F, G, A, B] = this.copy(offset = Some(n))
-    def limit(n: Long): QueryBuilder[F, G, A, B] = this.copy(limit = Some(n))
+    def offset(n: Long): QueryBuilder[A, B, C] = this.copy(offset = Some(n))
+    def limit(n: Long): QueryBuilder[A, B, C] = this.copy(limit = Some(n))
 
-    def as(alias: String): QueryProjection[QueryValue[F, A]] = QueryProjectOne(this.build, Some(alias))
+    def as(alias: String): QueryProjection[QueryValue[A, B]] = QueryProjectOne(this.build, Some(alias))
   }
 
-  case class JoinBuilder[F[_], G[_], A, B](queryBuilder: QueryBuilder[F, G, A, B], f: QueryComparison[G, B] => QueryJoin[G, A, B]) {
-    def on(where: QueryComparison[G, B]): QueryBuilder[F, G, A, B] = queryBuilder.copy(joins = queryBuilder.joins :+ f(where))
+  case class JoinBuilder[A, B, C](queryBuilder: QueryBuilder[A, B, C], f: QueryComparison[C, A] => QueryJoin[A, C]) {
+    def on(where: QueryComparison[C, A]): QueryBuilder[A, B, C] = queryBuilder.copy(joins = queryBuilder.joins :+ f(where))
   }
 
   class QuerySortBuilder(val f: QueryPath) {

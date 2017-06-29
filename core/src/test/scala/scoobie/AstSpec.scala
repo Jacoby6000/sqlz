@@ -17,7 +17,6 @@ object AstSpec extends Specification
 
     Query Values
       Parameter         $param
-      Raw String Expression   $rawExpression
 
     Query Comparisons
       Literal               $queryLitTest

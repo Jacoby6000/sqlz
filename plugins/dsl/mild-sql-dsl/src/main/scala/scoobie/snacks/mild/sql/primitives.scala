@@ -6,33 +6,33 @@ import scoobie.ast._
   * Created by jacob.barber on 5/24/16.
   */
 trait primitives {
-  class QueryValueExtensions[F[_], G[_], A, B](val a: QueryValue[F, A]) {
+  class QueryValueExtensions[A, B, C](val a: QueryValue[A, B]) {
     import QueryValueComparisonOperator._
-    def >[G[_], B](b: QueryValue[F, A])(implicit ga: G[A]): QueryComparison[G, B] = QueryComparisonValueBinOp(a, b, GreaterThan)
-    def >=[G[_], B](b: QueryValue[F, A])(implicit ga: G[A]): QueryComparison[G, B] = QueryComparisonValueBinOp(a, b, GreaterThanOrEqual)
-    def <[G[_], B](b: QueryValue[F, A])(implicit ga: G[A]): QueryComparison[G, B] = QueryComparisonValueBinOp(a, b, LessThan)
-    def <=[G[_], B](b: QueryValue[F, A])(implicit ga: G[A]): QueryComparison[G, B] = QueryComparisonValueBinOp(a, b, LessThanOrEqual)
-    def ===[G[_], B](b: QueryValue[F, A])(implicit ga: G[A]): QueryComparison[G, B] = QueryComparisonValueBinOp(a, b, Equal)
-    def !==[G[_], B](b: QueryValue[F, A])(implicit ga: G[A]): QueryComparison[G, B] = QueryNot(QueryEqual(a, b))
-    def <>[G[_], B](b: QueryValue[F, A])(implicit ga: G[A]): QueryComparison[G, B] = this !== b
+    def >(b: QueryValue[A, B]): QueryComparison[C, A] = QueryComparisonValueBinOp(a, b, GreaterThan)
+    def >=(b: QueryValue[A, B]): QueryComparison[C, A] = QueryComparisonValueBinOp(a, b, GreaterThanOrEqual)
+    def <(b: QueryValue[A, B]): QueryComparison[C, A] = QueryComparisonValueBinOp(a, b, LessThan)
+    def <=(b: QueryValue[A, B]): QueryComparison[C, A] = QueryComparisonValueBinOp(a, b, LessThanOrEqual)
+    def ===(b: QueryValue[A, B]): QueryComparison[C, A] = QueryComparisonValueBinOp(a, b, Equal)
+    def !==(b: QueryValue[A, B]): QueryComparison[C, A] = QueryNot(QueryEqual(a, b))
+    def <>(b: QueryValue[A, B]): QueryComparison[C, A] = this !== b
 
     import QueryValueArithmeticOperator._
-    def +(b: QueryValue[F, A]): QueryValue[F, A] = QueryValueBinOp(a, b, Add)
-    def -(b: QueryValue[F, A]): QueryValue[F, A] = QueryValueBinOp(a, b, Subtract)
-    def /(b: QueryValue[F, A]): QueryValue[F, A] = QueryValueBinOp(a, b, Divide)
-    def *(b: QueryValue[F, A]): QueryValue[F, A] = QueryValueBinOp(a, b, Multiply)
+    def +(b: QueryValue[A, B]): QueryValue[A, B] = QueryValueBinOp(a, b, Add)
+    def -(b: QueryValue[A, B]): QueryValue[A, B] = QueryValueBinOp(a, b, Subtract)
+    def /(b: QueryValue[A, B]): QueryValue[A, B] = QueryValueBinOp(a, b, Divide)
+    def *(b: QueryValue[A, B]): QueryValue[A, B] = QueryValueBinOp(a, b, Multiply)
 
-    def in(values: QueryValue[F, A]*)(implicit ga: G[A]): QueryComparison[G, B] = QueryIn(a, values.toList)
-    def notIn(values: QueryValue[F, A]*)(implicit ga: G[A]): QueryComparison[G, B] = QueryNot(QueryIn(a, values.toList))
+    def in(values: QueryValue[A, B]*): QueryComparison[C, A] = QueryIn(a, values.toList)
+    def notIn(values: QueryValue[A, B]*): QueryComparison[C, A] = QueryNot(QueryIn(a, values.toList))
 
-    def as(alias: String): QueryProjection[QueryValue[F, A]] = QueryProjectOne(a, Some(alias))
+    def as(alias: String): QueryProjection[QueryValue[A, B]] = QueryProjectOne(a, Some(alias))
   }
 
   class SqlQueryFunctionBuilder(val f: QueryPath) {
-    def apply[F[_], A](params: QueryValue[F, A]*): QueryFunction[F, QueryValue[F, A]] = QueryFunction(f, params.toList)
+    def apply[A, B](params: QueryValue[A, B]*): QueryFunction[QueryValue[A, B], B] = QueryFunction(f, params.toList)
   }
 
-  class SqlDslStringInterpolators[F[_], A](val ctx: StringContext) {
+  class SqlDslStringInterpolators(val ctx: StringContext) {
     def p(): QueryPath = {
       def go(remainingParts: List[String], queryPath: QueryPath): QueryPath = remainingParts match {
         case head :: tail => go(tail, QueryPathCons(head, queryPath))
@@ -52,13 +52,13 @@ trait primitives {
       case QueryProjectOne(selection, _) => QueryProjectOne(selection, Some(alias))
     }
 
-    def on[F[_], B](comparison: QueryComparison[F, B]): (QueryProjection[A], QueryComparison[F, B]) = (a, comparison)
+    def on[B](comparison: QueryComparison[B, A]): (QueryProjection[A], QueryComparison[B, A]) = (a, comparison)
   }
 
-  class QueryComparisonExtensions[F[_], A](val left: QueryComparison[F, A]) {
+  class QueryComparisonExtensions[A, B](val left: QueryComparison[A, B]) {
     import QueryComparisonOperator._
-    def and(right: QueryComparison[F, A]) = QueryComparisonBinOp(left, right, And)
-    def or(right: QueryComparison[F, A]) = QueryComparisonBinOp(left, right, Or)
+    def and(right: QueryComparison[A, B]) = QueryComparisonBinOp(left, right, And)
+    def or(right: QueryComparison[A, B]) = QueryComparisonBinOp(left, right, Or)
   }
 
 }

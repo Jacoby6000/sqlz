@@ -1,19 +1,13 @@
 package scoobie.snacks.mild
 
 import scoobie.ast._
-import scoobie.coercion.Coerce
-import scoobie.snacks.TypeComparisons._
-import scoobie.snacks.Pointed
-import scoobie.snacks.Pointed.PointedOps
 
 package object sql extends query.modify with query.select with primitives {
 
 
-  implicit val stringExpr = RawExpressionHandler[String](identity)
-
-  implicit def sqlDslStringInterpolatorConverter[F[_]](ctx: StringContext)(implicit coerce: Coerce[F]): SqlDslStringInterpolators[F] = new SqlDslStringInterpolators(ctx)
-  implicit def sqlValueExtensions[F[_], A](a: QueryValue[F, A]): QueryValueExtensions[F, A] = new QueryValueExtensions(a)
-  implicit def sqlComparisonExtensions[F[_], A](a: QueryComparison[F, A]): QueryComparisonExtensions[F, A] = new QueryComparisonExtensions(a)
+  implicit def sqlDslStringInterpolatorConverter[A, B, C](ctx: StringContext)(implicit coerce: Coerce[A, B, C]): SqlDslStringInterpolators[A] = new SqlDslStringInterpolators(ctx)
+  implicit def sqlValueExtensions[A, B](a: QueryValue[A, B]): QueryValueExtensions[A, B] = new QueryValueExtensions(a)
+  implicit def sqlComparisonExtensions[A, B](a: QueryComparison[A, B]): QueryComparisonExtensions[A, B] = new QueryComparisonExtensions(a)
   implicit def sqlProjectionExtensions[A](a: QueryProjection[A]): QueryProjectionExtensions[A] = new QueryProjectionExtensions(a)
   implicit def sqlModifyFieldBuilder(a: QueryPath): ModifyFieldBuilder = ModifyFieldBuilder(a)
   implicit def sqlSortBuilder(a: QueryPath): QuerySortBuilder = new QuerySortBuilder(a)
@@ -22,32 +16,32 @@ package object sql extends query.modify with query.select with primitives {
 
   val select = SelectBuilderBuilder
 
-  def update[G[_], A, B](table: QueryPath): UpdateBuilder[G, A, B] = new UpdateBuilder(table, List.empty, QueryComparisonNop[G, B])
+  def update[A, B](table: QueryPath): UpdateBuilder[G, A, B] = new UpdateBuilder(table, List.empty, QueryComparisonNop[A, B])
   def insertInto(table: QueryPath): InsertBuilder = new InsertBuilder(table)
 
-  def `null`[F[_], A]: QueryValue[F, A] = QueryNull[F, A]
+  def `null`[A, B]: QueryValue[A, B] = QueryNull[A, B]
   def  `*`[A]: QueryProjection[A] = QueryProjectAll[A]
 
-  def not[F[_], A, H[_]: Pointed](queryComparison: QueryComparison[F, H[A]])(implicit ev: QueryComparison[F, H[A]] =:= A): H[A] =
-    ev(QueryNot[F, H[A]](ev(queryComparison).point[H])).point[H]
+  def not[A, B](queryComparison: QueryComparison[A, B]): QueryComparison[QueryComparison[A, B], B] =
+    QueryNot(queryComparison)
 
-  implicit def toQueryValue[F[_], G[_], A, B](a: A)(
+  implicit def toQueryValue[F[_], A, B, C, T](t: T)(
     implicit
-    $e: Coerce2[F, G, A, B],
-    ev2: A =:!= QueryComparison[G, B],
-    ev3: F[A]
-  ): QueryValue[F] =
-    QueryParameter(a)
+    ev: Coerce[A, B, C],
+    qt: QueryType[F, B],
+    ft: F[T]
+  ): QueryValue[A, B] =
+    QueryParameter[A, B](qt.toQueryType(t, ft))
 
-  implicit def pathToValue[F[_], A](queryPath: QueryPath): QueryValue[F, A] =
+  implicit def pathToValue[A, B](queryPath: QueryPath): QueryValue[A, B] =
     QueryPathValue(queryPath)
 
-  implicit def pathToQueryProjection[F[_], A](queryPath: QueryPath): QueryProjection[QueryValue[F, A]] =
-    QueryProjectOne(pathToValue[F, A](queryPath), None)
+  implicit def pathToQueryProjection[A, B](queryPath: QueryPath): QueryProjection[QueryValue[A, B]] =
+    QueryProjectOne(pathToValue[A, B](queryPath), None)
 
-  implicit def valueToQueryProjection[F[_], A](value: QueryValue[F, A]): QueryProjection[QueryValue[F, A]] =
+  implicit def valueToQueryProjection[A, B](value: QueryValue[A, B]): QueryProjection[QueryValue[A, B]] =
     QueryProjectOne(value, None)
 
-  implicit def queryBuilderToProjection[F[_], A](builder: QueryBuilder[F]): QueryProjection[A] =
+  implicit def queryBuilderToProjection[A, B](builder: QueryBuilder[A, B]): QueryProjection[A, B] =
     QueryProjectOne(builder.build, None)
 }

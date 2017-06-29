@@ -8,24 +8,18 @@ import org.specs2._
   */
 trait ParamTests extends SpecificationLike with PathTests with TestHelpers {
 
-  implicit val stringExpr = RawExpressionHandler[String](identity)
-
-  val fooParam = QueryParameter[DummyHKT, String]("foo")
-  val rawStringExpression = QueryRawExpression("some expr")
+  val fooParam = QueryParameter[String, String]("foo")
   val queryFunction = QueryFunction(columnPathEnd, List("a".asParam, "b".asParam, 5.asParam))
-  val queryAdd = QueryAdd(fooParam, columnPathEnd)
-  val querySub = QuerySub(fooParam, columnPathEnd)
-  val queryDiv = QueryDiv(fooParam, columnPathEnd)
-  val queryMul = QueryMul(fooParam, columnPathEnd)
+
+  import QueryValueArithmeticOperator._
+  val queryAdd = QueryValueBinOp(fooParam, columnPathEnd, Add)
+  val querySub = QueryValueBinOp(fooParam, columnPathEnd, Subtract)
+  val queryDiv = QueryValueBinOp(fooParam, columnPathEnd, Divide)
+  val queryMul = QueryValueBinOp(fooParam, columnPathEnd, Multiply)
 
   val projection = QueryProjectOne(fooParam, None)
 
   lazy val param = {
     fooParam.value mustEqual "foo"
-  }
-
-  lazy val rawExpression = {
-    rawStringExpression.t mustEqual "some expr"
-    stringExpr.interpret(rawStringExpression.t) mustEqual "some expr"
   }
 }

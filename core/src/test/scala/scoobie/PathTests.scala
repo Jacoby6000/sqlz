@@ -8,8 +8,8 @@ import org.specs2._
   */
 
 trait PathTests extends SpecLike with TestHelpers {
-  val columnPathEnd = QueryPathEnd[DummyHKT]("column")
-  val columnPathCons = QueryPathCons[DummyHKT]("foo", QueryPathEnd("bar"))
+  val columnPathEnd = QueryPathEnd("column")
+  val columnPathCons = QueryPathCons("foo", QueryPathEnd("bar"))
 
   lazy val pathEnd = {
     columnPathEnd.path mustEqual "column"
@@ -17,6 +17,6 @@ trait PathTests extends SpecLike with TestHelpers {
 
   lazy val pathCons = {
     columnPathCons.path mustEqual "foo"
-    columnPathCons.queryPath mustEqual QueryPathEnd[DummyHKT]("bar")
+    columnPathCons.queryPath mustEqual QueryPathEnd("bar")
   }
 }
