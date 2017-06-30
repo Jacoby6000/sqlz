@@ -4,119 +4,134 @@ package scoobie
  * Created by jacob.barber on 2/2/16.
  */
 object ast {
+  case class Fix[+F[+_]](f: F[Fix[F]])
+  case class HFix[F[_[_], _], A](f: F[HFix[F, ?], A])
 
-  sealed trait QueryValueArithmeticOperator
-  object QueryValueArithmeticOperator {
-    case object Add extends QueryValueArithmeticOperator
-    case object Subtract extends QueryValueArithmeticOperator
-    case object Divide extends QueryValueArithmeticOperator
-    case object Multiply extends QueryValueArithmeticOperator
+  sealed trait Query[T, A[_], +I]
+  trait Value
+  trait Comparison
+
+  type QueryValue[T, A[_]] = Query[T, A, Value]
+  type QueryComparison[T, A[_]] = Query[T, A, Comparison]
+
+  sealed trait Operator[+I]
+
+  object ValueOperators {
+    case object Add extends Operator[Value]
+    case object Subtract extends Operator[Value]
+    case object Divide extends Operator[Value]
+    case object Multiply extends Operator[Value]
   }
 
-  sealed trait QueryValue[A, B]
-  case class QueryFunction[A, B](path: QueryPath, args: List[A]) extends QueryValue[A, B]
-  case class QueryValueBinOp[A, B](left: A, right: A, op: QueryValueArithmeticOperator) extends QueryValue[A, B]
-  case class QueryParameter[A, B](value: B) extends QueryValue[A, B]
-  case class QueryPathValue[A, B](path: QueryPath) extends QueryValue[A, B]
-  class QueryNull[A, B] extends QueryValue[A, B] {
+  case class Function[T, A[_]](path: Path, args: List[A[Value]]) extends QueryValue[T, A]
+  case class ValueBinOp[T, A[_]](left: A[Value], right: A[Value], op: Operator[Value]) extends QueryValue[T, A]
+  case class Parameter[T, A[_]](value: A[Value]) extends QueryValue[T, A]
+  case class PathValue[T, A[_]](path: Path) extends QueryValue[T, A]
+  class Null[T, A[_]] extends QueryValue[T, A] {
     override def equals(obj: scala.Any): Boolean = obj match {
-      case _: QueryNull[_, _] => true
+      case _: Null[_, _] => true
       case _ => false
     }
 
     override def toString: String = "QueryNull"
   }
 
-  object QueryNull {
-    def apply[A, B]: QueryNull[A, B] = new QueryNull[A, B]
+  object Null {
+    def apply[T, A[_]]: Null[T, A] = new Null[T, A]
   }
 
-  sealed trait QueryComparisonValueOperator
-  object QueryComparisonValueOperator {
-    case object Equal extends QueryComparisonValueOperator
-    case object GreaterThan extends QueryComparisonValueOperator
-    case object GreaterThanOrEqual extends QueryComparisonValueOperator
-    case object LessThan extends QueryComparisonValueOperator
-    case object LessThanOrEqual extends QueryComparisonValueOperator
+  object ComparisonValueOperators {
+    case object Equal extends Operator[(Value, Comparison)]
+    case object GreaterThan extends Operator[(Value, Comparison)]
+    case object GreaterThanOrEqual extends Operator[(Value, Comparison)]
+    case object LessThan extends Operator[(Value, Comparison)]
+    case object LessThanOrEqual extends Operator[(Value, Comparison)]
   }
 
-  sealed trait QueryComparisonOperator
-  object QueryComparisonOperator {
-    case object And extends QueryComparisonOperator
-    case object Or extends QueryComparisonOperator
+  object ComparisonOperators {
+    case object And extends Operator[Comparison]
+    case object Or extends Operator[Comparison]
   }
 
-  sealed trait QueryComparison[A, B]
-  case class QueryNot[A, B](value: A) extends QueryComparison[A, B]
-  case class QueryComparisonBinOp[A, B](left: A, right: A, op: QueryComparisonOperator) extends QueryComparison[A, B]
-  case class QueryComparisonValueBinOp[A, B](left: B, right: B, op: QueryComparisonValueOperator) extends QueryComparison[A, B]
-  case class QueryIn[A, B](left: B, rights: List[B]) extends QueryComparison[A, B]
-  case class QueryLit[A, B](value: B) extends QueryComparison[A, B]
+  case class Not[T, A[_]](value: A[Comparison]) extends QueryComparison[T, A]
+  case class ComparisonBinOp[T, A[_]](left: A[Comparison], right: A[Comparison], op: Operator[Comparison]) extends QueryComparison[T, A]
+  case class ComparisonValueBinOp[T, A[_]](left: A[Value], right: A[Value], op: Operator[(Value, Comparison)]) extends QueryComparison[T, A]
+  case class In[T, A[_]](left: A[Value], rights: A[Value]) extends QueryComparison[T, A]
+  case class Lit[T, A[_]](value: A[Value]) extends QueryComparison[T, A]
 
-  class QueryComparisonNop[A, B] extends QueryComparison[A, B] {
+  class ComparisonNop[T, A[_]] extends QueryComparison[T, A] {
     override def equals(obj: scala.Any): Boolean = obj match {
-      case _: QueryComparisonNop[_, _] => true
+      case _: ComparisonNop[_, _] => true
       case _ => false
     }
 
     override def toString: String = "QueryComparisonNop"
   }
-  object QueryComparisonNop {
-    def apply[A, B]: QueryComparisonNop[A, B] = new QueryComparisonNop[A, B]
+  object ComparisonNop {
+    def apply[T, A[_]]: ComparisonNop[T, A] = new ComparisonNop[T, A]
   }
 
 
-  sealed trait QueryPath
-  case class QueryPathEnd(path: String) extends QueryPath
-  case class QueryPathCons(path: String, queryPath: QueryPath) extends QueryPath
+  sealed trait Path {
+    override def toString: String = this match {
+      case PathEnd(p) => p
+      case PathCons(p, q) => p + q.toString
+    }
+  }
+  case class PathEnd(path: String) extends Path
+  case class PathCons(path: String, queryPath: Path) extends Path
 
-  sealed trait QueryProjection[A]
-  case class QueryProjectOne[A](selection: A, alias: Option[String]) extends QueryProjection[A]
-  class QueryProjectAll[A] extends QueryProjection[A] {
+  sealed trait Projection
+  sealed trait ProjectOneI extends Projection
+
+  case class ProjectOne[T, A[_]](selection: A[Value], alias: Option[String]) extends Query[T, A, ProjectOneI]
+  class ProjectAll[T, A[_]] extends Query[T, A, Projection] {
     override def equals(obj: scala.Any): Boolean = obj match {
-      case _: QueryProjectAll[_] => true
+      case _: ProjectAll[_, _] => true
       case _ => false
     }
 
     override def toString: String = "QueryProjectAll"
   }
 
-  object QueryProjectAll {
-    def apply[A]: QueryProjectAll[A] = new QueryProjectAll[A]
+  object ProjectAll {
+    def apply[T, A[_]]: ProjectAll[T, A] = new ProjectAll[T, A]
   }
 
-  sealed trait JoinOp
-  object JoinOp {
-    case object FullOuter extends JoinOp
-    case object LeftOuter extends JoinOp
-    case object RightOuter extends JoinOp
-    case object Cartesian extends JoinOp
-    case object Inner extends JoinOp
+  object JoinOperators {
+    case object FullOuter extends Operator[Join]
+    case object LeftOuter extends Operator[Join]
+    case object RightOuter extends Operator[Join]
+    case object Cartesian extends Operator[Join]
+    case object Inner extends Operator[Join]
   }
 
-  case class QueryJoin[A, B](table: QueryProjection[A], on: QueryComparison[B, A], joinOp: JoinOp)
+  sealed trait Join
+  case class QueryJoin[T, A[_]](table: ProjectOne[T, A], on: A[Comparison], op: Operator[Join]) extends Query[T, A, Join]
 
   sealed trait SortType
   object SortType {
     case object Ascending extends SortType
     case object Descending extends SortType
   }
-  case class QuerySort(column: QueryPath, sortType: SortType)
+  case class Sort(column: Path, sortType: SortType)
 
-  case class QuerySelect[A, B, C](
-                                table: QueryProjection[A],
-                                values: List[QueryProjection[A]],
-                                unions: List[QueryJoin[A, C]],
-                                filter: QueryComparison[C, A],
-                                sorts: List[QuerySort],
-                                groupings: List[QuerySort],
+  case class QuerySelect[T, A[_]](
+                                table: A[ProjectOneI],
+                                values: List[A[Projection]],
+                                joins: List[A[Join]],
+                                filter: A[Comparison],
+                                sorts: List[Sort],
+                                groupings: List[Sort],
                                 offset: Option[Long],
                                 limit: Option[Long]
-  ) extends QueryValue[A, B]
+  ) extends QueryValue[T, A]
 
-  case class ModifyField[A](key: QueryPath, value: A)
-  case class QueryInsert[A](collection: QueryPath, values: List[ModifyField[A]])
-  case class QueryUpdate[A, B](collection: QueryPath, values: List[ModifyField[A]], where: QueryComparison[B, A])
-  case class QueryDelete[A, B](collection: QueryPath, where: QueryComparison[A, B])
+  //case class ModifyField[A](key: QueryPath, value: A)
+  //case class QueryInsert[A](collection: QueryPath, values: List[ModifyField[A]])
+  //case class QueryUpdate[A, B](collection: QueryPath, values: List[ModifyField[A]], where: QueryComparison[B, A])
+  //case class QueryDelete[A, B](collection: QueryPath, where: QueryComparison[A, B])
 
+  type ANSIQuery[A] = HFix[Query[A, ?[_], ?], A]
 }
+

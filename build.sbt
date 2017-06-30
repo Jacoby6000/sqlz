@@ -202,7 +202,7 @@ lazy val docs =
       micrositeGithubOwner := "jacoby6000",
       micrositeGithubRepo := "scoobie",
       micrositePushSiteWith := GitHub4s,
-      micrositeGithubToken := Some(sys.env("GITHUB_MICROSITES_TOKEN")),
+      micrositeGithubToken := Some(""),//Some(sys.env("GITHUB_MICROSITES_TOKEN")),
       micrositeHighlightTheme := "atom-one-light",
       micrositePalette := Map(
         "brand-primary"     -> "#E05236",
