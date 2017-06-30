@@ -6,7 +6,6 @@ import UnidocKeys._
 import ReleaseTransformations._
 import ScoobieUtil._
 
-
 lazy val scoobie =
   project.in(file("."))
     .configs(IntegrationTest)

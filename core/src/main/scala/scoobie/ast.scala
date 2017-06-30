@@ -5,7 +5,7 @@ package scoobie
  */
 object ast {
   case class Fix[+F[+_]](f: F[Fix[F]])
-  case class HFix[F[_[_], _], A](f: F[HFix[F, ?], A])
+  case class HFix[F[_[_], _], A](unfix: F[HFix[F, ?], A])
 
   sealed trait Query[T, A[_], +I]
   trait Value
@@ -25,7 +25,7 @@ object ast {
 
   case class Function[T, A[_]](path: Path, args: List[A[Value]]) extends QueryValue[T, A]
   case class ValueBinOp[T, A[_]](left: A[Value], right: A[Value], op: Operator[Value]) extends QueryValue[T, A]
-  case class Parameter[T, A[_]](value: A[Value]) extends QueryValue[T, A]
+  case class Parameter[T, A[_]](value: T) extends QueryValue[T, A]
   case class PathValue[T, A[_]](path: Path) extends QueryValue[T, A]
   class Null[T, A[_]] extends QueryValue[T, A] {
     override def equals(obj: scala.Any): Boolean = obj match {
@@ -132,6 +132,60 @@ object ast {
   //case class QueryUpdate[A, B](collection: QueryPath, values: List[ModifyField[A]], where: QueryComparison[B, A])
   //case class QueryDelete[A, B](collection: QueryPath, where: QueryComparison[A, B])
 
-  type ANSIQuery[A] = HFix[Query[A, ?[_], ?], A]
+  type FixedQuery[A] = HFix[Query[A, ?[_], ?], A]
+  type QueryOf[T] = {
+    type l[F[_], I] = Query[T, F, I]
+  }
+}
+
+object cata {
+  import ast._
+
+  type Algebra[F[_[_], _], E[_]] = F[E, ?] ~> E
+
+  trait HFunctor[H[_[_], _]] {
+    // def fmap[F[_]: Functor, A, B](hfa: H[F, A])(f: A => B): H[F, B]
+    def hmap[F[_], G[_]](f: F ~> G): H[F, ?] ~> H[G, ?]
+  }
+  object HFunctor {
+    def apply[H[_[_], _]](implicit H: HFunctor[H]) = H
+
+    // implicit def hfunctorFunctor[H[_[_], _]: HFunctor, F[_]: Functor]:
+    //     Functor[H[F, ?]] =
+    //   new Functor[H[F, ?]] {
+    //     def map[A, B](fa: H[F, A])(f: A => B) = HFunctor[H].fmap(fa)(f)
+    // }
+  }
+
+  trait ~>[F[_], G[_]] {
+    def apply[A](fa: F[A]): G[A]
+  }
+
+  implicit val hfixRecursive: HRecursive[HFix] =
+    new HRecursive[HFix] {
+      override def hproject[F[_[_], _], A](t: HFix[F, A]) = t.unfix
+    }
+
+  trait HRecursive[T[_[_[_], _], _]] {
+    def hproject[F[_[_], _], A](t: T[F, A]): F[T[F, ?], A]
+
+    def cata[F[_[_], _]: HFunctor, A[_]](φ: Algebra[F, A]): T[F, ?] ~> A =
+      new (T[F, ?] ~> A) {
+        def apply[Q](t: T[F, Q]) =
+          φ(HFunctor[F].hmap(cata(φ))(hproject(t)))
+      }
+  }
+
+  implicit def queryHFunctor[T]: HFunctor[QueryOf[T]#l] = new HFunctor[QueryOf[T]#l] {
+    def hmap[F[_], G[_]](f: F ~> G) = new (Query[T, F, ?] ~> Query[T, G, ?]) {
+      def apply[I](fa: Query[T, F, I]): Query[T, G, I] =
+        fa match {
+          case p @ Parameter(_) => f(p)
+
+        }
+    }
+  }
+
+
 }
 
