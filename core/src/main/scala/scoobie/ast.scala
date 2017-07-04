@@ -8,8 +8,20 @@ object ast {
   case class HFix[F[_[_], _], A](unfix: F[HFix[F, ?], A])
 
   sealed trait Query[T, A[_], +I]
-  trait Value
-  trait Comparison
+
+  object Indicies {
+    trait Value
+    trait Comparison
+
+    trait ModifyFieldI
+
+    trait Projection
+    trait ProjectOneI extends Projection
+
+    trait Join
+  }
+
+  import Indicies._
 
   type QueryValue[T, A[_]] = Query[T, A, Value]
   type QueryComparison[T, A[_]] = Query[T, A, Comparison]
@@ -56,7 +68,7 @@ object ast {
   case class Not[T, A[_]](value: A[Comparison]) extends QueryComparison[T, A]
   case class ComparisonBinOp[T, A[_]](left: A[Comparison], right: A[Comparison], op: Operator[Comparison]) extends QueryComparison[T, A]
   case class ComparisonValueBinOp[T, A[_]](left: A[Value], right: A[Value], op: Operator[(Value, Comparison)]) extends QueryComparison[T, A]
-  case class In[T, A[_]](left: A[Value], rights: A[Value]) extends QueryComparison[T, A]
+  case class In[T, A[_]](left: A[Value], rights: List[A[Value]]) extends QueryComparison[T, A]
   case class Lit[T, A[_]](value: A[Value]) extends QueryComparison[T, A]
 
   class ComparisonNop[T, A[_]] extends QueryComparison[T, A] {
@@ -81,8 +93,6 @@ object ast {
   case class PathEnd(path: String) extends Path
   case class PathCons(path: String, queryPath: Path) extends Path
 
-  sealed trait Projection
-  sealed trait ProjectOneI extends Projection
 
   case class ProjectOne[T, A[_]](selection: A[Value], alias: Option[String]) extends Query[T, A, ProjectOneI]
   class ProjectAll[T, A[_]] extends Query[T, A, Projection] {
@@ -106,8 +116,7 @@ object ast {
     case object Inner extends Operator[Join]
   }
 
-  sealed trait Join
-  case class QueryJoin[T, A[_]](table: ProjectOne[T, A], on: A[Comparison], op: Operator[Join]) extends Query[T, A, Join]
+  case class QueryJoin[T, A[_]](table: A[ProjectOneI], on: A[Comparison], op: Operator[Join]) extends Query[T, A, Join]
 
   sealed trait SortType
   object SortType {
@@ -127,12 +136,12 @@ object ast {
                                 limit: Option[Long]
   ) extends QueryValue[T, A]
 
-  //case class ModifyField[A](key: QueryPath, value: A)
-  //case class QueryInsert[A](collection: QueryPath, values: List[ModifyField[A]])
-  //case class QueryUpdate[A, B](collection: QueryPath, values: List[ModifyField[A]], where: QueryComparison[B, A])
-  //case class QueryDelete[A, B](collection: QueryPath, where: QueryComparison[A, B])
+  case class ModifyField[T, A[_]](key: Path, value: A[Value]) extends Query[T, A, ModifyFieldI]
+  case class QueryInsert[T, A[_]](collection: Path, values: List[A[ModifyFieldI]]) extends Query[T, A, Unit]
+  case class QueryUpdate[T, A[_]](collection: Path, values: List[A[ModifyFieldI]], where: A[Comparison]) extends Query[T, A, Unit]
+  case class QueryDelete[T, A[_]](collection: Path, where: A[Comparison]) extends Query[T, A, Unit]
 
-  type FixedQuery[A] = HFix[Query[A, ?[_], ?], A]
+  type ANSIQuery[A] = HFix[Query[A, ?[_], ?], A]
   type QueryOf[T] = {
     type l[F[_], I] = Query[T, F, I]
   }
@@ -181,8 +190,39 @@ object cata {
       def apply[I](fa: Query[T, F, I]): Query[T, G, I] =
         fa match {
           case Parameter(param) => Parameter(param)
-          case Function(path, args) => Function(path, args.map(hmap(f)(_)))
+          case Function(path, args) => Function(path, args.map(f[Indicies.Value]))
+          case PathValue(path) => PathValue(path)
+          case ValueBinOp(l, r, op) => ValueBinOp(f(l), f(r), op)
+          case _: Null[_, _] => Null[T, G]
 
+          case ComparisonBinOp(l, r, op) => ComparisonBinOp(f(l), f(r), op)
+          case ComparisonValueBinOp(l, r, op) => ComparisonValueBinOp(f(l), f(r), op)
+          case In(l, rs) => In(f(l), rs.map(f[Indicies.Value]))
+          case Lit(v) => Lit(f(v))
+          case Not(v) => Not(f(v))
+          case _: ComparisonNop[_, _] => ComparisonNop[T, G]
+
+          case ProjectOne(value, alias) => ProjectOne(f(value), alias)
+          case _: ProjectAll[_, _] => ProjectAll[T, G]
+
+          case QueryJoin(projection, on, op) => QueryJoin(f(projection), f(on), op)
+
+          case ModifyField(path, value) => ModifyField(path, f(value))
+
+          case QueryDelete(table, where) => QueryDelete(table, f(where))
+          case QueryInsert(table, values) => QueryInsert(table, values.map(f[Indicies.ModifyFieldI]))
+          case QueryUpdate(table, values, where) => QueryUpdate(table, values.map(f[Indicies.ModifyFieldI]), f(where))
+          case QuerySelect(table, values, joins, filter, sorts, groupings, offset, limit) =>
+            QuerySelect(
+              f(table),
+              values.map(f[Indicies.Projection]),
+              joins.map(f[Indicies.Join]),
+              f(filter),
+              sorts,
+              groupings,
+              offset,
+              limit
+            )
         }
     }
   }
