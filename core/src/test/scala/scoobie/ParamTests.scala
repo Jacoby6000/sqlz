@@ -8,16 +8,23 @@ import org.specs2._
   */
 trait ParamTests extends SpecificationLike with PathTests with TestHelpers {
 
-  val fooParam = QueryParameter[String, String]("foo")
-  val queryFunction = QueryFunction(columnPathEnd, List("a".asParam, "b".asParam, 5.asParam))
+  val fooParam = Parameter[String, ANSIQuery[String]#fixed]("foo")
+  val queryFunction = Function(columnPathEnd, List(HFix("a".asParam), HFix("b".asParam), HFix("c".asParam)))
 
-  import QueryValueArithmeticOperator._
-  val queryAdd = QueryValueBinOp(fooParam, columnPathEnd, Add)
-  val querySub = QueryValueBinOp(fooParam, columnPathEnd, Subtract)
-  val queryDiv = QueryValueBinOp(fooParam, columnPathEnd, Divide)
-  val queryMul = QueryValueBinOp(fooParam, columnPathEnd, Multiply)
+  import ValueOperators._
+  val queryAdd =
+    ValueBinOp[String, ANSIQuery[String]#fixed](HFix(fooParam), HFix(PathValue[String, ANSIQuery[String]#fixed](columnPathEnd)), Add)
 
-  val projection = QueryProjectOne(fooParam, None)
+  val querySub =
+    ValueBinOp[String, ANSIQuery[String]#fixed](HFix(fooParam), HFix(PathValue[String, ANSIQuery[String]#fixed](columnPathEnd)), Subtract)
+
+  val queryDiv =
+    ValueBinOp[String, ANSIQuery[String]#fixed](HFix(fooParam), HFix(PathValue[String, ANSIQuery[String]#fixed](columnPathEnd)), Divide)
+
+  val queryMul =
+    ValueBinOp[String, ANSIQuery[String]#fixed](HFix(fooParam), HFix(PathValue[String, ANSIQuery[String]#fixed](columnPathEnd)), Multiply)
+
+  val projection = ProjectOne[String, ANSIQuery[String]#fixed](HFix(fooParam), None)
 
   lazy val param = {
     fooParam.value mustEqual "foo"

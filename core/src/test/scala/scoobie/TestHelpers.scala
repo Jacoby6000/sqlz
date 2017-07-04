@@ -8,6 +8,6 @@ import org.specs2._
   */
 trait TestHelpers extends SpecificationLike {
   implicit class AExtensions[A](a: A) {
-    def asParam: QueryValue[String, String] = QueryParameter[String, String](a.toString)
+    def asParam = Parameter[String, ANSIQuery[String]#fixed](a.toString)
   }
 }

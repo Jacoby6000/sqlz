@@ -8,6 +8,7 @@ import org.specs2._
 trait ProjectionTests extends SpecificationLike with ParamTests {
   lazy val queryProjectOneTest = {
     projection.alias mustEqual None
-    projection.selection mustEqual fooParam
+
+    projection.selection.unfix mustEqual fooParam
   }
 }

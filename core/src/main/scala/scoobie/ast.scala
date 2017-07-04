@@ -141,10 +141,11 @@ object ast {
   case class QueryUpdate[T, A[_]](collection: Path, values: List[A[ModifyFieldI]], where: A[Comparison]) extends Query[T, A, Unit]
   case class QueryDelete[T, A[_]](collection: Path, where: A[Comparison]) extends Query[T, A, Unit]
 
-  type ANSIQuery[A] = HFix[Query[A, ?[_], ?], A]
-  type QueryOf[T] = {
-    type l[F[_], I] = Query[T, F, I]
+  type ANSIQuery[T] = {
+    type of[A[_], I] = Query[T, A, I]
+    type fixed[I] = HFix[of, I]
   }
+
 }
 
 object cata {
@@ -185,7 +186,7 @@ object cata {
       }
   }
 
-  implicit def queryHFunctor[T]: HFunctor[QueryOf[T]#l] = new HFunctor[QueryOf[T]#l] {
+  implicit def queryHFunctor[T]: HFunctor[ANSIQuery[T]#of] = new HFunctor[ANSIQuery[T]#of] {
     def hmap[F[_], G[_]](f: F ~> G) = new (Query[T, F, ?] ~> Query[T, G, ?]) {
       def apply[I](fa: Query[T, F, I]): Query[T, G, I] =
         fa match {
