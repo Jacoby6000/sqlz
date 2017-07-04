@@ -180,7 +180,8 @@ object cata {
     def hmap[F[_], G[_]](f: F ~> G) = new (Query[T, F, ?] ~> Query[T, G, ?]) {
       def apply[I](fa: Query[T, F, I]): Query[T, G, I] =
         fa match {
-          case p @ Parameter(_) => f(p)
+          case Parameter(param) => Parameter(param)
+          case Function(path, args) => Function(path, args.map(hmap(f)(_)))
 
         }
     }
