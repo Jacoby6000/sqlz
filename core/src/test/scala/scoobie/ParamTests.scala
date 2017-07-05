@@ -27,6 +27,7 @@ trait ParamTests extends SpecificationLike with PathTests with TestHelpers {
   val projection = ProjectOne[String, ANSIQuery[String]#fixed](HFix(fooParam), None)
 
   lazy val param = {
+
     fooParam.value mustEqual "foo"
   }
 }

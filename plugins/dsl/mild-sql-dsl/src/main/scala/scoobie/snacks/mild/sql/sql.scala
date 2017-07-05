@@ -22,8 +22,6 @@ package object sql extends query.modify with query.select with primitives {
   def `null`[A, B]: QueryValue[A, B] = QueryNull[A, B]
   def  `*`[A]: QueryProjection[A] = QueryProjectAll[A]
 
-  def not[A, B](queryComparison: QueryComparison[A, B]): QueryComparison[QueryComparison[A, B], B] =
-    QueryNot(queryComparison)
 
   implicit def toQueryValue[F[_], A, B, C, T](t: T)(
     implicit

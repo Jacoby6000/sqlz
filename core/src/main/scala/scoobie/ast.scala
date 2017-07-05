@@ -4,7 +4,6 @@ package scoobie
  * Created by jacob.barber on 2/2/16.
  */
 object ast {
-  case class Fix[+F[+_]](f: F[Fix[F]])
   case class HFix[F[_[_], _], A](unfix: F[HFix[F, ?], A])
 
   sealed trait Query[T, A[_], +I]
@@ -94,7 +93,10 @@ object ast {
   case class PathCons(path: String, queryPath: Path) extends Path
 
 
-  case class ProjectOne[T, A[_]](selection: A[Value], alias: Option[String]) extends Query[T, A, ProjectOneI]
+  type QueryProjection[T, A[_]] = Query[T, A, Projection]
+  type QueryProjectOne[T, A[_]] = Query[T, A, ProjectOneI]
+
+  case class ProjectOne[T, A[_]](selection: A[Value], alias: Option[String]) extends QueryProjectOne[T, A]
   class ProjectAll[T, A[_]] extends Query[T, A, Projection] {
     override def equals(obj: scala.Any): Boolean = obj match {
       case _: ProjectAll[_, _] => true
@@ -150,6 +152,16 @@ object ast {
 
 object cata {
   import ast._
+  
+  trait LiftH[F[_[_[_], _], _]] {
+    def lift[G[_[_], _], I](g: G[F[G, ?], I]): F[G, I]
+  }
+  
+  case class HFix[F[_[_], _], A](unfix: F[HFix[F, ?], A])
+
+  implicit val hfixLift: LiftH[HFix] = new LiftH[HFix] {
+    def lift[G[_[_], _], I](g: G[HFix[G, ?], I]): HFix[G, I] = HFix(g)
+  }
 
   type Algebra[F[_[_], _], E[_]] = F[E, ?] ~> E
 

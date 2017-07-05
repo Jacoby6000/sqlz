@@ -1,35 +1,42 @@
 package scoobie.snacks.mild.sql
 
 import scoobie.ast._
+import scoobie.cata._
+import scoobie.coercion._
 
 /**
   * Created by jacob.barber on 5/24/16.
   */
 trait primitives {
-  class QueryValueExtensions[A, B, C](val a: QueryValue[A, B]) {
+
+  def not[T, A[_]](queryComparison: A[Indicies.Comparison])(implicit coercion: Coerce[T, A]): QueryComparison[T, A] =
+    QueryNot(queryComparison)
+
+  class QueryValueExtensions[A[_]](val a: A[Indicies.Value])(implicit coercion: Coerce[T, A]) {
     import QueryValueComparisonOperator._
-    def >(b: QueryValue[A, B]): QueryComparison[C, A] = QueryComparisonValueBinOp(a, b, GreaterThan)
-    def >=(b: QueryValue[A, B]): QueryComparison[C, A] = QueryComparisonValueBinOp(a, b, GreaterThanOrEqual)
-    def <(b: QueryValue[A, B]): QueryComparison[C, A] = QueryComparisonValueBinOp(a, b, LessThan)
-    def <=(b: QueryValue[A, B]): QueryComparison[C, A] = QueryComparisonValueBinOp(a, b, LessThanOrEqual)
-    def ===(b: QueryValue[A, B]): QueryComparison[C, A] = QueryComparisonValueBinOp(a, b, Equal)
-    def !==(b: QueryValue[A, B]): QueryComparison[C, A] = QueryNot(QueryEqual(a, b))
-    def <>(b: QueryValue[A, B]): QueryComparison[C, A] = this !== b
+    def >(b: A[Indicies.Value]): QueryComparison[T, A] = QueryComparisonValueBinOp(a, b, GreaterThan)
+    def >=(b: A[Indicies.Value]): QueryComparison[T, A]= QueryComparisonValueBinOp(a, b, GreaterThanOrEqual)
+    def <(b: A[Indicies.Value]): QueryComparison[T, A] = QueryComparisonValueBinOp(a, b, LessThan)
+    def <=(b: A[Indicies.Value]): QueryComparison[T, A] = QueryComparisonValueBinOp(a, b, LessThanOrEqual)
+    def ===(b: A[Indicies.Value]): QueryComparison[T, A] = QueryComparisonValueBinOp(a, b, Equal)
+    def !==[F[_[_[_], _], _]](b: A[Indicies.Value])(implicit liftH: LiftH[F]): QueryComparison[T, A] =
+      QueryNot(liftH.lift(this === b))
+    def <>[F[_[_[_], _], _]](b: A[Indicies.Value])(implicit liftH: LiftH[F]): QueryComparison[T, A] = this !== b
 
     import QueryValueArithmeticOperator._
-    def +(b: QueryValue[A, B]): QueryValue[A, B] = QueryValueBinOp(a, b, Add)
-    def -(b: QueryValue[A, B]): QueryValue[A, B] = QueryValueBinOp(a, b, Subtract)
-    def /(b: QueryValue[A, B]): QueryValue[A, B] = QueryValueBinOp(a, b, Divide)
-    def *(b: QueryValue[A, B]): QueryValue[A, B] = QueryValueBinOp(a, b, Multiply)
+    def +(b: QueryValue[T, A]): QueryValue[T, A] = QueryValueBinOp(a, b, Add)
+    def -(b: QueryValue[T, A]): QueryValue[T, A] = QueryValueBinOp(a, b, Subtract)
+    def /(b: QueryValue[T, A]): QueryValue[T, A] = QueryValueBinOp(a, b, Divide)
+    def *(b: QueryValue[T, A]): QueryValue[T, A] = QueryValueBinOp(a, b, Multiply)
 
-    def in(values: QueryValue[A, B]*): QueryComparison[C, A] = QueryIn(a, values.toList)
-    def notIn(values: QueryValue[A, B]*): QueryComparison[C, A] = QueryNot(QueryIn(a, values.toList))
+    def in(values: QueryValue[T, A]*): QueryComparison[C, A] = QueryIn(a, values.toList)
+    def notIn(values: QueryValue[T, A]*): QueryComparison[C, A] = QueryNot(QueryIn(a, values.toList))
 
-    def as(alias: String): QueryProjection[QueryValue[A, B]] = QueryProjectOne(a, Some(alias))
+    def as(alias: String): QueryProjection[QueryValue[T, A]] = QueryProjectOne(a, Some(alias))
   }
 
   class SqlQueryFunctionBuilder(val f: QueryPath) {
-    def apply[A, B](params: QueryValue[A, B]*): QueryFunction[QueryValue[A, B], B] = QueryFunction(f, params.toList)
+    def apply[A, B](params: QueryValue[T, A]*): QueryFunction[QueryValue[T, A], B] = QueryFunction(f, params.toList)
   }
 
   class SqlDslStringInterpolators(val ctx: StringContext) {
