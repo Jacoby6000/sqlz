@@ -143,7 +143,7 @@ object ast {
   case class QueryUpdate[T, A[_]](collection: Path, values: List[A[ModifyFieldI]], where: A[Comparison]) extends Query[T, A, Unit]
   case class QueryDelete[T, A[_]](collection: Path, where: A[Comparison]) extends Query[T, A, Unit]
 
-  type ANSIQuery[T] = {
+  type QueryAST[T] = {
     type of[A[_], I] = Query[T, A, I]
     type fixed[I] = HFix[of, I]
   }
@@ -152,16 +152,28 @@ object ast {
 
 object cata {
   import ast._
-  
+
   trait LiftH[F[_[_[_], _], _]] {
     def lift[G[_[_], _], I](g: G[F[G, ?], I]): F[G, I]
   }
-  
+
+  trait LiftAST[A[_], G[_[_], _]] {
+    def lift[I](g: G[A, I]): A[I]
+  }
+
+  implicit def hfixLiftQuery[G[_[_], _]]: LiftAST[HFix[G, ?], G] =
+    new LiftAST[HFix[G, ?], G] {
+      def lift[I](g: G[HFix[G, ?], I]): HFix[G, I] = HFix(g)
+    }
+
   case class HFix[F[_[_], _], A](unfix: F[HFix[F, ?], A])
 
-  implicit val hfixLift: LiftH[HFix] = new LiftH[HFix] {
+
+  implicit val hfixLiftH: LiftH[HFix] = new LiftH[HFix] {
     def lift[G[_[_], _], I](g: G[HFix[G, ?], I]): HFix[G, I] = HFix(g)
   }
+
+  type LiftQueryAST[T, A[_]] = LiftAST[A, QueryAST[T]#of]
 
   type Algebra[F[_[_], _], E[_]] = F[E, ?] ~> E
 
@@ -198,7 +210,7 @@ object cata {
       }
   }
 
-  implicit def queryHFunctor[T]: HFunctor[ANSIQuery[T]#of] = new HFunctor[ANSIQuery[T]#of] {
+  implicit def queryHFunctor[T]: HFunctor[QueryAST[T]#of] = new HFunctor[QueryAST[T]#of] {
     def hmap[F[_], G[_]](f: F ~> G) = new (Query[T, F, ?] ~> Query[T, G, ?]) {
       def apply[I](fa: Query[T, F, I]): Query[T, G, I] =
         fa match {

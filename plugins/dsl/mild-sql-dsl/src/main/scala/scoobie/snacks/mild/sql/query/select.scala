@@ -1,73 +1,74 @@
 package scoobie.snacks.mild.sql.query
 
 import scoobie.ast._
+import scoobie.cata._
 
 /**
   * Created by jacob.barber on 5/24/16.
   */
 trait select {
   object SelectBuilderBuilder {
-    def apply[T, A[_]](projections: QueryProjection[T, A]*): SelectBuilder[T, A] = SelectBuilder(projections.toList)
+    def apply[T, A[_]](projections: A[Indicies.Projection]*): SelectBuilder[T, A] = SelectBuilder(projections.toList)
   }
 
-  case class SelectBuilder[T, A[_]](projections: List[QueryProjection[T, A]]) {
-    def from(path: QueryProjectOne[T, A]) =
-      QuerySelect[T, A](path, projections, List.empty, QueryComparisonNop[T, A], List.empty, List.empty, None, None)
+  case class SelectBuilder[T, A[_]](projections: List[A[Indicies.Projection]]) {
+    def from(path: A[Indicies.ProjectOneI])(implicit lifter: LiftQueryAST[T, A]) =
+      QuerySelect[T, A](path, projections, List.empty, lifter.lift(ComparisonNop[T, A]), List.empty, List.empty, None, None)
   }
 
   class QuerySelectExtensions[T, A[_]](select: QuerySelect[T, A]) {
-    import JoinOp._
-    def leftOuterJoin(projection: QueryProjection[A]): JoinBuilder[A, B, C] =
-      JoinBuilder(select, QueryJoin(projection, _, LeftOuter))
+    import JoinOperators._
+    def leftOuterJoin(projection: A[Indicies.ProjectOneI]): JoinBuilder[T, A] =
+      JoinBuilder[T, A](select, QueryJoin(projection, _: A[Indicies.Comparison], LeftOuter))
 
-    def rightOuterJoin(projection: QueryProjection[A]): JoinBuilder[A, B, C] =
-      JoinBuilder(select, QueryJoin(projection, _, RightOuter))
+    def rightOuterJoin(projection: A[Indicies.ProjectOneI]): JoinBuilder[T, A] =
+      JoinBuilder[T, A](select, QueryJoin(projection, _: A[Indicies.Comparison], RightOuter))
 
-    def innerJoin(projection: QueryProjection[A]): JoinBuilder[A, B, C] =
-      JoinBuilder(select, QueryJoin(projection, _, Inner))
+    def innerJoin(projection: A[Indicies.ProjectOneI]): JoinBuilder[T, A] =
+      JoinBuilder[T, A](select, QueryJoin(projection, _: A[Indicies.Comparison], Inner))
 
-    def crossJoin(projection: QueryProjection[A]): JoinBuilder[A, B, C] =
-      JoinBuilder(select, QueryJoin(projection, _, Cartesian))
+    def crossJoin(projection: A[Indicies.ProjectOneI]): JoinBuilder[T, A] =
+      JoinBuilder[T, A](select, QueryJoin(projection, _: A[Indicies.Comparison], Cartesian))
 
-    def fullOuterJoin(projection: QueryProjection[A]): JoinBuilder[A, B, C] =
-      JoinBuilder(select, QueryJoin(projection, _, FullOuter))
+    def fullOuterJoin(projection: A[Indicies.ProjectOneI]): JoinBuilder[T, A] =
+      JoinBuilder[T, A](select, QueryJoin(projection, _: A[Indicies.Comparison], FullOuter))
 
-    def where(queryComparison: QueryComparison[C, A]): QuerySelect[T, A] = {
-      select.copy(filter = QueryComparisonBinOp(select.filter, queryComparison, QueryComparisonOperator.And))
+    def where(queryComparison: A[Indicies.Comparison])(implicit lifter: LiftQueryAST[T, A]): QuerySelect[T, A] = {
+      select.copy(filter = lifter.lift(ComparisonBinOp(select.filter, queryComparison, ComparisonOperators.And)))
     }
 
-    def leftOuterJoin(tup: (QueryProjection[A], QueryComparison[C, A])): QuerySelect[T, A] =
-      select.copy(joins = select.joins :+ QueryJoin(tup._1, tup._2, LeftOuter))
+    def leftOuterJoin(tup: (A[Indicies.ProjectOneI], A[Indicies.Comparison]))(implicit lifter: LiftQueryAST[T, A]): QuerySelect[T, A] =
+      select.copy(joins = select.joins :+ lifter.lift(QueryJoin(tup._1, tup._2, LeftOuter)))
 
-    def rightOuterJoin(tup: (QueryProjection[A], QueryComparison[C, A])): QuerySelect[T, A] =
-      select.copy(joins = select.joins :+ QueryJoin(tup._1, tup._2, RightOuter))
+    def rightOuterJoin(tup: (A[Indicies.ProjectOneI], A[Indicies.Comparison]))(implicit lifter: LiftQueryAST[T, A]): QuerySelect[T, A] =
+      select.copy(joins = select.joins :+ lifter.lift(QueryJoin(tup._1, tup._2, RightOuter)))
 
-    def innerJoin(tup: (QueryProjection[A], QueryComparison[C, A])): QuerySelect[T, A] =
-      select.copy(joins = select.joins :+ QueryJoin(tup._1, tup._2, Inner))
+    def innerJoin(tup: (A[Indicies.ProjectOneI], A[Indicies.Comparison]))(implicit lifter: LiftQueryAST[T, A]): QuerySelect[T, A] =
+      select.copy(joins = select.joins :+ lifter.lift(QueryJoin(tup._1, tup._2, Inner)))
 
-    def crossJoin(tup: (QueryProjection[A], QueryComparison[C, A])): QuerySelect[T, A] =
-      select.copy(joins = select.joins :+ QueryJoin(tup._1, tup._2, Cartesian))
+    def crossJoin(tup: (A[Indicies.ProjectOneI], A[Indicies.Comparison]))(implicit lifter: LiftQueryAST[T, A]): QuerySelect[T, A] =
+      select.copy(joins = select.joins :+ lifter.lift(QueryJoin(tup._1, tup._2, Cartesian)))
 
-    def fullOuterJoin(tup: (QueryProjection[A], QueryComparison[C, A])): QuerySelect[T, A] =
-      select.copy(joins = select.joins :+ QueryJoin(tup._1, tup._2, FullOuter))
+    def fullOuterJoin(tup: (A[Indicies.ProjectOneI], A[Indicies.Comparison]))(implicit lifter: LiftQueryAST[T, A]): QuerySelect[T, A] =
+      select.copy(joins = select.joins :+ lifter.lift(QueryJoin(tup._1, tup._2, FullOuter)))
 
-    def orderBy(sorts: QuerySort*) = select.copy(sorts = select.sorts ++ sorts.toList)
-    def groupBy(groups: QuerySort*) = select.copy(groupings = select.groupings ++ groups.toList)
+    def orderBy(sorts: Sort*) = select.copy(sorts = select.sorts ++ sorts.toList)
+    def groupBy(groups: Sort*) = select.copy(groupings = select.groupings ++ groups.toList)
 
     def offset(n: Long): QuerySelect[T, A] = select.copy(offset = Some(n))
     def limit(n: Long): QuerySelect[T, A] = select.copy(limit = Some(n))
 
-    def as(alias: String): QueryProjection[QueryValue[A, B]] = QueryProjectOne(select.build, Some(alias))
+    def as(alias: String)(implicit lifter: LiftQueryAST[T, A]): ProjectOne[T, A] = ProjectOne(lifter.lift(select), Some(alias))
   }
 
-  case class JoinBuilder[T, A[_]](query: QuerySelect[T, A], f: A[Indicies.Comparison] => A[Indicies.Join]) {
-    def on(where: A[Indicies.Comparison]): QuerySelect[T, A] = query.copy(joins = query.joins :+ f(where))
+  case class JoinBuilder[T, A[_]](query: QuerySelect[T, A], f: A[Indicies.Comparison] => QueryJoin[T, A]) {
+    def on(where: A[Indicies.Comparison])(implicit lifter: LiftQueryAST[T, A]): QuerySelect[T, A] =
+      query.copy(joins = query.joins :+ lifter.lift(f(where)))
   }
 
-  class QuerySortBuilder(val f: QueryPath) {
-    def asc: QuerySort = QuerySort(f, SortType.Ascending)
-    def desc: QuerySort = QuerySort(f, SortType.Descending)
+  class QuerySortBuilder(val f: Path) {
+    def asc: Sort = Sort(f, SortType.Ascending)
+    def desc: Sort = Sort(f, SortType.Descending)
   }
-
 
 }
