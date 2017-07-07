@@ -96,7 +96,8 @@ object ast {
   type QueryProjection[T, A[_]] = Query[T, A, Projection]
   type QueryProjectOne[T, A[_]] = Query[T, A, ProjectOneI]
 
-  case class ProjectOne[T, A[_]](selection: A[Value], alias: Option[String]) extends QueryProjectOne[T, A]
+  case class ProjectOne[T, A[_]](selection: A[Value]) extends QueryProjectOne[T, A]
+  case class ProjectAlias[T, A[_]](selection: A[ProjectOneI], alias: String) extends QueryProjectOne[T, A]
   class ProjectAll[T, A[_]] extends Query[T, A, Projection] {
     override def equals(obj: scala.Any): Boolean = obj match {
       case _: ProjectAll[_, _] => true
@@ -161,13 +162,10 @@ object cata {
     def lift[I](g: G[A, I]): A[I]
   }
 
-  implicit def hfixLiftQuery[G[_[_], _]]: LiftAST[HFix[G, ?], G] =
+  def hfixLiftQuery[G[_[_], _]]: LiftAST[HFix[G, ?], G] =
     new LiftAST[HFix[G, ?], G] {
       def lift[I](g: G[HFix[G, ?], I]): HFix[G, I] = HFix(g)
     }
-
-  case class HFix[F[_[_], _], A](unfix: F[HFix[F, ?], A])
-
 
   implicit val hfixLiftH: LiftH[HFix] = new LiftH[HFix] {
     def lift[G[_[_], _], I](g: G[HFix[G, ?], I]): HFix[G, I] = HFix(g)
@@ -227,7 +225,8 @@ object cata {
           case Not(v) => Not(f(v))
           case _: ComparisonNop[_, _] => ComparisonNop[T, G]
 
-          case ProjectOne(value, alias) => ProjectOne(f(value), alias)
+          case ProjectOne(value) => ProjectOne(f(value))
+          case ProjectAlias(value, alias) => ProjectAlias(f(value), alias)
           case _: ProjectAll[_, _] => ProjectAll[T, G]
 
           case QueryJoin(projection, on, op) => QueryJoin(f(projection), f(on), op)

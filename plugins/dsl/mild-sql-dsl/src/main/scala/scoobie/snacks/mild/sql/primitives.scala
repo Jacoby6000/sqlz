@@ -7,20 +7,22 @@ import scoobie.coercion._
 /**
   * Created by jacob.barber on 5/24/16.
   */
-trait primitives {
+trait primitives[T, A[_]] {
 
-  def not[T, A[_]](queryComparison: A[Indicies.Comparison])(implicit coercion: Coerce[T, A]): QueryComparison[T, A] =
+  def lifter: LiftQueryAST[T, A]
+
+  def not(queryComparison: A[Indicies.Comparison]): QueryComparison[T, A] =
     Not(queryComparison)
 
-  class QueryValueExtensions[T, A[_]](val a: A[Indicies.Value])(implicit coercion: Coerce[T, A]) {
+  class QueryValueExtensions(val a: A[Indicies.Value]) {
     import ComparisonValueOperators._
     def >(b: A[Indicies.Value]): QueryComparison[T, A] = ComparisonValueBinOp(a, b, GreaterThan)
     def >=(b: A[Indicies.Value]): QueryComparison[T, A]= ComparisonValueBinOp(a, b, GreaterThanOrEqual)
     def <(b: A[Indicies.Value]): QueryComparison[T, A] = ComparisonValueBinOp(a, b, LessThan)
     def <=(b: A[Indicies.Value]): QueryComparison[T, A] = ComparisonValueBinOp(a, b, LessThanOrEqual)
     def ===(b: A[Indicies.Value]): QueryComparison[T, A] = ComparisonValueBinOp(a, b, Equal)
-    def !==(b: A[Indicies.Value])(implicit lifter: LiftQueryAST[T, A]): QueryComparison[T, A] = not(lifter.lift(this === b))
-    def <>(b: A[Indicies.Value])(implicit lifter: LiftQueryAST[T, A]): QueryComparison[T, A] = this !== b
+    def !==(b: A[Indicies.Value]): QueryComparison[T, A] = not(lifter.lift(this === b))
+    def <>(b: A[Indicies.Value]): QueryComparison[T, A] = this !== b
 
     import ValueOperators._
     def +(b: A[Indicies.Value]): QueryValue[T, A] = ValueBinOp(a, b, Add)
@@ -29,14 +31,15 @@ trait primitives {
     def *(b: A[Indicies.Value]): QueryValue[T, A] = ValueBinOp(a, b, Multiply)
 
     def in(values: A[Indicies.Value]*): QueryComparison[T, A] = In(a, values.toList)
-    def notIn(values: A[Indicies.Value]*)(implicit lifter: LiftQueryAST[T, A]): QueryComparison[T, A] =
+    def notIn(values: A[Indicies.Value]*): QueryComparison[T, A] =
       not(lifter.lift(this.in(values: _*)))
 
-    def as(alias: String): ProjectOne[T, A] = ProjectOne(a, Some(alias))
+    def as(alias: String): ProjectAlias[T, A] =
+      ProjectAlias(lifter.lift(ProjectOne(a)), alias)
   }
 
   class SqlQueryFunctionBuilder(val f: Path) {
-    def apply[T, A[_]](params: A[Indicies.Value]*): QueryValue[T, A] = Function(f, params.toList)
+    def apply(params: A[Indicies.Value]*): QueryValue[T, A] = Function(f, params.toList)
   }
 
   class SqlDslStringInterpolators(val ctx: StringContext) {
@@ -53,12 +56,13 @@ trait primitives {
     def func(): SqlQueryFunctionBuilder = new SqlQueryFunctionBuilder(p())
   }
 
-  class QueryProjectionExtensions[T, A[_]](val a: ProjectOne[T, A]) {
-    def as(alias: String): QueryProjectOne[T, A] = ProjectOne[T, A](a.selection, Some(alias))
-    def on[B](comparison: QueryComparison[T, A]): (QueryProjection[T, A], QueryComparison[T, A]) = (a, comparison)
+  class QueryProjectionExtensions(val a: A[Indicies.ProjectOneI]) {
+    def as(alias: String): ProjectAlias[T, A] = ProjectAlias[T, A](a, alias)
+    def on(comparison: A[Indicies.Comparison]): (A[Indicies.ProjectOneI], A[Indicies.Comparison]) =
+      (a, comparison)
   }
 
-  class QueryComparisonExtensions[T, A[_]](val left: A[Indicies.Comparison]){
+  class QueryComparisonExtensions(val left: A[Indicies.Comparison]){
     import ComparisonOperators._
     def and(right: A[Indicies.Comparison]) = ComparisonBinOp(left, right, And)
     def or(right: A[Indicies.Comparison]) = ComparisonBinOp(left, right, Or)
