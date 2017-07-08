@@ -18,7 +18,6 @@ object ScoobieUtil {
   lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.10"
   lazy val specs = "org.specs2" %% "specs2-core" % "3.8.8" % "test,it"
   lazy val doobieSpecs = "org.tpolecat" %% "doobie-specs2"
-  lazy val coreSnapshot = "com.github.jacoby6000" %% "scoobie-core" % "0.3.2-SNAPSHOT"
   lazy val publishAllSigned = taskKey[Unit]("Publish all (run with +publishAll for crossbuilds)")
 
   lazy val noPublishSettings = Seq(
@@ -29,7 +28,7 @@ object ScoobieUtil {
 
 
   lazy val buildSettings = Seq(
-    scalaVersion := "2.12.2",
+    scalaVersion := "2.12.2-SNAPSHOT",
     organization := "com.github.jacoby6000",
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     crossScalaVersions := Seq("2.11.11", scalaVersion.value),

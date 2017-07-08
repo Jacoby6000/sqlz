@@ -82,7 +82,7 @@ class SqlSpec extends Specification with SqlDSLTestHelper {
   Query Projection Extensions
     As         $projectionAs
     On         $projectionOn
-""" /*
+
   Query Builder
     Basic Builder                    $basicBuilder
     From Subquery                    $fromSubquery
@@ -104,7 +104,7 @@ class SqlSpec extends Specification with SqlDSLTestHelper {
     Cross Join Builder               $crossJoinBuilder
     Inner Join Subquery              $innerJoinSubquery
     Inner Join Builder Subquery      $innerJoinBuilderSubquery
-    """ */
+    """
 
   lazy val queryPathInterpolator = {
     p"foo" mustEqual PathEnd("foo")
@@ -177,7 +177,7 @@ class SqlSpec extends Specification with SqlDSLTestHelper {
     projectAll mustEqual ProjectAll[String, AST]
   }
 
-  lazy val projectionOn = (simpleProjection as "t" on simpleEquals) mustEqual ((simpleProjection as "t") -> simpleEquals)
+  lazy val projectionOn = (simpleProjection as "t" on simpleEquals) mustEqual (HFix(simpleProjection as "t") -> HFix(simpleEquals))
 
   lazy val pathAs = {
     (p"foo" as "bar") mustEqual ProjectAlias[String, AST](HFix(ProjectOne[String, AST](HFix(PathValue[String, AST](PathEnd("foo"))))), "bar")
@@ -187,7 +187,7 @@ class SqlSpec extends Specification with SqlDSLTestHelper {
 
   val manualTable = HFix(ProjectOne[String, AST](PathEnd("baz")))
   val manualColumns: List[AST[Projection]] = List(HFix(ProjectOne[String, AST](PathEnd("foo"))), HFix(ProjectOne[String, AST](PathEnd("bar"))))
-  val manualBaseQuery = QuerySelect[String, AST](manualTable, manualColumns, List.empty, ComparisonNop[String, AST], List.empty, List.empty, None, None)
+  val manualBaseQuery = QuerySelect[String, AST](manualTable, manualColumns, List.empty, HFix(ComparisonNop[String, AST]), List.empty, List.empty, None, None)
 
   val baseQuery = select(p"foo", p"bar") from p"baz"
 
@@ -197,7 +197,7 @@ class SqlSpec extends Specification with SqlDSLTestHelper {
   val selectFromSub = select(p"foo", p"bar") from (select(p"foo", p"bar") from p"baz")
 
   lazy val fromSubquery = selectFromSub mustEqual (
-    QuerySelect(manualBaseQuery, manualColumns, List.empty, ComparisonNop[String, AST], List.empty, List.empty, None, None)
+    QuerySelect(HFix(ProjectOne[String, AST](HFix(manualBaseQuery))), manualColumns, List.empty, HFix(ComparisonNop[String, AST]), List.empty, List.empty, None, None)
   )
 
   val scalarSubquery = select(baseQuery) from p"baz"
@@ -206,14 +206,14 @@ class SqlSpec extends Specification with SqlDSLTestHelper {
     QuerySelect[String, AST](
       manualTable,
       (HFix(ProjectOne[String, AST](HFix(manualBaseQuery))): AST[Projection]) :: Nil,
-      List.empty, ComparisonNop[String, AST], List.empty, List.empty, None, None
+      List.empty, HFix(ComparisonNop[String, AST]), List.empty, List.empty, None, None
     )
   )
-  lazy val offsetTest = (baseQuery offset 5L) mustEqual (
+  lazy val offset = (baseQuery offset 5L) mustEqual (
     manualBaseQuery.copy(offset = Some(5))
   )
 
-  lazy val limitTest = (baseQuery limit 5) mustEqual manualBaseQuery.copy(limit = Some(5))
+  lazy val limit = (baseQuery limit 5) mustEqual manualBaseQuery.copy(limit = Some(5))
 
   lazy val offsetAndLimit = (baseQuery offset 5 limit 5) mustEqual manualBaseQuery.copy(limit = Some(5), offset = Some(5))
 
@@ -224,18 +224,18 @@ class SqlSpec extends Specification with SqlDSLTestHelper {
 
   val joinTable = p"inner"
   val joinCondition: QueryComparison[String, AST] = p"whatever" <> `null`
-/*
+
   lazy val innerJoinBuilder = (baseQuery innerJoin joinTable on joinCondition) mustEqual (
     manualBaseQuery.copy(joins =
       List(
-        HFix(Join(
-          HFix(ProjectOne(
+        HFix(QueryJoin[String, AST](
+          HFix(ProjectOne[String, AST](
             PathEnd("inner")
           )),
-          HFix(Not(
-            HFix(QueryComparisonBinOp(
-              HFix(PathValue(PathEnd("whatever"))),
-              HFix(QueryNull[String, AST]),
+          HFix(Not[String, AST](
+            HFix(ComparisonValueBinOp[String, AST](
+              HFix(PathValue[String, AST](PathEnd("whatever"))),
+              HFix(Null[String, AST]),
               Equal
             ))
           )),
@@ -245,17 +245,18 @@ class SqlSpec extends Specification with SqlDSLTestHelper {
     )
   )
 
+
   lazy val leftOuterJoinBuilder = (baseQuery leftOuterJoin joinTable on joinCondition) mustEqual (
     manualBaseQuery.copy(joins =
       List(
-        HFix(Join(
-          HFix(ProjectOne(
+        HFix(QueryJoin[String, AST](
+          HFix(ProjectOne[String, AST](
             PathEnd("inner")
           )),
-          HFix(Not(
-            HFix(QueryComparisonBinOp(
-              HFix(PathValue(PathEnd("whatever"))),
-              HFix(QueryNull[String, AST]),
+          HFix(Not[String, AST](
+            HFix(ComparisonValueBinOp[String, AST](
+              HFix(PathValue[String, AST](PathEnd("whatever"))),
+              HFix(Null[String, AST]),
               Equal
             ))
           )),
@@ -269,14 +270,14 @@ class SqlSpec extends Specification with SqlDSLTestHelper {
   lazy val rightOuterJoinBuilder = (baseQuery rightOuterJoin joinTable on joinCondition) mustEqual (
     manualBaseQuery.copy(joins =
       List(
-        HFix(Join(
-          HFix(ProjectOne(
+        HFix(QueryJoin[String, AST](
+          HFix(ProjectOne[String, AST](
             PathEnd("inner")
           )),
-          HFix(Not(
-            HFix(QueryComparisonBinOp(
-              HFix(PathValue(PathEnd("whatever"))),
-              HFix(QueryNull[String, AST]),
+          HFix(Not[String, AST](
+            HFix(ComparisonValueBinOp[String, AST](
+              HFix(PathValue[String, AST](PathEnd("whatever"))),
+              HFix(Null[String, AST]),
               Equal
             ))
           )),
@@ -289,14 +290,14 @@ class SqlSpec extends Specification with SqlDSLTestHelper {
   lazy val fullOuterJoinBuilder = (baseQuery fullOuterJoin joinTable on joinCondition) mustEqual (
     manualBaseQuery.copy(joins =
       List(
-        HFix(Join(
-          HFix(ProjectOne(
+        HFix(QueryJoin[String, AST](
+          HFix(ProjectOne[String, AST](
             PathEnd("inner")
           )),
-          HFix(Not(
-            HFix(QueryComparisonBinOp(
-              HFix(PathValue(PathEnd("whatever"))),
-              HFix(QueryNull[String, AST]),
+          HFix(Not[String, AST](
+            HFix(ComparisonValueBinOp[String, AST](
+              HFix(PathValue[String, AST](PathEnd("whatever"))),
+              HFix(Null[String, AST]),
               Equal
             ))
           )),
@@ -309,14 +310,14 @@ class SqlSpec extends Specification with SqlDSLTestHelper {
   lazy val crossJoinBuilder = (baseQuery crossJoin joinTable on joinCondition) mustEqual (
     manualBaseQuery.copy(joins =
       List(
-        HFix(Join(
-          HFix(ProjectOne(
+        HFix(QueryJoin[String, AST](
+          HFix(ProjectOne[String, AST](
             PathEnd("inner")
           )),
-          HFix(Not(
-            HFix(QueryComparisonBinOp(
-              HFix(PathValue(PathEnd("whatever"))),
-              HFix(QueryNull[String, AST]),
+          HFix(Not[String, AST](
+            HFix(ComparisonValueBinOp[String, AST](
+              HFix(PathValue[String, AST](PathEnd("whatever"))),
+              HFix(Null[String, AST]),
               Equal
             ))
           )),
@@ -325,113 +326,153 @@ class SqlSpec extends Specification with SqlDSLTestHelper {
       )
     )
   )
-}
 
-  val join = ProjectOne(PathEnd("inner"), None) on (PathEnd("whatever") <> `null`)
+  val join = p"inner" on (p"whatever" <> `null`)
 
   lazy val innerJoin = (baseQuery innerJoin join) mustEqual (
-    Select(
-      ProjectOne(PathEnd("baz"), None),
-      ProjectOne(PathEnd("foo"), None) ::
-      ProjectOne(PathEnd("bar"), None) ::
-      Nil,
-      (InnerJoin(ProjectOne(PathEnd("inner"), None), PathEnd("whatever") <> `null`)) :: Nil,
-      ComparisonNop,
-      List.empty,
-      List.empty,
-      None,
-      None
+    manualBaseQuery.copy(joins =
+      List(
+        HFix(QueryJoin[String, AST](
+          HFix(ProjectOne[String, AST](
+            PathEnd("inner")
+          )),
+          HFix(Not[String, AST](
+            HFix(ComparisonValueBinOp[String, AST](
+              HFix(PathValue[String, AST](PathEnd("whatever"))),
+              HFix(Null[String, AST]),
+              Equal
+            ))
+          )),
+          Inner
+        ))
+      )
     )
   )
 
   lazy val leftOuterJoin = (baseQuery leftOuterJoin join) mustEqual (
-    Select(
-      ProjectOne(PathEnd("baz"), None),
-      ProjectOne(PathEnd("foo"), None) ::
-      ProjectOne(PathEnd("bar"), None) ::
-      Nil,
-      (LeftOuterJoin(ProjectOne(PathEnd("inner"), None), PathEnd("whatever") <> `null`)) :: Nil,
-      ComparisonNop,
-      List.empty,
-      List.empty,
-      None,
-      None
+    manualBaseQuery.copy(joins =
+      List(
+        HFix(QueryJoin[String, AST](
+          HFix(ProjectOne[String, AST](
+            PathEnd("inner")
+          )),
+          HFix(Not[String, AST](
+            HFix(ComparisonValueBinOp[String, AST](
+              HFix(PathValue[String, AST](PathEnd("whatever"))),
+              HFix(Null[String, AST]),
+              Equal
+            ))
+          )),
+          LeftOuter
+        ))
+      )
     )
   )
 
   lazy val rightOuterJoin = (baseQuery rightOuterJoin join) mustEqual (
-    Select(
-      ProjectOne(PathEnd("baz"), None),
-      ProjectOne(PathEnd("foo"), None) ::
-      ProjectOne(PathEnd("bar"), None) ::
-      Nil,
-      RightOuterJoin(ProjectOne(PathEnd("inner"), None), PathEnd("whatever") <> `null`) :: Nil,
-      ComparisonNop,
-      List.empty,
-      List.empty,
-      None,
-      None
+    manualBaseQuery.copy(joins =
+      List(
+        HFix(QueryJoin[String, AST](
+          HFix(ProjectOne[String, AST](
+            PathEnd("inner")
+          )),
+          HFix(Not[String, AST](
+            HFix(ComparisonValueBinOp[String, AST](
+              HFix(PathValue[String, AST](PathEnd("whatever"))),
+              HFix(Null[String, AST]),
+              Equal
+            ))
+          )),
+          RightOuter
+        ))
+      )
     )
   )
 
+
   lazy val fullOuterJoin = (baseQuery fullOuterJoin join) mustEqual (
-    Select(
-      ProjectOne(PathEnd("baz"), None),
-      ProjectOne(PathEnd("foo"), None) ::
-      ProjectOne(PathEnd("bar"), None) ::
-      Nil,
-      FullOuterJoin(ProjectOne(PathEnd("inner"), None), PathEnd("whatever") <> `null`) :: Nil,
-      ComparisonNop,
-      List.empty,
-      List.empty,
-      None,
-      None
+    manualBaseQuery.copy(joins =
+      List(
+        HFix(QueryJoin[String, AST](
+          HFix(ProjectOne[String, AST](
+            PathEnd("inner")
+          )),
+          HFix(Not[String, AST](
+            HFix(ComparisonValueBinOp[String, AST](
+              HFix(PathValue[String, AST](PathEnd("whatever"))),
+              HFix(Null[String, AST]),
+              Equal
+            ))
+          )),
+          FullOuter
+        ))
+      )
     )
   )
 
   lazy val crossJoin = (baseQuery crossJoin join) mustEqual (
-    Select(
-      ProjectOne(PathEnd("baz"), None),
-      ProjectOne(PathEnd("foo"), None) ::
-      ProjectOne(PathEnd("bar"), None) ::
-      Nil,
-      CrossJoin(ProjectOne(PathEnd("inner"), None), PathEnd("whatever") <> `null`) :: Nil,
-      ComparisonNop,
-      List.empty,
-      List.empty,
-      None,
-      None
+    manualBaseQuery.copy(joins =
+      List(
+        HFix(QueryJoin[String, AST](
+          HFix(ProjectOne[String, AST](
+            PathEnd("inner")
+          )),
+          HFix(Not[String, AST](
+            HFix(ComparisonValueBinOp[String, AST](
+              HFix(PathValue[String, AST](PathEnd("whatever"))),
+              HFix(Null[String, AST]),
+              Equal
+            ))
+          )),
+          Cartesian
+        ))
+      )
     )
   )
 
+
   lazy val innerJoinSubquery = (baseQuery innerJoin ((baseQuery as "foo") on joinCondition)) mustEqual (
-    Select(
-      ProjectOne(PathEnd("baz"), None),
-      ProjectOne(PathEnd("foo"), None) ::
-      ProjectOne(PathEnd("bar"), None) ::
-      Nil,
-      (InnerJoin(ProjectOne(baseQuery, Some("foo")), PathEnd("whatever") <> `null`)) :: Nil,
-      ComparisonNop,
-      List.empty,
-      List.empty,
-      None,
-      None
+    manualBaseQuery.copy(joins =
+      List(
+        HFix(QueryJoin[String, AST](
+          HFix(ProjectAlias[String, AST](
+            HFix(ProjectOne[String, AST](
+              manualBaseQuery
+            )),
+            "foo"
+          )),
+          HFix(Not[String, AST](
+            HFix(ComparisonValueBinOp[String, AST](
+              HFix(PathValue[String, AST](PathEnd("whatever"))),
+              HFix(Null[String, AST]),
+              Equal
+            ))
+          )),
+          Inner
+        ))
+      )
     )
   )
 
   lazy val innerJoinBuilderSubquery = (baseQuery innerJoin baseQuery on joinCondition) mustEqual (
-    Select(
-      ProjectOne(PathEnd("baz"), None),
-      ProjectOne(PathEnd("foo"), None) ::
-      ProjectOne(PathEnd("bar"), None) ::
-      Nil,
-      (InnerJoin(ProjectOne(baseQuery, None), PathEnd("whatever") <> `null`)) :: Nil,
-      ComparisonNop,
-      List.empty,
-      List.empty,
-      None,
-      None
+    manualBaseQuery.copy(joins =
+      List(
+        HFix(QueryJoin[String, AST](
+          HFix(ProjectOne[String, AST](
+            manualBaseQuery
+          )),
+          HFix(Not[String, AST](
+            HFix(ComparisonValueBinOp[String, AST](
+              HFix(PathValue[String, AST](PathEnd("whatever"))),
+              HFix(Null[String, AST]),
+              Equal
+            ))
+          )),
+          Inner
+        ))
+      )
     )
   )
-*/
+
+
 }

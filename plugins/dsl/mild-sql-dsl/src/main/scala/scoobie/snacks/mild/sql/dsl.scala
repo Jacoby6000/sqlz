@@ -30,11 +30,20 @@ trait dsl[T, A[_]] extends query.modify[T, A] with query.select[T, A] with primi
   implicit def sqlComparisonExtensions(a: QueryComparison[T, A]): QueryComparisonExtensions =
     new QueryComparisonExtensions(lifter.lift(a))
 
+  implicit def pathToProjectionExtensions(p: Path): QueryProjectionExtensions =
+    new QueryProjectionExtensions(pathToQueryProjectOneI(p))
+
   implicit def sqlProjectionExtensionsA(a: A[Indicies.ProjectOneI]): QueryProjectionExtensions =
     new QueryProjectionExtensions(a)
 
   implicit def sqlProjectOneExtensions(a: ProjectOne[T, A]): QueryProjectionExtensions =
     new QueryProjectionExtensions(lifter.lift(a))
+
+  implicit def valueToProjectionExtensions(v: QueryValue[T, A]): QueryProjectionExtensions =
+    new QueryProjectionExtensions(liftQueryValueToProjectOneI(v))
+
+  implicit def valueASTToProjectionExtensions(v: A[Indicies.Value]): QueryProjectionExtensions =
+    new QueryProjectionExtensions(valueToQueryProjectOneI(v))
 
   implicit def sqlProjectAliasExtensions(a: ProjectAlias[T, A]): QueryProjectionExtensions =
     new QueryProjectionExtensions(lifter.lift(a))
@@ -42,8 +51,12 @@ trait dsl[T, A[_]] extends query.modify[T, A] with query.select[T, A] with primi
   implicit def sqlModifyFieldBuilder(a: Path): ModifyFieldBuilder =
     ModifyFieldBuilder(a)
 
+
   implicit def sqlSortBuilder(a: Path): QuerySortBuilder =
     new QuerySortBuilder(a)
+
+  implicit def querySelectExtensions(querySelect: QuerySelect[T, A]): QuerySelectExtensions =
+    new QuerySelectExtensions(querySelect)
 
   def deleteFrom(table: Path): DeleteBuilder = new DeleteBuilder(table)
 
@@ -96,4 +109,5 @@ trait dsl[T, A[_]] extends query.modify[T, A] with query.select[T, A] with primi
 
   implicit def liftQueryComparison(query: QueryComparison[T, A]): A[Indicies.Comparison] =
     lifter.lift(query)
+
 }

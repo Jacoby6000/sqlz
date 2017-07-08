@@ -25,3 +25,4 @@ tags
 .dummy/
 
 *.vim
+.DS_Store

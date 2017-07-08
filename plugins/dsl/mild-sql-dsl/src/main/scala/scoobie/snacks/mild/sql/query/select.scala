@@ -37,10 +37,6 @@ trait select[T, A[_]] {
     def fullOuterJoin(projection: A[Indicies.ProjectOneI]): JoinBuilder =
       JoinBuilder(select, QueryJoin(projection, _: A[Indicies.Comparison], FullOuter))
 
-    def where(queryComparison: A[Indicies.Comparison]): QuerySelect[T, A] = {
-      select.copy(filter = lifter.lift(ComparisonBinOp(select.filter, queryComparison, ComparisonOperators.And)))
-    }
-
     def leftOuterJoin(tup: (A[Indicies.ProjectOneI], A[Indicies.Comparison])): QuerySelect[T, A] =
       select.copy(joins = select.joins :+ lifter.lift(QueryJoin(tup._1, tup._2, LeftOuter)))
 
@@ -55,6 +51,11 @@ trait select[T, A[_]] {
 
     def fullOuterJoin(tup: (A[Indicies.ProjectOneI], A[Indicies.Comparison])): QuerySelect[T, A] =
       select.copy(joins = select.joins :+ lifter.lift(QueryJoin(tup._1, tup._2, FullOuter)))
+
+
+    def where(queryComparison: A[Indicies.Comparison]): QuerySelect[T, A] = {
+      select.copy(filter = lifter.lift(ComparisonBinOp(select.filter, queryComparison, ComparisonOperators.And)))
+    }
 
     def orderBy(sorts: Sort*) = select.copy(sorts = select.sorts ++ sorts.toList)
     def groupBy(groups: Sort*) = select.copy(groupings = select.groupings ++ groups.toList)

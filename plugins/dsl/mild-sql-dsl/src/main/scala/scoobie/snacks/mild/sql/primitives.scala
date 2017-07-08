@@ -34,8 +34,6 @@ trait primitives[T, A[_]] {
     def notIn(values: A[Indicies.Value]*): QueryComparison[T, A] =
       not(lifter.lift(this.in(values: _*)))
 
-    def as(alias: String): ProjectAlias[T, A] =
-      ProjectAlias(lifter.lift(ProjectOne(a)), alias)
   }
 
   class SqlQueryFunctionBuilder(val f: Path) {
