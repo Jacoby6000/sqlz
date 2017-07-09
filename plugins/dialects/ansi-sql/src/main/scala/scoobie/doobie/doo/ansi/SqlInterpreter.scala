@@ -13,45 +13,105 @@ object SqlInterpreter {
 /**
   * Generates sql query strings, converting them in to type B using a typeclass F[_].
   *
-  * @param escapeFieldWith
+  * @param pathWrapper
   * @param lifter Something that knows how to use the typeclass F to produce values of B.
   * @param litSqlInterpreter An implementation of F[_] for handling longs.
   * @tparam B A type we can produce using an value for F[A] and a value for A. B must be semigroupal.
   */
-case class SqlInterpreter[T: Semigroup](litSqlInterpreter: (String => T)) {
+case class SqlInterpreter[T: Semigroup](pathWrapper: String, litSqlInterpreter: (String => T)) {
 
   type ANSIAST[A[_], I] = QueryAST[T]#of[A, I]
+  type Const[I] = T
 
   implicit class SqlLitInterpolator(val s: StringContext) {
-    def litSql(params: String*): T = s.standardInterpolator(evaluatedLitSql(params))
+    def litSql(params: String*): T = evaluatedLitSql(s.standardInterpolator(identity, params))
   }
 
-  def evaluatedLitSql(s: String): T = litSqlInterpreter(LiteralQueryString(s), sqlFragmentInterpreter)
+  def evaluatedLitSql(s: String): T = litSqlInterpreter(s)
 
-  def binOpReduction[A](op: B, left: A, right: A)(f: A => B) = f(left) |+| wrap(op, litSql" ") |+| f(right)
-  def wrap(s: B, using: B, usingRight: Option[B] = None): B = using |+| s |+| usingRight.getOrElse(using)
+  def binOpReduction[U](op: T, left: U, right: U)(f: U => T) = f(left) |+| wrap(op, litSql" ") |+| f(right)
+  def wrap(s: T, using: T, usingRight: Option[T] = None): T = using |+| s |+| usingRight.getOrElse(using)
 
-  def interpreterAlgebra[I, F[_[_[_], _], _], M[_]]
-                    (query: F[ANSIAST, I])
+  def reducePath(queryPath: Path, trailingSpace: Boolean = true): T = queryPath match {
+    case PathEnd(str) => wrap(evaluatedLitSql(str), evaluatedLitSql(pathWrapper)) |+| (if (trailingSpace) litSql" " else litSql"")
+    case PathCons(head, tail) => wrap(evaluatedLitSql(head), evaluatedLitSql(pathWrapper)) |+| litSql"." |+| reducePath(tail, trailingSpace)
+  }
+
+  def commas(ts: List[T]): T = ts.foldLeft(Option.empty[T]){
+    case (Some(acc), fr) => Some(acc |+| litSql", " |+| fr)
+    case (None, fr) => Some(fr)
+  }.getOrElse(litSql" ")
+
+  def spaces(ts: List[T]): T = ts.foldLeft(litSql"")((acc, fr) => acc |+| fr)
+
+  def parens(t: T): T = litSql"(" |+| t |+| litSql") "
+
+  def parensAndCommas(frags: List[T]): T =
+    parens(commas(frags))
+
+  def interpreterAlgebra[F[_[_[_], _], _]]
                     (implicit queryFunctor: HFunctor[ANSIAST],
-                              hRecursive: HRecursive[F],
-                              monad: Monad[M]): F[ANSIAST, ?] ~> M =
-    query.cata {
-      new (Algebra[ANSIAST, M]){
-        def apply(ast: ANSIAST[M]): M = {
-          ast match {
-          case Parameter(param) => param.lift[M]
-          case Function(path, args) => Function(path, args.map(f[Indicies.Value]))
-          case PathValue(path) => PathValue(path)
-          case ValueBinOp(l, r, op) => ValueBinOp(f(l), f(r), op)
-          case _: Null[_, _] => Null[T, G]
+                              hRecursive: HRecursive[F]): ParaAlgebra[F, ANSIAST, Const] = {
 
-          case ComparisonBinOp(l, r, op) => ComparisonBinOp(f(l), f(r), op)
-          case ComparisonValueBinOp(l, r, op) => ComparisonValueBinOp(f(l), f(r), op)
-          case In(l, rs) => In(f(l), rs.map(f[Indicies.Value]))
-          case Lit(v) => Lit(f(v))
-          case Not(v) => Not(f(v))
-          case _: ComparisonNop[_, _] => ComparisonNop[T, G]
+
+    type AST[X] = ANSIAST[F[ANSIAST, ?], X]
+
+    object HProject {
+      def unapply[X](f: F[ANSIAST, X]): Option[AST[X]] = Some(f.hproject)
+    }
+
+    def reduceProjection(projection: AST[Indicies.Projection]): T = projection match {
+      case _: ProjectAll[_, _] => litSql"*"
+      case ProjectOne(HProject(value)) => reduceValue(value)
+      case ProjectAlias(HProject(projection), alias) => reduceProjection(projection) |+| litSql"AS $alias "
+    }
+
+    def reduceValue(value: AST[Indicies.Value]): T = value match {
+      case Parameter(t) => t
+      case Function(path, args) => reducePath(path, false) |+| parensAndCommas(args.map(v => reduceValue(v.hproject)))
+      case ValueBinOp(left, right, ValueOperators.Add) => binOpReduction(litSql"+ ", left, right)(v => reduceValue(v.hproject))
+      case ValueBinOp(left, right, ValueOperators.Subtract) => binOpReduction(litSql"- ", left, right)(v => reduceValue(v.hproject))
+      case ValueBinOp(left, right, ValueOperators.Multiply) => binOpReduction(litSql"* ", left, right)(v => reduceValue(v.hproject))
+      case ValueBinOp(left, right, ValueOperators.Divide) => binOpReduction(litSql"/ ", left, right)(v => reduceValue(v.hproject))
+      case PathValue(path) => reducePath(path)
+      case _: Null[_, _] => litSql"NULL "
+    }
+
+    new ParaAlgebra[F, QueryAST[T]#of, Const]#l {
+      def apply[I](ast: ParaAlgebra[F, QueryAST[T]#of, Const]#input[I]): Const[I] = {
+        import ValueOperators._
+        import ComparisonValueOperators._
+        ast match {
+          case Parameter(param) => param
+          case Function(path, args) => reducePath(path) |+| parensAndCommas(args)
+          case PathValue(path) => reducePath(path)
+          case ValueBinOp((_, left), (_, right), Add) => binOpReduction(litSql"+ ", left, right)(identity)
+          case ValueBinOp((_, left), (_, right), Subtract) => binOpReduction(litSql"- ", left, right)(identity)
+          case ValueBinOp((_, left), (_, right), Multiply) => binOpReduction(litSql"* ", left, right)(identity)
+          case ValueBinOp((_, left), (_, right), Divide) => binOpReduction(litSql"/ ", left, right)(identity)
+          case _: Null[T, in] => litSql"NULL"
+/*
+          case Lit(v) => v
+          case ComparisonValueBinOp(left, _: QueryNull[_, _], Equal) => left |+| litSql"IS NULL "
+          case ComparisonValueBinOp(_: QueryNull[_, _], right, Equal) => right |+| litSql"IS NULL "
+          case ComparisonValueBinOp(left, right, Equal) => binOpReduction(litSql"= ", left, right)(identity)
+          case Not(HProject(ComparisonValueBinOp(left, _: QueryNull[F], Equal))) => reduceValue(left) |+| litSql"IS NOT NULL "
+          case Not(HProject(ComparisonValueBinOp(_: QueryNull[F], Equal))) => reduceValue(right) |+| litSql"IS NOT NULL "
+          case Not(HProject(QueryEqual(left, right, Equal))) => binOpReduction(litSql"<> ", left, right)(reduceValue)
+          case QueryGreaterThan(left, right) => binOpReduction(litSql"> ", left, right)(reduceValue)
+          case QueryGreaterThanOrEqual(left, right) => binOpReduction(litSql">= ", left, right)(reduceValue)
+          case In(left, rights) => reduceValue(left) |+| litSql" IN  " |+| parensAndCommas(rights.map(reduceValue))
+          case Not(In(left, rights)) => reduceValue(left) |+| litSql" NOT IN  " |+| parensAndCommas(rights.map(reduceValue))
+          case QueryLessThan(left, right) => binOpReduction(litSql"< ", left, right)(reduceValue)
+          case QueryLessThanOrEqual(left, right) => binOpReduction(litSql"<= ", left, right)(reduceValue)
+          case QueryAnd(_: QueryComparisonNop[F], right) => reduceComparison(right)
+          case QueryAnd(left , _: QueryComparisonNop[F]) => reduceComparison(left)
+          case QueryAnd(left, right) => binOpReduction(litSql"AND ", left, right)(reduceComparison)
+          case QueryOr(_: QueryComparisonNop[F], right) => reduceComparison(right)
+          case QueryOr(left , _: QueryComparisonNop[F]) => reduceComparison(left)
+          case QueryOr(left, right) => binOpReduction(litSql"OR ", left, right)(reduceComparison)
+          case Not(v) => litSql"NOT ( " |+| reduceComparison(v) |+| litSql") "
+          case _: QueryComparisonNop[F] => litSql" "
 
           case ProjectOne(value) => ProjectOne(f(value))
           case ProjectAlias(value, alias) => ProjectAlias(f(value), alias)
@@ -62,7 +122,7 @@ case class SqlInterpreter[T: Semigroup](litSqlInterpreter: (String => T)) {
           case ModifyField(path, value) => ModifyField(path, f(value))
 
           case QueryDelete(table, where) => QueryDelete(table, f(where))
-          case QueryInsert(table, values) => QueryInsert(table, values.map(f[Indicies.ModifyFieldI]))
+          case Insert(table, values) => Insert(table, values.map(f[Indicies.ModifyFieldI]))
           case QueryUpdate(table, values, where) => QueryUpdate(table, values.map(f[Indicies.ModifyFieldI]), f(where))
           case QuerySelect(table, values, joins, filter, sorts, groupings, offset, limit) =>
             QuerySelect(
@@ -74,38 +134,23 @@ case class SqlInterpreter[T: Semigroup](litSqlInterpreter: (String => T)) {
               groupings,
               offset,
               limit
-            )
-          }
+            ) */
         }
       }
     }
+
+
+
+
+
+  }
 }
 
 /*
   def interpretSql(expr: QueryExpression): B = {
 
-    def commas(bs: List[B]): B = bs.foldLeft(Option.empty[B]){
-      case (Some(acc), fr) => Some(acc |+| litSql", " |+| fr)
-      case (None, fr) => Some(fr)
-    }.getOrElse(litSql" ")
-
-    def spaces(bs: List[B]): B = bs.foldLeft(litSql"")((acc, fr) => acc |+| fr)
-
-    def parens(b: B): B = litSql"(" |+| b |+| litSql") "
-
-    def parensAndCommas(frags: List[B]): B =
-      parens(commas(frags))
 
 
-    def reducePath(queryPath: QueryPath[F], trailingSpace: Boolean = true): B = queryPath match {
-      case QueryPathEnd(str) => wrap(evaluatedLitSql(str), evaluatedLitSql(escapeFieldWith)) |+| (if (trailingSpace) litSql" " else litSql"")
-      case QueryPathCons(head, tail) => wrap(evaluatedLitSql(head), evaluatedLitSql(escapeFieldWith)) |+| litSql"." |+| reducePath(tail, trailingSpace)
-    }
-
-    def reduceProjection(projection: QueryProjection[F]): B = projection match {
-      case _: QueryProjectAll[F] => litSql"*"
-      case QueryProjectOne(path, alias) => reduceValue(path) |+| evaluatedLitSql(alias.map("AS " + _ + " ").getOrElse(""))
-    }
 
     def reduceValue(value: QueryValue[F]): B = value match {
       case p @ QueryParameter(s) =>
@@ -128,13 +173,13 @@ case class SqlInterpreter[T: Semigroup](litSqlInterpreter: (String => T)) {
       case QueryEqual(left, _: QueryNull[F]) => reduceValue(left) |+| litSql"IS NULL "
       case QueryEqual(_: QueryNull[F], right) => reduceValue(right) |+| litSql"IS NULL "
       case QueryEqual(left, right) => binOpReduction(litSql"= ", left, right)(reduceValue)
-      case QueryNot(QueryEqual(left, _: QueryNull[F])) => reduceValue(left) |+| litSql"IS NOT NULL "
-      case QueryNot(QueryEqual(_: QueryNull[F], right)) => reduceValue(right) |+| litSql"IS NOT NULL "
-      case QueryNot(QueryEqual(left, right)) => binOpReduction(litSql"<> ", left, right)(reduceValue)
+      case Not(QueryEqual(left, _: QueryNull[F])) => reduceValue(left) |+| litSql"IS NOT NULL "
+      case Not(QueryEqual(_: QueryNull[F], right)) => reduceValue(right) |+| litSql"IS NOT NULL "
+      case Not(QueryEqual(left, right)) => binOpReduction(litSql"<> ", left, right)(reduceValue)
       case QueryGreaterThan(left, right) => binOpReduction(litSql"> ", left, right)(reduceValue)
       case QueryGreaterThanOrEqual(left, right) => binOpReduction(litSql">= ", left, right)(reduceValue)
-      case QueryIn(left, rights) => reduceValue(left) |+| litSql" IN  " |+| parensAndCommas(rights.map(reduceValue))
-      case QueryNot(QueryIn(left, rights)) => reduceValue(left) |+| litSql" NOT IN  " |+| parensAndCommas(rights.map(reduceValue))
+      case In(left, rights) => reduceValue(left) |+| litSql" IN  " |+| parensAndCommas(rights.map(reduceValue))
+      case Not(In(left, rights)) => reduceValue(left) |+| litSql" NOT IN  " |+| parensAndCommas(rights.map(reduceValue))
       case QueryLessThan(left, right) => binOpReduction(litSql"< ", left, right)(reduceValue)
       case QueryLessThanOrEqual(left, right) => binOpReduction(litSql"<= ", left, right)(reduceValue)
       case QueryAnd(_: QueryComparisonNop[F], right) => reduceComparison(right)
@@ -143,7 +188,7 @@ case class SqlInterpreter[T: Semigroup](litSqlInterpreter: (String => T)) {
       case QueryOr(_: QueryComparisonNop[F], right) => reduceComparison(right)
       case QueryOr(left , _: QueryComparisonNop[F]) => reduceComparison(left)
       case QueryOr(left, right) => binOpReduction(litSql"OR ", left, right)(reduceComparison)
-      case QueryNot(v) => litSql"NOT ( " |+| reduceComparison(v) |+| litSql") "
+      case Not(v) => litSql"NOT ( " |+| reduceComparison(v) |+| litSql") "
       case _: QueryComparisonNop[F] => litSql" "
     }
 
@@ -152,7 +197,7 @@ case class SqlInterpreter[T: Semigroup](litSqlInterpreter: (String => T)) {
       case QueryRightOuterJoin(path, logic) => litSql"RIGHT OUTER JOIN " |+| reduceProjection(path) |+| litSql"ON " |+| reduceComparison(logic)
       case QueryCrossJoin(path, logic) => litSql"CROSS JOIN " |+| reduceProjection(path) |+| litSql"ON " |+| reduceComparison(logic)
       case QueryFullOuterJoin(path, logic) => litSql"FULL OUTER JOIN " |+| reduceProjection(path) |+| litSql"ON " |+| reduceComparison(logic)
-      case QueryInnerJoin(path, logic) => litSql"INNER JOIN " |+| reduceProjection(path) |+| litSql"ON " |+| reduceComparison(logic)
+      case InnerJoin(path, logic) => litSql"INNER JOIN " |+| reduceProjection(path) |+| litSql"ON " |+| reduceComparison(logic)
     }
 
     def reduceSort(sort: QuerySort[F]): B = sort match {
@@ -184,7 +229,7 @@ case class SqlInterpreter[T: Semigroup](litSqlInterpreter: (String => T)) {
 
         litSql"SELECT " |+| sqlProjections |+| litSql"FROM " |+| sqlTable |+| sqlJoins |+| sqlFilter |+| sqlSorts |+| sqlGroups |+| sqlLimit |+| sqlOffset
 
-      case QueryInsert(table, values) =>
+      case Insert(table, values) =>
         val sqlTable = reducePath(table)
         val mappedSqlValuesKV = values.map(reduceInsertValues)
         val sqlColumns = commas(mappedSqlValuesKV.map(_._1))

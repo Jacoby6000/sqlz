@@ -36,7 +36,7 @@ object ast {
 
   case class Function[T, A[_]](path: Path, args: List[A[Value]]) extends QueryValue[T, A]
   case class ValueBinOp[T, A[_]](left: A[Value], right: A[Value], op: Operator[Value]) extends QueryValue[T, A]
-  case class Parameter[T, A[_]](value: T) extends QueryValue[T, A]
+  case class Parameter[T, A[_]](value: T) extends Query[T, A, Value]
   case class PathValue[T, A[_]](path: Path) extends QueryValue[T, A]
   class Null[T, A[_]] extends QueryValue[T, A] {
     override def equals(obj: scala.Any): Boolean = obj match {
@@ -129,14 +129,14 @@ object ast {
   case class Sort(column: Path, sortType: SortType)
 
   case class QuerySelect[T, A[_]](
-                                table: A[ProjectOneI],
-                                values: List[A[Projection]],
-                                joins: List[A[Join]],
-                                filter: A[Comparison],
-                                sorts: List[Sort],
-                                groupings: List[Sort],
-                                offset: Option[Long],
-                                limit: Option[Long]
+    table: A[ProjectOneI],
+    values: List[A[Projection]],
+    joins: List[A[Join]],
+    filter: A[Comparison],
+    sorts: List[Sort],
+    groupings: List[Sort],
+    offset: Option[Long],
+    limit: Option[Long]
   ) extends QueryValue[T, A]
 
   case class ModifyField[T, A[_]](key: Path, value: A[Value]) extends Query[T, A, ModifyFieldI]
@@ -158,6 +158,10 @@ object cata {
     def lift[G[_[_], _], I](g: G[F[G, ?], I]): F[G, I]
   }
 
+  trait :*:[F[_], G[_]] {
+    type l[A] = (F[A], G[A])
+  }
+
   trait LiftAST[A[_], G[_[_], _]] {
     def lift[I](g: G[A, I]): A[I]
   }
@@ -174,6 +178,17 @@ object cata {
   type LiftQueryAST[T, A[_]] = LiftAST[A, QueryAST[T]#of]
 
   type Algebra[F[_[_], _], E[_]] = F[E, ?] ~> E
+  type GAlgebra[W[_[_], _], F[_[_], _], E[_]] = F[W[E, ?], ?] ~> E
+
+  type ParaAlgebra[T[_[_[_], _], _], F[_[_], _], A[_]] = {
+    type input[I] = F[CoproductH[T, F]#l[A, ?], I]
+    type l = GAlgebra[CoproductH[T, F]#l, F, A]
+
+  }
+  type CoproductH[T[_[_[_], _], _], F[_[_], _]] = {
+    type l[A[_], I] = (T[F, ?] :*: A)#l[I]
+
+  }
 
   trait HFunctor[H[_[_], _]] {
     // def fmap[F[_]: Functor, A, B](hfa: H[F, A])(f: A => B): H[F, B]
@@ -190,7 +205,9 @@ object cata {
   }
 
   trait ~>[F[_], G[_]] {
-    def apply[A](fa: F[A]): G[A]
+    type in[A] = F[A]
+    type out[A] = G[A]
+    def apply[A](fa: in[A]): out[A]
   }
 
   implicit val hfixRecursive: HRecursive[HFix] =
@@ -198,14 +215,27 @@ object cata {
       override def hproject[F[_[_], _], A](t: HFix[F, A]) = t.unfix
     }
 
+
   trait HRecursive[T[_[_[_], _], _]] {
     def hproject[F[_[_], _], A](t: T[F, A]): F[T[F, ?], A]
-
-    def cata[F[_[_], _]: HFunctor, A[_]](φ: Algebra[F, A]): T[F, ?] ~> A =
-      new (T[F, ?] ~> A) {
+    def cata[F[_[_], _]: HFunctor, A[_]](φ: Algebra[F, A]): T[F, ?]  ~> A =
+      new (T[F, ?]~> A) {
         def apply[Q](t: T[F, Q]) =
           φ(HFunctor[F].hmap(cata(φ))(hproject(t)))
       }
+
+    def para[F[_[_], _]: HFunctor, A[_]](φ: ParaAlgebra[T, F, A]#l): T[F, ?] ~> A =
+      new (T[F, ?] ~> A) {
+        def apply[Q](t: T[F, Q]) =
+          φ(HFunctor[F].hmap[T[F, ?], (T[F, ?] :*: A)#l](
+            new (T[F, ?] ~> (T[F, ?] :*: A)#l) {
+              def apply[P](t: T[F, P]) = (t, para(φ).apply(t))
+            })(hproject[F, Q](t)))
+      }
+  }
+
+  implicit class HRecursiveOps[F[_[_[_], _], _], G[_[_], _], I](f: F[G, I]) {
+    def hproject(implicit hrecursive: HRecursive[F]): G[F[G, ?], I] = hrecursive.hproject(f)
   }
 
   implicit def queryHFunctor[T]: HFunctor[QueryAST[T]#of] = new HFunctor[QueryAST[T]#of] {
