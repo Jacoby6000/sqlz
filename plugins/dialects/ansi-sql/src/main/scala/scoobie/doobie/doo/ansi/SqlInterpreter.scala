@@ -4,6 +4,7 @@ import scalaz._
 import Scalaz._
 import SqlInterpreter._
 import scoobie.ast._
+import scoobie.cata._
 
 object SqlInterpreter {
   case class LiteralQueryString(s: String) extends AnyVal
@@ -14,22 +15,74 @@ object SqlInterpreter {
   *
   * @param escapeFieldWith
   * @param lifter Something that knows how to use the typeclass F to produce values of B.
-  * @param sqlFragmentInterpreter An implementation of F[_] that should not do any augmentation to the query string provided.
-  * @param longInterpreter An implementation of F[_] for handling longs.
-  * @tparam F The typeclass used to lift values in to the context of B.  Most important inside of the QueryParameter case of the reduceValue function.
+  * @param litSqlInterpreter An implementation of F[_] for handling longs.
   * @tparam B A type we can produce using an value for F[A] and a value for A. B must be semigroupal.
   */
-case class SqlInterpreter[F[_], B: Semigroup](escapeFieldWith: String)
-                                             (implicit lifter: SqlQueryLifter[F,B], sqlFragmentInterpreter: F[LiteralQueryString], longInterpreter: F[Long]) {
+case class SqlInterpreter[T: Semigroup](litSqlInterpreter: (String => T)) {
+
+  type ANSIAST[A[_], I] = QueryAST[T]#of[A, I]
+
   implicit class SqlLitInterpolator(val s: StringContext) {
-    def litSql(params: String*): B =
-      evaluatedLitSql(s.standardInterpolator(identity, params))
+    def litSql(params: String*): T = s.standardInterpolator(evaluatedLitSql(params))
   }
 
-  def evaluatedLitSql(s: String): B = lifter.liftValue(LiteralQueryString(s), sqlFragmentInterpreter)
+  def evaluatedLitSql(s: String): T = litSqlInterpreter(LiteralQueryString(s), sqlFragmentInterpreter)
 
-  def interpretSql(expr: QueryExpression[F]): B = {
-    def wrap(s: B, using: B, usingRight: Option[B] = None): B = using |+| s |+| usingRight.getOrElse(using)
+  def binOpReduction[A](op: B, left: A, right: A)(f: A => B) = f(left) |+| wrap(op, litSql" ") |+| f(right)
+  def wrap(s: B, using: B, usingRight: Option[B] = None): B = using |+| s |+| usingRight.getOrElse(using)
+
+  def interpreterAlgebra[I, F[_[_[_], _], _], M[_]]
+                    (query: F[ANSIAST, I])
+                    (implicit queryFunctor: HFunctor[ANSIAST],
+                              hRecursive: HRecursive[F],
+                              monad: Monad[M]): F[ANSIAST, ?] ~> M =
+    query.cata {
+      new (Algebra[ANSIAST, M]){
+        def apply(ast: ANSIAST[M]): M = {
+          ast match {
+          case Parameter(param) => param.lift[M]
+          case Function(path, args) => Function(path, args.map(f[Indicies.Value]))
+          case PathValue(path) => PathValue(path)
+          case ValueBinOp(l, r, op) => ValueBinOp(f(l), f(r), op)
+          case _: Null[_, _] => Null[T, G]
+
+          case ComparisonBinOp(l, r, op) => ComparisonBinOp(f(l), f(r), op)
+          case ComparisonValueBinOp(l, r, op) => ComparisonValueBinOp(f(l), f(r), op)
+          case In(l, rs) => In(f(l), rs.map(f[Indicies.Value]))
+          case Lit(v) => Lit(f(v))
+          case Not(v) => Not(f(v))
+          case _: ComparisonNop[_, _] => ComparisonNop[T, G]
+
+          case ProjectOne(value) => ProjectOne(f(value))
+          case ProjectAlias(value, alias) => ProjectAlias(f(value), alias)
+          case _: ProjectAll[_, _] => ProjectAll[T, G]
+
+          case QueryJoin(projection, on, op) => QueryJoin(f(projection), f(on), op)
+
+          case ModifyField(path, value) => ModifyField(path, f(value))
+
+          case QueryDelete(table, where) => QueryDelete(table, f(where))
+          case QueryInsert(table, values) => QueryInsert(table, values.map(f[Indicies.ModifyFieldI]))
+          case QueryUpdate(table, values, where) => QueryUpdate(table, values.map(f[Indicies.ModifyFieldI]), f(where))
+          case QuerySelect(table, values, joins, filter, sorts, groupings, offset, limit) =>
+            QuerySelect(
+              f(table),
+              values.map(f[Indicies.Projection]),
+              joins.map(f[Indicies.Join]),
+              f(filter),
+              sorts,
+              groupings,
+              offset,
+              limit
+            )
+          }
+        }
+      }
+    }
+}
+
+/*
+  def interpretSql(expr: QueryExpression): B = {
 
     def commas(bs: List[B]): B = bs.foldLeft(Option.empty[B]){
       case (Some(acc), fr) => Some(acc |+| litSql", " |+| fr)
@@ -43,7 +96,6 @@ case class SqlInterpreter[F[_], B: Semigroup](escapeFieldWith: String)
     def parensAndCommas(frags: List[B]): B =
       parens(commas(frags))
 
-    def binOpReduction[A](op: B, left: A, right: A)(f: A => B) = f(left) |+| wrap(op, litSql" ") |+| f(right)
 
     def reducePath(queryPath: QueryPath[F], trailingSpace: Boolean = true): B = queryPath match {
       case QueryPathEnd(str) => wrap(evaluatedLitSql(str), evaluatedLitSql(escapeFieldWith)) |+| (if (trailingSpace) litSql" " else litSql"")
@@ -155,4 +207,4 @@ case class SqlInterpreter[F[_], B: Semigroup](escapeFieldWith: String)
     }
 
   }
-}
+}*/
