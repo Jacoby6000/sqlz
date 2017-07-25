@@ -3,6 +3,8 @@
 [![Build Status](https://travis-ci.org/Jacoby6000/scoobie.svg?branch=master)](https://travis-ci.org/Jacoby6000/scoobie) 
 [![codecov](https://codecov.io/gh/Jacoby6000/scoobie/branch/master/graph/badge.svg)](https://codecov.io/gh/Jacoby6000/scoobie)
 
+## Development paused while I wait for a fix for scala/scala#5744
+
 ### Querying with [Doobie](https://github.com/tpolecat/doobie), without raw sql
 
 The goal of this project is to produce an alternative to writing SQL queries for use with Doobie.
