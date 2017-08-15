@@ -191,7 +191,6 @@ class SqlSpec extends Specification with SqlDSLTestHelper {
 
   val baseQuery = select(p"foo", p"bar") from p"baz"
 
-
   lazy val basicBuilder = baseQuery mustEqual manualBaseQuery
 
   val selectFromSub = select(p"foo", p"bar") from (select(p"foo", p"bar") from p"baz")

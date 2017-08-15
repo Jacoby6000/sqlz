@@ -4,7 +4,7 @@ package scoobie
  * Created by jacob.barber on 2/2/16.
  */
 object ast {
-  case class HFix[F[_[_], _], A](unfix: F[HFix[F, ?], A])
+  case class HFix[F[_[_], _], A](unfix: F[[B] => HFix[F, B], A])
 
   sealed trait Query[T, A[_], +I]
 
@@ -144,18 +144,13 @@ object ast {
   case class QueryUpdate[T, A[_]](collection: Path, values: List[A[ModifyFieldI]], where: A[Comparison]) extends Query[T, A, Unit]
   case class QueryDelete[T, A[_]](collection: Path, where: A[Comparison]) extends Query[T, A, Unit]
 
-  type QueryAST[T] = {
-    type of[A[_], I] = Query[T, A, I]
-    type fixed[I] = HFix[of, I]
-  }
-
 }
 
 object cata {
   import ast._
 
   trait LiftH[F[_[_[_], _], _]] {
-    def lift[G[_[_], _], I](g: G[F[G, ?], I]): F[G, I]
+    def lift[G[_[_], _], I](g: G[[A] => F[G, A], I]): F[G, I]
   }
 
   trait :*:[F[_], G[_]] {
@@ -166,33 +161,30 @@ object cata {
     def lift[I](g: G[A, I]): A[I]
   }
 
-  def hfixLiftQuery[G[_[_], _]]: LiftAST[HFix[G, ?], G] =
-    new LiftAST[HFix[G, ?], G] {
-      def lift[I](g: G[HFix[G, ?], I]): HFix[G, I] = HFix(g)
+  def hfixLiftQuery[G[_[_], _]]: LiftAST[[A] => HFix[G, A], G] =
+    new LiftAST[[A] => HFix[G, A], G] {
+      def lift[I](g: G[[A] => HFix[G, A], I]): HFix[G, I] = HFix(g)
     }
 
   implicit val hfixLiftH: LiftH[HFix] = new LiftH[HFix] {
-    def lift[G[_[_], _], I](g: G[HFix[G, ?], I]): HFix[G, I] = HFix(g)
+    def lift[G[_[_], _], I](g: G[[A] => HFix[G, A], I]): HFix[G, I] = HFix(g)
   }
 
-  type LiftQueryAST[T, A[_]] = LiftAST[A, QueryAST[T]#of]
+  type LiftQueryAST[T, A[_]] = LiftAST[A, [F[_], I] => Query[T, F, I]]
 
-  type Algebra[F[_[_], _], E[_]] = F[E, ?] ~> E
-  type GAlgebra[W[_[_], _], F[_[_], _], E[_]] = F[W[E, ?], ?] ~> E
+  type Algebra[F[_[_], _], E[_]] = ([A] => F[E, A]) ~> E
+  type GAlgebra[W[_[_], _], F[_[_], _], E[_]] = ([A] => F[[B] => W[E, B], A]) ~> E
 
-  type ParaAlgebra[T[_[_[_], _], _], F[_[_], _], A[_]] = {
-    type input[I] = F[CoproductH[T, F]#l[A, ?], I]
-    type l = GAlgebra[CoproductH[T, F]#l, F, A]
+  type ParaAlgebra[T[_[_[_], _], _], F[_[_], _], A[_]] = GAlgebra[[B] => (T[F, B], A[B]), F, A]
 
-  }
+
   type CoproductH[T[_[_[_], _], _], F[_[_], _]] = {
-    type l[A[_], I] = (T[F, ?] :*: A)#l[I]
-
+    type l[A[_], I] = (([B] => T[F, B]) :*: A)#l[I]
   }
 
   trait HFunctor[H[_[_], _]] {
     // def fmap[F[_]: Functor, A, B](hfa: H[F, A])(f: A => B): H[F, B]
-    def hmap[F[_], G[_]](f: F ~> G): H[F, ?] ~> H[G, ?]
+    def hmap[F[_], G[_]](f: F ~> G): ([A] => H[F, A]) ~> ([A] => H[G, A])
   }
   object HFunctor {
     def apply[H[_[_], _]](implicit H: HFunctor[H]) = H
@@ -217,38 +209,39 @@ object cata {
 
 
   trait HRecursive[T[_[_[_], _], _]] {
-    def hproject[F[_[_], _], A](t: T[F, A]): F[T[F, ?], A]
-    def cata[F[_[_], _]: HFunctor, A[_]](φ: Algebra[F, A]): T[F, ?]  ~> A =
-      new (T[F, ?]~> A) {
+    def hproject[F[_[_], _], A](t: T[F, A]): F[[B] => T[F, B], A]
+    def cata[F[_[_], _]: HFunctor, A[_]](φ: Algebra[F, A]): ([B] => T[F, B]) ~> A =
+      new (([B] => T[F, B]) ~> A) {
         def apply[Q](t: T[F, Q]) =
           φ(HFunctor[F].hmap(cata(φ))(hproject(t)))
       }
 
-    def para[F[_[_], _]: HFunctor, A[_]](φ: ParaAlgebra[T, F, A]#l): T[F, ?] ~> A =
-      new (T[F, ?] ~> A) {
+    // Crashes
+    /*def para[F[_[_], _]: HFunctor, A[_]](φ: ParaAlgebra[T, F, A]): ([B] => T[F, B]) ~> A =
+      new (([B] => T[F, B]) ~> A) {
         def apply[Q](t: T[F, Q]) =
-          φ(HFunctor[F].hmap[T[F, ?], (T[F, ?] :*: A)#l](
-            new (T[F, ?] ~> (T[F, ?] :*: A)#l) {
-              def apply[P](t: T[F, P]) = (t, para(φ).apply(t))
-            })(hproject[F, Q](t)))
-      }
+          φ(HFunctor[F].hmap[[B] => T[F, B], [B] => (T[F, B], A[B])](
+            new (([B] => T[F, B]) ~> ([B] => (T[F, B], A[B])) {
+              def apply[P](t: T[F, P]) = (t, para[F, A](φ).apply(t))
+            }))(hproject[F, Q](t)))
+      }*/
   }
 
   implicit class HRecursiveOps[F[_[_[_], _], _], G[_[_], _], I](f: F[G, I]) {
-    def hproject(implicit hrecursive: HRecursive[F]): G[F[G, ?], I] = hrecursive.hproject(f)
+    def hproject(implicit hrecursive: HRecursive[F]): G[[B] => F[G, B], I] = hrecursive.hproject(f)
   }
 
-  implicit def queryHFunctor[T]: HFunctor[QueryAST[T]#of] = new HFunctor[QueryAST[T]#of] {
-    def hmap[F[_], G[_]](f: F ~> G) = new (Query[T, F, ?] ~> Query[T, G, ?]) {
+  implicit def queryHFunctor[T]: HFunctor[[A[_], I] => Query[T, A, I]] = new HFunctor[[A[_], I] => Query[T, A, I]] {
+    def hmap[F[_], G[_]](f: F ~> G) = new (([B] => Query[T, F, B]) ~> ([B] => Query[T, G, B])) {
       def apply[I](fa: Query[T, F, I]): Query[T, G, I] =
         fa match {
-          case Parameter(param) => Parameter(param)
+          case Parameter(param) => Parameter[T, G](param)
           case Function(path, args) => Function(path, args.map(f[Indicies.Value]))
           case PathValue(path) => PathValue(path)
           case ValueBinOp(l, r, op) => ValueBinOp(f(l), f(r), op)
           case _: Null[_, _] => Null[T, G]
 
-          case ComparisonBinOp(l, r, op) => ComparisonBinOp(f(l), f(r), op)
+          case ComparisonBinOp(l, r, op) => ComparisonBinOp(f(l), f(r), op) 
           case ComparisonValueBinOp(l, r, op) => ComparisonValueBinOp(f(l), f(r), op)
           case In(l, rs) => In(f(l), rs.map(f[Indicies.Value]))
           case Lit(v) => Lit(f(v))

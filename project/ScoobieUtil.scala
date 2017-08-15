@@ -15,7 +15,6 @@ object ScoobieUtil {
   lazy val doobieCore = "org.tpolecat" %% "doobie-core"
   lazy val doobieCoreCats = "org.tpolecat" %% "doobie-core-cats"
   lazy val doobiePGDriver = "org.tpolecat" %% "doobie-postgres"
-  lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.10"
   lazy val specs = "org.specs2" %% "specs2-core" % "3.8.8" % "test,it"
   lazy val doobieSpecs = "org.tpolecat" %% "doobie-specs2"
   lazy val publishAllSigned = taskKey[Unit]("Publish all (run with +publishAll for crossbuilds)")
@@ -28,7 +27,7 @@ object ScoobieUtil {
 
 
   lazy val buildSettings = Seq(
-    scalaVersion := "2.12.2-SNAPSHOT",
+    scalaVersion := "0.2.0-RC1",
     organization := "com.github.jacoby6000",
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     crossScalaVersions := Seq("2.11.11", scalaVersion.value),
@@ -92,7 +91,8 @@ object ScoobieUtil {
         "-Ywarn-value-discard",
         "-Xmax-classfile-name", "128",
         "-Xfatal-warnings"
-      )
+      ),
+      "0.2" -> Seq()
     )
 
 
@@ -102,8 +102,7 @@ object ScoobieUtil {
       "-groups",
       "-sourcepath", (baseDirectory in LocalRootProject).value.getAbsolutePath,
       "-doc-source-url", "https://github.com/jacoby6000/scoobie/tree/v" + version.value + "${FILE_PATH}.scala"
-    ),
-    addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3")
+    )
   )
 
   def publishSettings(packageName: String) = osgiSettings ++ Seq(

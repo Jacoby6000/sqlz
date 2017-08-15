@@ -55,7 +55,6 @@ lazy val core =
     .settings(name := "scoobie-core")
     .settings(description := "AST for making convenient SQL DSLs in Scala.")
     .settings(scoobieSettings ++ publishSettings("scoobie"))
-    .settings(libraryDependencies ++= Seq(specs))
 
 lazy val doobieCorePlugin = ScoobieUtil.doobiePlugin(
   Some(doobieCore),
@@ -170,7 +169,6 @@ lazy val weakSqlDsl =
     .settings(scoobieSettings ++ publishSettings("scoobie.snacks.mild.sql"))
     .settings(name := "scoobie-contrib-mild-sql-dsl")
     .settings(description := "Introduces a weakly typed SQL DSL to scoobie.")
-    .settings(libraryDependencies += specs)
     .dependsOn(core)
 
 lazy val ansiSql =
@@ -181,7 +179,6 @@ lazy val ansiSql =
     .settings(publishSettings("scoobie.doobie.doo.ansi"))
     .settings(name := "scoobie-contrib-ansi-sql")
     .settings(description := "Provides an ANSI-SQL interpreter for use with the Scoobie AST.")
-    .settings(libraryDependencies ++= Seq(scalaz, specs))
     .settings(scoobieSettings)
     .dependsOn(core, weakSqlDsl % "test")
 
