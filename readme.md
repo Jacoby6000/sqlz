@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/Jacoby6000/scoobie.svg?branch=master)](https://travis-ci.org/Jacoby6000/scoobie) 
 [![codecov](https://codecov.io/gh/Jacoby6000/scoobie/branch/master/graph/badge.svg)](https://codecov.io/gh/Jacoby6000/scoobie)
 
-## Development paused while I wait for a fix for scala/scala#5744
+## Development paused while I wait for a fix for [scala/scala#5744](https://github.com/scala/scala/pull/5744)
 
 ### Querying with [Doobie](https://github.com/tpolecat/doobie), without raw sql
 
