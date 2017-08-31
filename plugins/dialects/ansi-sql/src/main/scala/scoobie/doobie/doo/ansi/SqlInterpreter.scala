@@ -1,13 +1,19 @@
 package scoobie.doobie.doo.ansi
 
-import scalaz._
-import Scalaz._
 import SqlInterpreter._
 import scoobie.ast._
 import scoobie.cata._
 
 object SqlInterpreter {
   case class LiteralQueryString(s: String) extends AnyVal
+
+  trait Semigroup[A] {
+    def append(l: A, r: A): A
+  }
+
+  implicit class SemigroupOps[A](l: A) {
+    def |+|(r: A)(implicit semigroup: Semigroup[A]): A = semigroup.append(l, r)
+  }
 }
 
 /**
@@ -20,7 +26,7 @@ object SqlInterpreter {
   */
 case class SqlInterpreter[T: Semigroup](pathWrapper: String, litSqlInterpreter: (String => T)) {
 
-  type ANSIAST[A[_], I] = QueryAST[T]#of[A, I]
+  type ANSIAST[A[_], I] = Query[T, A, I]
   type Const[I] = T
 
   implicit class SqlLitInterpolator(val s: StringContext) {
@@ -51,10 +57,10 @@ case class SqlInterpreter[T: Semigroup](pathWrapper: String, litSqlInterpreter: 
 
   def interpreterAlgebra[F[_[_[_], _], _]]
                     (implicit queryFunctor: HFunctor[ANSIAST],
-                              hRecursive: HRecursive[F]): ParaAlgebra[F, ANSIAST, Const] = {
+                              hRecursive: HRecursive[F]): GAlgebra[[G[_], X] => (ANSIAST[G, X], F[ANSIAST, X]), ANSIAST, Const] = {
 
 
-    type AST[X] = ANSIAST[F[ANSIAST, ?], X]
+    type AST[X] = ANSIAST[[Y] => F[ANSIAST, Y], X]
 
     object HProject {
       def unapply[X](f: F[ANSIAST, X]): Option[AST[X]] = Some(f.hproject)
@@ -77,8 +83,8 @@ case class SqlInterpreter[T: Semigroup](pathWrapper: String, litSqlInterpreter: 
       case _: Null[_, _] => litSql"NULL "
     }
 
-    new ParaAlgebra[F, QueryAST[T]#of, Const]#l {
-      def apply[I](ast: ParaAlgebra[F, QueryAST[T]#of, Const]#input[I]): Const[I] = {
+    new GAlgebra[[G[_], X] => (ANSIAST[G, X], AST), ANSIAST, Const] {
+      def apply[I](ast: ANSIAST[[G[_], X] => (ANSIAST[G, X], F[ANSIAST, X]), I]): Const[I] = {
         import ValueOperators._
         import ComparisonValueOperators._
         ast match {

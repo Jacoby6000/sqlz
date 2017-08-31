@@ -175,13 +175,6 @@ object cata {
   type Algebra[F[_[_], _], E[_]] = ([A] => F[E, A]) ~> E
   type GAlgebra[W[_[_], _], F[_[_], _], E[_]] = ([A] => F[[B] => W[E, B], A]) ~> E
 
-  type ParaAlgebra[T[_[_[_], _], _], F[_[_], _], A[_]] = GAlgebra[[B] => (T[F, B], A[B]), F, A]
-
-
-  type CoproductH[T[_[_[_], _], _], F[_[_], _]] = {
-    type l[A[_], I] = (([B] => T[F, B]) :*: A)#l[I]
-  }
-
   trait HFunctor[H[_[_], _]] {
     // def fmap[F[_]: Functor, A, B](hfa: H[F, A])(f: A => B): H[F, B]
     def hmap[F[_], G[_]](f: F ~> G): ([A] => H[F, A]) ~> ([A] => H[G, A])
@@ -202,6 +195,11 @@ object cata {
     def apply[A](fa: in[A]): out[A]
   }
 
+
+  def foo[A[_]](a: A[Int]): A[Int] = a
+
+  foo[({Query[Int, List, I]]
+
   implicit val hfixRecursive: HRecursive[HFix] =
     new HRecursive[HFix] {
       override def hproject[F[_[_], _], A](t: HFix[F, A]) = t.unfix
@@ -216,15 +214,17 @@ object cata {
           φ(HFunctor[F].hmap(cata(φ))(hproject(t)))
       }
 
-    // Crashes
-    /*def para[F[_[_], _]: HFunctor, A[_]](φ: ParaAlgebra[T, F, A]): ([B] => T[F, B]) ~> A =
+    def para[F[_[_], _]: HFunctor, A[_]](
+      φ: GAlgebra[[γ[_], α] => (T[F, α], γ[α]), F, A]):
+    ([B] => T[F, B]) ~> A =
       new (([B] => T[F, B]) ~> A) {
         def apply[Q](t: T[F, Q]) =
           φ(HFunctor[F].hmap[[B] => T[F, B], [B] => (T[F, B], A[B])](
-            new (([B] => T[F, B]) ~> ([B] => (T[F, B], A[B])) {
-              def apply[P](t: T[F, P]) = (t, para[F, A](φ).apply(t))
-            }))(hproject[F, Q](t)))
-      }*/
+            new (([B] => T[F, B]) ~> ([B] => (T[F, B], A[B]))) {
+              def apply[P](t: T[F, P]) = (t, para(φ).apply(t))
+            })(hproject[F, Q](t)))
+      }
+
   }
 
   implicit class HRecursiveOps[F[_[_[_], _], _], G[_[_], _], I](f: F[G, I]) {
@@ -232,25 +232,26 @@ object cata {
   }
 
   implicit def queryHFunctor[T]: HFunctor[[A[_], I] => Query[T, A, I]] = new HFunctor[[A[_], I] => Query[T, A, I]] {
-    def hmap[F[_], G[_]](f: F ~> G) = new (([B] => Query[T, F, B]) ~> ([B] => Query[T, G, B])) {
-      def apply[I](fa: Query[T, F, I]): Query[T, G, I] =
+    type Q[A[_], I] = Query[T, A, I] // Make a type alias for query with an Invariant Index. Dotty will explode if the Index is Covariant.
+    def hmap[F[_], G[_]](f: F ~> G) = new ~>[[I] => Q[F, I], [I] => Q[G, I]] {
+      def apply[I](fa: Q[F, I]): Q[G, I] =
         fa match {
           case Parameter(param) => Parameter[T, G](param)
           case Function(path, args) => Function(path, args.map(f[Indicies.Value]))
           case PathValue(path) => PathValue(path)
           case ValueBinOp(l, r, op) => ValueBinOp(f(l), f(r), op)
-          case _: Null[_, _] => Null[T, G]
+          case _: Null[_, [_] => _] => Null[T, G]
 
-          case ComparisonBinOp(l, r, op) => ComparisonBinOp(f(l), f(r), op) 
+          case ComparisonBinOp(l, r, op) => ComparisonBinOp(f(l), f(r), op)
           case ComparisonValueBinOp(l, r, op) => ComparisonValueBinOp(f(l), f(r), op)
           case In(l, rs) => In(f(l), rs.map(f[Indicies.Value]))
           case Lit(v) => Lit(f(v))
           case Not(v) => Not(f(v))
-          case _: ComparisonNop[_, _] => ComparisonNop[T, G]
+          case _: ComparisonNop[_, [_] => _] => ComparisonNop[T, G]
 
           case ProjectOne(value) => ProjectOne(f(value))
           case ProjectAlias(value, alias) => ProjectAlias(f(value), alias)
-          case _: ProjectAll[_, _] => ProjectAll[T, G]
+          case _: ProjectAll[_, [_] => _] => ProjectAll[T, G]
 
           case QueryJoin(projection, on, op) => QueryJoin(f(projection), f(on), op)
 
@@ -273,5 +274,6 @@ object cata {
         }
     }
   }
+
 }
 
