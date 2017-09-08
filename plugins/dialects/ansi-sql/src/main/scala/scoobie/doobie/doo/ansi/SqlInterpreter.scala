@@ -59,92 +59,73 @@ case class SqlInterpreter[T: Semigroup](pathWrapper: String, litSqlInterpreter: 
                     (implicit queryFunctor: HFunctor[ANSIAST],
                               hRecursive: HRecursive[F]): GAlgebra[[G[_], X] => (ANSIAST[G, X], F[ANSIAST, X]), ANSIAST, Const] = {
 
-
     type AST[X] = ANSIAST[[Y] => F[ANSIAST, Y], X]
 
-    object HProject {
-      def unapply[X](f: F[ANSIAST, X]): Option[AST[X]] = Some(f.hproject)
+    
+    object HEmbed {
+      def unapply[X](f: F[ANSIAST, X]) = Some(f.hproject)
     }
 
-    def reduceProjection(projection: AST[Indicies.Projection]): T = projection match {
-      case _: ProjectAll[_, _] => litSql"*"
-      case ProjectOne(HProject(value)) => reduceValue(value)
-      case ProjectAlias(HProject(projection), alias) => reduceProjection(projection) |+| litSql"AS $alias "
-    }
+    def alg: GAlgebra[[G[_], X] => (ANSIAST[G, X], F[ANSIAST, X]), ANSIAST, Const] = 
+      new GAlgebra[[G[_], X] => (ANSIAST[G, X], F[ANSIAST, X]), ANSIAST, Const] {
+        def apply[I](ast: ANSIAST[[X] => (Const[X], ANSIAST[[Y] => F[ANSIAST, Y], X]), I]): Const[I] = {
+          import ValueOperators._
+          import ComparisonValueOperators._
+          ast match {
+            case Parameter(param) => param
+            case Function(path, args) => reducePath(path) |+| parensAndCommas(args.map(_._1))
+            case PathValue(path) => reducePath(path)
+            case ValueBinOp((left, _), (right, _), Add) => binOpReduction(litSql"+ ", left, right)(identity)
+            case ValueBinOp((left, _), (right, _), Subtract) => binOpReduction(litSql"- ", left, right)(identity)
+            case ValueBinOp((left, _), (right, _), Multiply) => binOpReduction(litSql"* ", left, right)(identity)
+            case ValueBinOp((left, _), (right, _), Divide) => binOpReduction(litSql"/ ", left, right)(identity)
+            case _: Null[T, in] => litSql"NULL"
+            case Lit((v, _)) => v
+            case ComparisonValueBinOp((left, _), (_, _: Null[_, _]), Equal) => left |+| litSql"IS NULL "
+            case ComparisonValueBinOp((_, _: Null[_, _]), (right, _), Equal) => right |+| litSql"IS NULL "
+            case ComparisonValueBinOp((left, _), (right, _), Equal) => binOpReduction(litSql"= ", left, right)(identity)
+            case Not((_, ComparisonValueBinOp(left, HEmbed(_: Null[_, _]), Equal))) => alg.apply(hRecursive.hproject(left)) /* |+| litSql"IS NOT NULL "
+            case Not((_, ComparisonValueBinOp(HEmbed(_: Null[_, _]), right, Equal))) => right |+| litSql"IS NOT NULL "
+            case Not((_, QueryEqual(left, right, Equal))) => binOpReduction(litSql"<> ", left, right)(identity)
+            case In(left, rights) => reduceValue(left) |+| litSql" IN  " |+| parensAndCommas(rights.map(reduceValue))
+            case Not(In(left, rights)) => reduceValue(left) |+| litSql" NOT IN  " |+| parensAndCommas(rights.map(reduceValue))
+            case QueryLessThan(left, right) => binOpReduction(litSql"< ", left, right)(reduceValue)
+            case QueryLessThanOrEqual(left, right) => binOpReduction(litSql"<= ", left, right)(reduceValue)
+            case QueryAnd(_: QueryComparisonNop[F], right) => reduceComparison(right)
+            case QueryAnd(left , _: QueryComparisonNop[F]) => reduceComparison(left)
+            case QueryAnd(left, right) => binOpReduction(litSql"AND ", left, right)(reduceComparison)
+            case QueryOr(_: QueryComparisonNop[F], right) => reduceComparison(right)
+            case QueryOr(left , _: QueryComparisonNop[F]) => reduceComparison(left)
+            case QueryOr(left, right) => binOpReduction(litSql"OR ", left, right)(reduceComparison)
+            case Not(v) => litSql"NOT ( " |+| reduceComparison(v) |+| litSql") "
+            case _: QueryComparisonNop[F] => litSql" "
 
-    def reduceValue(value: AST[Indicies.Value]): T = value match {
-      case Parameter(t) => t
-      case Function(path, args) => reducePath(path, false) |+| parensAndCommas(args.map(v => reduceValue(v.hproject)))
-      case ValueBinOp(left, right, ValueOperators.Add) => binOpReduction(litSql"+ ", left, right)(v => reduceValue(v.hproject))
-      case ValueBinOp(left, right, ValueOperators.Subtract) => binOpReduction(litSql"- ", left, right)(v => reduceValue(v.hproject))
-      case ValueBinOp(left, right, ValueOperators.Multiply) => binOpReduction(litSql"* ", left, right)(v => reduceValue(v.hproject))
-      case ValueBinOp(left, right, ValueOperators.Divide) => binOpReduction(litSql"/ ", left, right)(v => reduceValue(v.hproject))
-      case PathValue(path) => reducePath(path)
-      case _: Null[_, _] => litSql"NULL "
-    }
+            case ProjectOne(value) => ProjectOne(f(value))
+            case ProjectAlias(value, alias) => ProjectAlias(f(value), alias)
+            case _: ProjectAll[_, _] => ProjectAll[T, G]
 
-    new GAlgebra[[G[_], X] => (ANSIAST[G, X], AST), ANSIAST, Const] {
-      def apply[I](ast: ANSIAST[[G[_], X] => (ANSIAST[G, X], F[ANSIAST, X]), I]): Const[I] = {
-        import ValueOperators._
-        import ComparisonValueOperators._
-        ast match {
-          case Parameter(param) => param
-          case Function(path, args) => reducePath(path) |+| parensAndCommas(args)
-          case PathValue(path) => reducePath(path)
-          case ValueBinOp((_, left), (_, right), Add) => binOpReduction(litSql"+ ", left, right)(identity)
-          case ValueBinOp((_, left), (_, right), Subtract) => binOpReduction(litSql"- ", left, right)(identity)
-          case ValueBinOp((_, left), (_, right), Multiply) => binOpReduction(litSql"* ", left, right)(identity)
-          case ValueBinOp((_, left), (_, right), Divide) => binOpReduction(litSql"/ ", left, right)(identity)
-          case _: Null[T, in] => litSql"NULL"
-/*
-          case Lit(v) => v
-          case ComparisonValueBinOp(left, _: QueryNull[_, _], Equal) => left |+| litSql"IS NULL "
-          case ComparisonValueBinOp(_: QueryNull[_, _], right, Equal) => right |+| litSql"IS NULL "
-          case ComparisonValueBinOp(left, right, Equal) => binOpReduction(litSql"= ", left, right)(identity)
-          case Not(HProject(ComparisonValueBinOp(left, _: QueryNull[F], Equal))) => reduceValue(left) |+| litSql"IS NOT NULL "
-          case Not(HProject(ComparisonValueBinOp(_: QueryNull[F], Equal))) => reduceValue(right) |+| litSql"IS NOT NULL "
-          case Not(HProject(QueryEqual(left, right, Equal))) => binOpReduction(litSql"<> ", left, right)(reduceValue)
-          case QueryGreaterThan(left, right) => binOpReduction(litSql"> ", left, right)(reduceValue)
-          case QueryGreaterThanOrEqual(left, right) => binOpReduction(litSql">= ", left, right)(reduceValue)
-          case In(left, rights) => reduceValue(left) |+| litSql" IN  " |+| parensAndCommas(rights.map(reduceValue))
-          case Not(In(left, rights)) => reduceValue(left) |+| litSql" NOT IN  " |+| parensAndCommas(rights.map(reduceValue))
-          case QueryLessThan(left, right) => binOpReduction(litSql"< ", left, right)(reduceValue)
-          case QueryLessThanOrEqual(left, right) => binOpReduction(litSql"<= ", left, right)(reduceValue)
-          case QueryAnd(_: QueryComparisonNop[F], right) => reduceComparison(right)
-          case QueryAnd(left , _: QueryComparisonNop[F]) => reduceComparison(left)
-          case QueryAnd(left, right) => binOpReduction(litSql"AND ", left, right)(reduceComparison)
-          case QueryOr(_: QueryComparisonNop[F], right) => reduceComparison(right)
-          case QueryOr(left , _: QueryComparisonNop[F]) => reduceComparison(left)
-          case QueryOr(left, right) => binOpReduction(litSql"OR ", left, right)(reduceComparison)
-          case Not(v) => litSql"NOT ( " |+| reduceComparison(v) |+| litSql") "
-          case _: QueryComparisonNop[F] => litSql" "
+            case QueryJoin(projection, on, op) => QueryJoin(f(projection), f(on), op)
 
-          case ProjectOne(value) => ProjectOne(f(value))
-          case ProjectAlias(value, alias) => ProjectAlias(f(value), alias)
-          case _: ProjectAll[_, _] => ProjectAll[T, G]
+            case ModifyField(path, value) => ModifyField(path, f(value))
 
-          case QueryJoin(projection, on, op) => QueryJoin(f(projection), f(on), op)
-
-          case ModifyField(path, value) => ModifyField(path, f(value))
-
-          case QueryDelete(table, where) => QueryDelete(table, f(where))
-          case Insert(table, values) => Insert(table, values.map(f[Indicies.ModifyFieldI]))
-          case QueryUpdate(table, values, where) => QueryUpdate(table, values.map(f[Indicies.ModifyFieldI]), f(where))
-          case QuerySelect(table, values, joins, filter, sorts, groupings, offset, limit) =>
-            QuerySelect(
-              f(table),
-              values.map(f[Indicies.Projection]),
-              joins.map(f[Indicies.Join]),
-              f(filter),
-              sorts,
-              groupings,
-              offset,
-              limit
-            ) */
+            case QueryDelete(table, where) => QueryDelete(table, f(where))
+            case Insert(table, values) => Insert(table, values.map(f[Indicies.ModifyFieldI]))
+            case QueryUpdate(table, values, where) => QueryUpdate(table, values.map(f[Indicies.ModifyFieldI]), f(where))
+            case QuerySelect(table, values, joins, filter, sorts, groupings, offset, limit) =>
+              QuerySelect(
+                f(table),
+                values.map(f[Indicies.Projection]),
+                joins.map(f[Indicies.Join]),
+                f(filter),
+                sorts,
+                groupings,
+                offset,
+                limit
+              ) */
+          }
         }
       }
-    }
-
+    alg
 
 
 
@@ -171,16 +152,16 @@ case class SqlInterpreter[T: Semigroup](pathWrapper: String, litSqlInterpreter: 
       case QueryDiv(left, right) => binOpReduction(litSql"/ ", left, right)(reduceValue)
       case QueryMul(left, right) => binOpReduction(litSql"* ", left, right)(reduceValue)
       case sel: QuerySelect[F] => litSql"(" |+| interpretSql(sel) |+| litSql")"
-      case _: QueryNull[F] => litSql"NULL "
+      case _: Null[F] => litSql"NULL "
     }
 
     def reduceComparison(value: QueryComparison[F]): B = value match {
       case QueryLit(v) => reduceValue(v)
-      case QueryEqual(left, _: QueryNull[F]) => reduceValue(left) |+| litSql"IS NULL "
-      case QueryEqual(_: QueryNull[F], right) => reduceValue(right) |+| litSql"IS NULL "
+      case QueryEqual(left, _: Null[F]) => reduceValue(left) |+| litSql"IS NULL "
+      case QueryEqual(_: Null[F], right) => reduceValue(right) |+| litSql"IS NULL "
       case QueryEqual(left, right) => binOpReduction(litSql"= ", left, right)(reduceValue)
-      case Not(QueryEqual(left, _: QueryNull[F])) => reduceValue(left) |+| litSql"IS NOT NULL "
-      case Not(QueryEqual(_: QueryNull[F], right)) => reduceValue(right) |+| litSql"IS NOT NULL "
+      case Not(QueryEqual(left, _: Null[F])) => reduceValue(left) |+| litSql"IS NOT NULL "
+      case Not(QueryEqual(_: Null[F], right)) => reduceValue(right) |+| litSql"IS NOT NULL "
       case Not(QueryEqual(left, right)) => binOpReduction(litSql"<> ", left, right)(reduceValue)
       case QueryGreaterThan(left, right) => binOpReduction(litSql"> ", left, right)(reduceValue)
       case QueryGreaterThanOrEqual(left, right) => binOpReduction(litSql">= ", left, right)(reduceValue)

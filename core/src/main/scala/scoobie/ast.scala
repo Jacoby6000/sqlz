@@ -153,10 +153,6 @@ object cata {
     def lift[G[_[_], _], I](g: G[[A] => F[G, A], I]): F[G, I]
   }
 
-  trait :*:[F[_], G[_]] {
-    type l[A] = (F[A], G[A])
-  }
-
   trait LiftAST[A[_], G[_[_], _]] {
     def lift[I](g: G[A, I]): A[I]
   }
@@ -201,9 +197,14 @@ object cata {
       override def hproject[F[_[_], _], A](t: HFix[F, A]) = t.unfix
     }
 
+  object HRecursive {
+    def apply[T[_[_[_], _], _]](implicit r: HRecursive[T]): HRecursive[T] = r
+  }
 
   trait HRecursive[T[_[_[_], _], _]] {
-    def hproject[F[_[_], _], A](t: T[F, A]): F[[B] => T[F, B], A]
+    type Out[G[_[_], _], I] = G[[B] => T[G, B], I]
+
+    def hproject[F[_[_], _], A](t: T[F, A]): Out[F, A]
     def cata[F[_[_], _]: HFunctor, A[_]](φ: Algebra[F, A]): ([B] => T[F, B]) ~> A =
       new (([B] => T[F, B]) ~> A) {
         def apply[Q](t: T[F, Q]) =
@@ -224,7 +225,7 @@ object cata {
   }
 
   implicit class HRecursiveOps[F[_[_[_], _], _], G[_[_], _], I](f: F[G, I]) {
-    def hproject(implicit hrecursive: HRecursive[F]): G[[B] => F[G, B], I] = hrecursive.hproject(f)
+    def hproject(implicit hrecursive: HRecursive[F]): hrecursive.Out[G, I] = hrecursive.hproject(f)
   }
 
   implicit def queryHFunctor[T]: HFunctor[[A[_], I] => Query[T, A, I]] = new HFunctor[[A[_], I] => Query[T, A, I]] {

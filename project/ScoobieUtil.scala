@@ -27,7 +27,7 @@ object ScoobieUtil {
 
 
   lazy val buildSettings = Seq(
-    scalaVersion := "0.2.0-RC1",
+    scalaVersion := "0.3.0-RC2",
     organization := "com.github.jacoby6000",
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     crossScalaVersions := Seq("2.11.11", scalaVersion.value),
@@ -92,7 +92,7 @@ object ScoobieUtil {
         "-Xmax-classfile-name", "128",
         "-Xfatal-warnings"
       ),
-      "0.2" -> Seq()
+      "0.3" -> Seq()
     )
 
 
