@@ -196,10 +196,6 @@ object cata {
   }
 
 
-  def foo[A[_]](a: A[Int]): A[Int] = a
-
-  foo[({Query[Int, List, I]]
-
   implicit val hfixRecursive: HRecursive[HFix] =
     new HRecursive[HFix] {
       override def hproject[F[_[_], _], A](t: HFix[F, A]) = t.unfix
