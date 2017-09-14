@@ -60,8 +60,8 @@ trait select[T, A[_]] {
     def orderBy(sorts: Sort*) = select.copy(sorts = select.sorts ++ sorts.toList)
     def groupBy(groups: Sort*) = select.copy(groupings = select.groupings ++ groups.toList)
 
-    def offset(n: Long): QuerySelect[T, A] = select.copy(offset = Some(n))
-    def limit(n: Long): QuerySelect[T, A] = select.copy(limit = Some(n))
+    def offset(n: T): QuerySelect[T, A] = select.copy(offset = Some(n))
+    def limit(n: T): QuerySelect[T, A] = select.copy(limit = Some(n))
 
     def as(alias: String): ProjectAlias[T, A] =
       ProjectAlias(lifter.lift(ProjectOne(lifter.lift(select))), alias)

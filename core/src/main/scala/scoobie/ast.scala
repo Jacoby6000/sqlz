@@ -135,8 +135,8 @@ object ast {
     filter: A[Comparison],
     sorts: List[Sort],
     groupings: List[Sort],
-    offset: Option[Long],
-    limit: Option[Long]
+    offset: Option[T],
+    limit: Option[T]
   ) extends QueryValue[T, A]
 
   case class ModifyField[T, A[_]](key: Path, value: A[Value]) extends Query[T, A, ModifyFieldI]
@@ -169,7 +169,7 @@ object cata {
   type LiftQueryAST[T, A[_]] = LiftAST[A, [F[_], I] => Query[T, F, I]]
 
   type Algebra[F[_[_], _], E[_]] = ([A] => F[E, A]) ~> E
-  type GAlgebra[W[_[_], _], F[_[_], _], E[_]] = ([A] => F[[B] => W[E, B], A]) ~> E
+  type GAlgebra[W[_[_], _], F[_[_], _], E[_]] = ([a] => F[[b] => W[E, b], a]) ~> E
 
   trait HFunctor[H[_[_], _]] {
     // def fmap[F[_]: Functor, A, B](hfa: H[F, A])(f: A => B): H[F, B]
@@ -226,6 +226,8 @@ object cata {
 
   implicit class HRecursiveOps[F[_[_[_], _], _], G[_[_], _], I](f: F[G, I]) {
     def hproject(implicit hrecursive: HRecursive[F]): hrecursive.Out[G, I] = hrecursive.hproject(f)
+    def para[A[_]](alg: GAlgebra[[γ[_], α] => (F[G, α], γ[α]), G, A])(implicit hrecursive: HRecursive[F], hfunctor: HFunctor[G]): A[I] =
+      hrecursive.para(alg).apply(f)
   }
 
   implicit def queryHFunctor[T]: HFunctor[[A[_], I] => Query[T, A, I]] = new HFunctor[[A[_], I] => Query[T, A, I]] {

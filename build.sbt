@@ -14,8 +14,8 @@ lazy val scoobie =
     .settings(scoobieSettings ++ noPublishSettings)
     .settings(unidocSettings)
     .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(docs))
-    .dependsOn(core, doobieSupport, doobiePostgres, weakSqlDsl, ansiSql)
-    .aggregate(core, doobieSupport, doobiePostgres, weakSqlDsl, ansiSql)
+    .dependsOn(core, weakSqlDsl, ansiSql)
+    .aggregate(core, weakSqlDsl, ansiSql)
     .settings(
       publishAllSigned :=
         Def.sequential(
