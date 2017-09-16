@@ -3,13 +3,15 @@
 [![Build Status](https://travis-ci.org/Jacoby6000/scoobie.svg?branch=master)](https://travis-ci.org/Jacoby6000/scoobie) 
 [![codecov](https://codecov.io/gh/Jacoby6000/scoobie/branch/master/graph/badge.svg)](https://codecov.io/gh/Jacoby6000/scoobie)
 
-## Development paused while I wait for a fix for [scala/scala#5744](https://github.com/scala/scala/pull/5744)
+## Scala Development paused while I wait for a fix for [scala/scala#5744](https://github.com/scala/scala/pull/5744)
 
 Issue 5744 explains that scala does not work properly with GADTs. After talking a lot with Edmund Noble and Greg Pfeil, I've discovered that to have the AST be reusable and arbitrarily extensible, I need to be able to use GADTs. 
 
 You can see the work I've done towards that [here](https://github.com/Jacoby6000/scoobie/tree/feature/%2340-adjust-ast-to-support-fixpoint). 
 
-I've also started working with dotty in an attempt to see if it will work in dotty.   Interestingly enough, most things do work, but whenever a GAlgebra makes a recursive call, the compiler crashes. You can see the work done towards that, [here](https://github.com/Jacoby6000/scoobie/tree/dotty).
+## Dotty
+
+I've also started working with dotty in an attempt to see if it will work in dotty.   Interestingly enough, most things do work, but whenever I try to invoke the algebra to execute a paramorphism, the compiler crashes. You can see the work done towards that, [here](https://github.com/Jacoby6000/scoobie/tree/dotty).
 
 ### Querying with [Doobie](https://github.com/tpolecat/doobie), without raw sql
 
