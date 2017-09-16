@@ -9,7 +9,7 @@ Issue 5744 explains that scala does not work properly with GADTs. After talking 
 
 You can see the work I've done towards that [here](https://github.com/Jacoby6000/scoobie/tree/feature/%2340-adjust-ast-to-support-fixpoint). 
 
-## Dotty
+### Dotty
 
 I've also started working with dotty in an attempt to see if it will work in dotty.   Interestingly enough, most things do work, but whenever I try to invoke the algebra to execute a paramorphism, the compiler crashes. You can see the work done towards that, [here](https://github.com/Jacoby6000/scoobie/tree/dotty).
 
