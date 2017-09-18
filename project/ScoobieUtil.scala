@@ -28,7 +28,7 @@ object ScoobieUtil {
 
 
   lazy val buildSettings = Seq(
-    scalaVersion := "2.12.2-SNAPSHOT",
+    scalaVersion := "2.12.3",
     organization := "com.github.jacoby6000",
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     crossScalaVersions := Seq("2.11.11", scalaVersion.value),
