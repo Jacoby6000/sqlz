@@ -1,7 +1,7 @@
 package scoobie.doobie
 
 import doobie.imports._
-import scoobie.ast.QuerySelect
+import scoobie.ast.ansi.QuerySelect
 
 /**
   * Created by jacob.barber on 5/25/16.

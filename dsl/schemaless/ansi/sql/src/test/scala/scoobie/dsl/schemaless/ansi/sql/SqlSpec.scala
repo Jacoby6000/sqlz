@@ -2,7 +2,7 @@ package scoobie.dsl.schemaless.ansi.sql
 
 import org.specs2._
 import scoobie.ast.ansi._
-import scoobie.coercion.Coerce
+import scoobie.ast.coercion.Coerce
 import scoobie.dsl.schemaless.ansi.sql
 
 /**

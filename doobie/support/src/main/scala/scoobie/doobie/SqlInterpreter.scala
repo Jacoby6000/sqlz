@@ -5,7 +5,7 @@ import doobie.util.query.Query0
 import doobie.util.update.Update0
 import doobie.util.fragment.Fragment
 import doobie.util.log.LogHandler
-import scoobie.ast.{QueryExpression, QueryModify, QuerySelect}
+import scoobie.ast.ansi.{QueryExpression, QueryModify, QuerySelect}
 
 /**
   * Created by jacob.barber on 5/25/16.

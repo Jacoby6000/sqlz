@@ -1,7 +1,7 @@
 package scoobie
 
 import _root_.doobie.imports._
-import scoobie.coercion.Coerce
+import scoobie.ast.coercion.Coerce
 
 import scalaz._, Scalaz._
 /**

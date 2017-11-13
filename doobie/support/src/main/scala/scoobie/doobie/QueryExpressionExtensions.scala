@@ -1,7 +1,7 @@
 package scoobie.doobie
 
 import doobie.imports._
-import scoobie.ast.QueryExpression
+import scoobie.ast.ansi.QueryExpression
 
 
 /**

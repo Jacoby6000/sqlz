@@ -1,6 +1,6 @@
 package scoobie
 
-import scoobie.ast._
+import scoobie.ast.ansi._
 import org.specs2._
 
 /**

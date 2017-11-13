@@ -1,9 +1,9 @@
 package scoobie.doobie.doo
 
 import doobie.imports._
-import scoobie.coercion.Coerce
-import scoobie.doobie.doo.ansi.SqlInterpreter.LiteralQueryString
-import scoobie.doobie.doo.ansi._
+import scoobie.ast.coercion.Coerce
+import scoobie.doobie..SqlInterpreter.LiteralQueryString
+import scoobie.doobie.ansi._
 import scoobie.doobie.{DoobieSqlInterpreter, DoobieSupport, ScoobieFragmentProducer}
 
 /**

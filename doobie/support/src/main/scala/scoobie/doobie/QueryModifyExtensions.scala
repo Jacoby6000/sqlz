@@ -1,7 +1,7 @@
 package scoobie.doobie
 
 import doobie.imports._
-import scoobie.ast.QueryModify
+import scoobie.ast.ansi.QueryModify
 
 /**
   * Created by jacob.barber on 5/25/16.
