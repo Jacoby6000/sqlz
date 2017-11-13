@@ -25,7 +25,7 @@ libraryDependencies ++= {
 
   Seq(
     "com.github.jacoby6000" %% "scoobie-contrib-doobie41-postgres" % scoobieVersion, // import doobie 4.1 with postgres support
-    "com.github.jacoby6000" %% "scoobie-contrib-mild-sql-dsl" % scoobieVersion // import the weak sql dsl
+    "com.github.jacoby6000" %% "scoobie-dsl-schemaless-ansi-sql" % scoobieVersion // import the schemaless ansi sql dsl
   )
 }
 ```
