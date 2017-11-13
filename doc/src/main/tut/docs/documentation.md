@@ -29,6 +29,5 @@ To get going quickly, checkout the [Quickstart](./quickstart.html) page.
 
 | scoobie distribution              | scoobie version | jdk   | scala          | description                                                                                                                                                    |
 |:---------------------------------:|:---------------:|:-----:|:--------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| scoobie-core                      | 0.3.1           |  1.6+ | 2.11.8/2.12.1  | Pulls in the core AST. Use this dependency if you are trying to create additional interpreters or DSLs                                                         |
-| scoobie-contrib-ansi-sql          | 0.3.1           |  1.6+ | 2.11.8/2.12.1  | Pulls in the core AST plus an interpreter for interpreting ANSI SQL. Use this if you're looking to create an additional database driver backed by ANSI SQL     |
-
+| scoobie-ast-ansi  | 0.3.1           |  1.6+ | 2.11.8/2.12.1  | Pulls in the core ANSI AST. Use this dependency if you are trying to create additional interpreters or DSLs                                                    |
+| scoobie-interpreters-ansi            | 0.3.1           |  1.6+ | 2.11.8/2.12.1  | Pulls in the core ANSI AST plus an interpreter for interpreting ANSI SQL. Use this if you're looking to create an additional database driver backed by ANSI SQL |
