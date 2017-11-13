@@ -22,11 +22,11 @@ install:
 
 before_script:
   - psql -c 'create database world;' -U postgres
-  - psql -q -c '\i ./plugins/doobie/doobie-postgres/src/it/resources/world.sql' -d world -U postgres
+  - psql -q -c '\i ./doobie/postgres/src/it/resources/world.sql' -d world -U postgres
   - psql -d world -c "create extension postgis" -U postgres
   - psql -d world -c "create type myenum as enum ('foo', 'bar')" -U postgres
   - mysql -e 'CREATE DATABASE IF NOT EXISTS world;'
-  - mysql world < ./plugins/doobie/doobie-mysql/src/it/resources/world.sql
+  - mysql world < ./doobie/mysql/src/it/resources/world.sql
 
 after_success:
   - if [ "$TRAVIS_SCALA_VERSION" = "2.12.2" ]; then bash <(curl -s https://codecov.io/bash); fi
