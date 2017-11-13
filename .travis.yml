@@ -15,7 +15,7 @@ addons:
   mysql: "5.7"
   apt:
     packages:
-    - postgresql-9.5-postgis-2.3
+    - postgresql-9.3-postgis-2.3
 
 install:
   - rvm use 2.2.3 --install --fuzzy
