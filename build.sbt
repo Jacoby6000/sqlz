@@ -15,19 +15,19 @@ lazy val scoobie =
     .settings(scoobieSettings ++ noPublishSettings)
     .settings(unidocSettings)
     .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(docs))
-    .dependsOn(core, doobieSupport, doobiePostgres, weakSqlDsl, ansiSql)
-    .aggregate(core, doobieSupport, doobiePostgres, weakSqlDsl, ansiSql)
+    .dependsOn(ansiAst, doobieSupport, doobiePostgres, dslAnsiSqlSchemaless, ansiSql)
+    .aggregate(ansiAst, doobieSupport, doobiePostgres, dslAnsiSqlSchemaless, ansiSql)
     .settings(
       publishAllSigned :=
         Def.sequential(
-          (PgpKeys.publishSigned in core),
+          (PgpKeys.publishSigned in ansiAst),
           (PgpKeys.publishSigned in doobieSupport40),
           (PgpKeys.publishSigned in doobieSupport41),
           (PgpKeys.publishSigned in doobiePostgres40),
           (PgpKeys.publishSigned in doobiePostgres41),
           (PgpKeys.publishSigned in doobieMySql41),
           (PgpKeys.publishSigned in doobieMySql40),
-          (PgpKeys.publishSigned in weakSqlDsl),
+          (PgpKeys.publishSigned in dslAnsiSqlSchemaless),
           (PgpKeys.publishSigned in ansiSql)
         ).value
     )
@@ -36,24 +36,24 @@ lazy val scoobieDoobie40 =
   project.in(file("./.dummy/scoobieDoobie40"))
     .configs(IntegrationTest)
     .settings(Defaults.itSettings)
-    .settings(name := "scoobieDoobie40", target := (file(".") / "target40"))
+    .settings(name := "scoobieDoobie40")
     .settings(scoobieSettings ++ noPublishSettings)
-    .aggregate(core, doobieSupport40, doobiePostgres40, doobieMySql40, weakSqlDsl)
+    .aggregate(ansiAst, doobieSupport40, doobiePostgres40, doobieMySql40, dslAnsiSqlSchemaless)
 
 lazy val scoobieDoobie41 =
   project.in(file("./.dummy/scoobieDoobie41"))
     .configs(IntegrationTest)
     .settings(Defaults.itSettings)
-    .settings(name := "scoobieDoobie41", target := (file(".") / "target41"))
+    .settings(name := "scoobieDoobie41")
     .settings(scoobieSettings ++ noPublishSettings)
-    .aggregate(core, doobieSupport41, doobiePostgres41, doobieMySql41, weakSqlDsl)
+    .aggregate(ansiAst, doobieSupport41, doobiePostgres41, doobieMySql41, dslAnsiSqlSchemaless)
 
-lazy val core =
-  project.in(file("core"))
+lazy val ansiAst =
+  project.in(file("ast/dialects/ansi"))
     .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
     .configs(IntegrationTest)
     .settings(Defaults.itSettings)
-    .settings(name := "scoobie-core")
+    .settings(name := "scoobie-ast")
     .settings(description := "AST for making convenient SQL DSLs in Scala.")
     .settings(scoobieSettings ++ publishSettings("scoobie"))
     .settings(libraryDependencies ++= Seq(specs))
@@ -73,7 +73,7 @@ lazy val doobieSupport =
     .settings(Defaults.itSettings)
     .settings(doobieCoreSettings.head)
     .settings(noPublishSettings)
-    .dependsOn(core)
+    .dependsOn(ansiAst)
 
 lazy val doobieSupport41 =
   project.in(doobieCoreFile)
@@ -82,7 +82,7 @@ lazy val doobieSupport41 =
     .settings(doobieCoreSettings.tail.head)
     .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
     .settings(publishSettings("scoobie.doobie"))
-    .dependsOn(core)
+    .dependsOn(ansiAst)
 
 lazy val doobieSupport40 =
   project.in(doobieCoreFile)
@@ -91,7 +91,7 @@ lazy val doobieSupport40 =
     .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
     .settings(doobieCoreSettings.tail.tail.head)
     .settings(publishSettings("scoobie.doobie"))
-    .dependsOn(core)
+    .dependsOn(ansiAst)
 
 lazy val doobiePostgresPlugin = ScoobieUtil.doobiePlugin(
   Some(doobiePGDriver),
@@ -108,7 +108,7 @@ lazy val doobiePostgres =
     .settings(Defaults.itSettings)
     .settings(noPublishSettings)
     .settings(doobiePgSettings.head)
-    .dependsOn(doobieSupport % "compile->compile;it->it;", ansiSql, weakSqlDsl % "it")
+    .dependsOn(doobieSupport % "compile->compile;it->it;", ansiSql, dslAnsiSqlSchemaless % "it")
 
 lazy val doobiePostgres41 =
   project.in(doobiePgFile)
@@ -117,7 +117,7 @@ lazy val doobiePostgres41 =
     .settings(Defaults.itSettings)
     .settings(publishSettings("scoobie.doobie.doo.postgres"))
     .settings(doobiePgSettings.tail.head)
-    .dependsOn(doobieSupport41 % "compile->compile;it->it;", ansiSql, weakSqlDsl % "it")
+    .dependsOn(doobieSupport41 % "compile->compile;it->it;", ansiSql, dslAnsiSqlSchemaless % "it")
 
 lazy val doobiePostgres40 =
   project.in(doobiePgFile)
@@ -126,7 +126,7 @@ lazy val doobiePostgres40 =
     .settings(Defaults.itSettings)
     .settings(publishSettings("scoobie.doobie.doo.postgres"))
     .settings(doobiePgSettings.tail.tail.head)
-    .dependsOn(doobieSupport40 % "compile->compile;it->it;", ansiSql, weakSqlDsl % "it")
+    .dependsOn(doobieSupport40 % "compile->compile;it->it;", ansiSql, dslAnsiSqlSchemaless % "it")
 
 lazy val doobieMySqlPlugin = ScoobieUtil.doobiePlugin(
   None,
@@ -143,7 +143,7 @@ lazy val doobieMySql =
     .settings(Defaults.itSettings)
     .settings(noPublishSettings)
     .settings(doobieMySqlSettings.head)
-    .dependsOn(doobieSupport % "compile->compile;it->it;", ansiSql, weakSqlDsl % "it")
+    .dependsOn(doobieSupport % "compile->compile;it->it;", ansiSql, dslAnsiSqlSchemaless % "it")
 
 lazy val doobieMySql41 =
   project.in(doobieMySqlFile)
@@ -152,7 +152,7 @@ lazy val doobieMySql41 =
     .settings(Defaults.itSettings)
     .settings(publishSettings("scoobie.doobie.doo.mysql"))
     .settings(doobieMySqlSettings.tail.head)
-    .dependsOn(doobieSupport41 % "compile->compile;it->it;", ansiSql, weakSqlDsl % "it")
+    .dependsOn(doobieSupport41 % "compile->compile;it->it;", ansiSql, dslAnsiSqlSchemaless % "it")
 
 lazy val doobieMySql40 =
   project.in(doobieMySqlFile)
@@ -161,36 +161,36 @@ lazy val doobieMySql40 =
     .settings(Defaults.itSettings)
     .settings(publishSettings("scoobie.doobie.doo.mysql"))
     .settings(doobieMySqlSettings.tail.tail.head)
-    .dependsOn(doobieSupport40 % "compile->compile;it->it;", ansiSql, weakSqlDsl % "it")
+    .dependsOn(doobieSupport40 % "compile->compile;it->it;", ansiSql, dslAnsiSqlSchemaless % "it")
 
-lazy val weakSqlDsl =
-  project.in(file("./plugins/dsl/mild-sql-dsl"))
+lazy val dslAnsiSqlSchemaless =
+  project.in(file("dsl/schemaless/ansi/sql"))
     .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
     .configs(IntegrationTest)
     .settings(Defaults.itSettings)
-    .settings(scoobieSettings ++ publishSettings("scoobie.snacks.mild.sql"))
-    .settings(name := "scoobie-contrib-mild-sql-dsl")
-    .settings(description := "Introduces a weakly typed SQL DSL to scoobie.")
+    .settings(scoobieSettings ++ publishSettings("scoobie.dsl.schemaless.ansi.sql"))
+    .settings(name := "scoobie-dsl-schemaless-ansi-sql")
+    .settings(description := "Introduces a schemaless SQL DSL to scoobie.")
     .settings(libraryDependencies += specs)
-    .dependsOn(core)
+    .dependsOn(ansiAst)
 
 lazy val ansiSql =
-  project.in(file("./plugins/dialects/ansi-sql"))
+  project.in(file("ast/interpreters/ansi"))
     .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
     .configs(IntegrationTest)
     .settings(Defaults.itSettings)
     .settings(publishSettings("scoobie.doobie.doo.ansi"))
-    .settings(name := "scoobie-contrib-ansi-sql")
+    .settings(name := "scoobie-interpreters-ansi")
     .settings(description := "Provides an ANSI-SQL interpreter for use with the Scoobie AST.")
     .settings(libraryDependencies ++= Seq(scalaz, specs))
     .settings(scoobieSettings)
-    .dependsOn(core, weakSqlDsl % "test")
+    .dependsOn(ansiAst, dslAnsiSqlSchemaless % "test")
 
 lazy val docs =
   project.in(file("doc"))
     .enablePlugins(TutPlugin, MicrositesPlugin)
     .settings(scoobieSettings ++ noPublishSettings)
-    .dependsOn(doobiePostgres41, weakSqlDsl, doobieSupport41 % "tut->it;compile->compile;")
+    .dependsOn(doobiePostgres41, dslAnsiSqlSchemaless, doobieSupport41 % "tut->it;compile->compile;")
     .settings(
       scalacOptions := (scalacOptions in ThisBuild).value.filterNot(_.startsWith("-Ywarn-unused")),
       micrositeName := "Scoobie",

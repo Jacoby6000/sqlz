@@ -177,7 +177,7 @@ object ScoobieUtil {
     repeat: Boolean = true,
     doobieVersionList: List[String] = doobieVersions
   ): DoobiePlugin = {
-    val sourceDir = s"./plugins/doobie/doobie-$doobiePluginName"
+    val sourceDir = s"doobie/$doobiePluginName"
     val settings = doobieVersionList.map { doobieVersion =>
       val versionNoDots = doobieVersion.filterNot(_ == '.').replaceAll("^0+", "")
       val scoobieArtifactName = s"scoobie-contrib-doobie$versionNoDots-$doobiePluginName"
