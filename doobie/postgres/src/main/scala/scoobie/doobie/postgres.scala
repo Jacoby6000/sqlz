@@ -2,8 +2,8 @@ package scoobie.doobie
 
 import doobie.imports._
 import scoobie.ast.coercion.Coerce
-import scoobie.ast.interpreters.ansi._
-import scoobie.ast.interpreters.ansi.SqlInterpreter.LiteralQueryString
+import scoobie.interpreters.ansi._
+import scoobie.interpreters.ansi.SqlInterpreter.LiteralQueryString
 
 /**
   * Created by jbarber on 5/20/16.

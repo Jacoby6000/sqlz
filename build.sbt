@@ -49,9 +49,9 @@ lazy val scoobieDoobie41 =
     .aggregate(ansiAst, doobieSupport41, doobiePostgres41, doobieMySql41, dslAnsiSqlSchemaless)
 
 lazy val ansiAst =
-  project.in(file("ast/dialects/ansi"))
+  project.in(file("ast/ansi"))
     .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
-    .settings(name := "scoobie-ast")
+    .settings(name := "scoobie-ast-ansi")
     .settings(description := "AST for making convenient SQL DSLs in Scala.")
     .settings(scoobieSettings ++ publishSettings("scoobie"))
     .settings(libraryDependencies ++= Seq(specsNoIt))
@@ -113,7 +113,7 @@ lazy val doobiePostgres41 =
     .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
     .configs(IntegrationTest)
     .settings(Defaults.itSettings)
-    .settings(publishSettings("scoobie.doobie.doo.postgres"))
+    .settings(publishSettings("scoobie.doobie.postgres"))
     .settings(doobiePgSettings.tail.head)
     .dependsOn(doobieSupport41 % "compile->compile;it->it;", ansiSql, dslAnsiSqlSchemaless % "it")
 
@@ -122,7 +122,7 @@ lazy val doobiePostgres40 =
     .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
     .configs(IntegrationTest)
     .settings(Defaults.itSettings)
-    .settings(publishSettings("scoobie.doobie.doo.postgres"))
+    .settings(publishSettings("scoobie.doobie.postgres"))
     .settings(doobiePgSettings.tail.tail.head)
     .dependsOn(doobieSupport40 % "compile->compile;it->it;", ansiSql, dslAnsiSqlSchemaless % "it")
 
@@ -148,7 +148,7 @@ lazy val doobieMySql41 =
     .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
     .configs(IntegrationTest)
     .settings(Defaults.itSettings)
-    .settings(publishSettings("scoobie.doobie.doo.mysql"))
+    .settings(publishSettings("scoobie.doobie.mysql"))
     .settings(doobieMySqlSettings.tail.head)
     .dependsOn(doobieSupport41 % "compile->compile;it->it;", ansiSql, dslAnsiSqlSchemaless % "it")
 
@@ -157,7 +157,7 @@ lazy val doobieMySql40 =
     .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
     .configs(IntegrationTest)
     .settings(Defaults.itSettings)
-    .settings(publishSettings("scoobie.doobie.doo.mysql"))
+    .settings(publishSettings("scoobie.doobie.mysql"))
     .settings(doobieMySqlSettings.tail.tail.head)
     .dependsOn(doobieSupport40 % "compile->compile;it->it;", ansiSql, dslAnsiSqlSchemaless % "it")
 
@@ -171,9 +171,9 @@ lazy val dslAnsiSqlSchemaless =
     .dependsOn(ansiAst)
 
 lazy val ansiSql =
-  project.in(file("ast/interpreters/ansi"))
+  project.in(file("interpreters/ansi"))
     .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
-    .settings(publishSettings("scoobie.doobie.doo.ansi"))
+    .settings(publishSettings("scoobie.doobie.ansi"))
     .settings(name := "scoobie-interpreters-ansi")
     .settings(description := "Provides an ANSI-SQL interpreter for use with the Scoobie AST.")
     .settings(libraryDependencies ++= Seq(scalaz, specsNoIt))

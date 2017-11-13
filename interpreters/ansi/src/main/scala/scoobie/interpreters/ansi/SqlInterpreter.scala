@@ -1,4 +1,4 @@
-package scoobie.ast.interpreters.ansi
+package scoobie.interpreters.ansi
 
 import scalaz._
 import Scalaz._
