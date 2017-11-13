@@ -1,10 +1,10 @@
-package scoobie.doobie.doo
+package scoobie.doobie
 
 import _root_.doobie.imports._
 import org.specs2._
-import scoobie.doobie.doo.mysql._
-import scoobie.snacks.mild.sql
-import scoobie.snacks.mild.sql._
+import scoobie.doobie.mysql._
+import scoobie.dsl.schemaless.ansi.sql
+import scoobie.dsl.schemaless.ansi.sql._
 
 import scalaz.NonEmptyList
 import scalaz.concurrent.Task

@@ -8,7 +8,7 @@ import ScoobieUtil._
 
 
 lazy val scoobie =
-  project.in(file("."))
+  project.in(file("./.root"))
     .configs(IntegrationTest)
     .settings(Defaults.itSettings)
     .settings(name := "scoobie")
@@ -51,12 +51,10 @@ lazy val scoobieDoobie41 =
 lazy val ansiAst =
   project.in(file("ast/dialects/ansi"))
     .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
-    .configs(IntegrationTest)
-    .settings(Defaults.itSettings)
     .settings(name := "scoobie-ast")
     .settings(description := "AST for making convenient SQL DSLs in Scala.")
     .settings(scoobieSettings ++ publishSettings("scoobie"))
-    .settings(libraryDependencies ++= Seq(specs))
+    .settings(libraryDependencies ++= Seq(specsNoIt))
 
 lazy val doobieCorePlugin = ScoobieUtil.doobiePlugin(
   Some(doobieCore),
@@ -166,23 +164,19 @@ lazy val doobieMySql40 =
 lazy val dslAnsiSqlSchemaless =
   project.in(file("dsl/schemaless/ansi/sql"))
     .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
-    .configs(IntegrationTest)
-    .settings(Defaults.itSettings)
     .settings(scoobieSettings ++ publishSettings("scoobie.dsl.schemaless.ansi.sql"))
     .settings(name := "scoobie-dsl-schemaless-ansi-sql")
     .settings(description := "Introduces a schemaless SQL DSL to scoobie.")
-    .settings(libraryDependencies += specs)
+    .settings(libraryDependencies += specsNoIt)
     .dependsOn(ansiAst)
 
 lazy val ansiSql =
   project.in(file("ast/interpreters/ansi"))
     .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
-    .configs(IntegrationTest)
-    .settings(Defaults.itSettings)
     .settings(publishSettings("scoobie.doobie.doo.ansi"))
     .settings(name := "scoobie-interpreters-ansi")
     .settings(description := "Provides an ANSI-SQL interpreter for use with the Scoobie AST.")
-    .settings(libraryDependencies ++= Seq(scalaz, specs))
+    .settings(libraryDependencies ++= Seq(scalaz, specsNoIt))
     .settings(scoobieSettings)
     .dependsOn(ansiAst, dslAnsiSqlSchemaless % "test")
 

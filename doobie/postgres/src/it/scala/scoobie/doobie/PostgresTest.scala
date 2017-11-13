@@ -1,9 +1,9 @@
-package scoobie.doobie.doo
+package scoobie.doobie
 
 import _root_.doobie.imports._
 import doobie.specs2.imports._
-import scoobie.doobie.doo.postgres._
-import scoobie.snacks.mild.sql._
+import scoobie.doobie.postgres._
+import scoobie.dsl.schemaless.ansi.sql._
 import org.specs2.mutable.Specification
 
 import scalaz.NonEmptyList
