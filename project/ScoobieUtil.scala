@@ -16,7 +16,9 @@ object ScoobieUtil {
   lazy val doobieCoreCats = "org.tpolecat" %% "doobie-core-cats"
   lazy val doobiePGDriver = "org.tpolecat" %% "doobie-postgres"
   lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.10"
+  lazy val specsBase = "org.specs2" %% "specs2-core" % "3.8.8"
   lazy val specs = "org.specs2" %% "specs2-core" % "3.8.8" % "test,it"
+  lazy val specsNoIt = "org.specs2" %% "specs2-core" % "3.8.8" % "test"
   lazy val doobieSpecs = "org.tpolecat" %% "doobie-specs2"
   lazy val publishAllSigned = taskKey[Unit]("Publish all (run with +publishAll for crossbuilds)")
 
@@ -177,7 +179,7 @@ object ScoobieUtil {
     repeat: Boolean = true,
     doobieVersionList: List[String] = doobieVersions
   ): DoobiePlugin = {
-    val sourceDir = s"./plugins/doobie/doobie-$doobiePluginName"
+    val sourceDir = s"doobie/$doobiePluginName"
     val settings = doobieVersionList.map { doobieVersion =>
       val versionNoDots = doobieVersion.filterNot(_ == '.').replaceAll("^0+", "")
       val scoobieArtifactName = s"scoobie-contrib-doobie$versionNoDots-$doobiePluginName"
@@ -208,4 +210,3 @@ object ScoobieUtil {
     result
   }
 }
-

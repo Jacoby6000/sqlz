@@ -11,8 +11,8 @@ The SQL dsl attempts to closely mimic standard SQL syntax.
 To get started with the DSL, import the scoobie DSL, and an interpreter.
 
 ```tut:silent
-import scoobie.doobie.doo.postgres._
-import scoobie.snacks.mild.sql._
+import scoobie.dsl.schemaless.ansi.sql._
+import scoobie.doobie.postgres._
 ```
 
 From here, you can start throwing queries together.
@@ -82,5 +82,3 @@ select(p"a.foo", p"b.bar") from (p"table1" as "a") leftOuterJoin (p"table2" as "
 ```
 
 Valid joins include `leftOuterJoin`, `rightOuterJoin`, `innerJoin`, `fullOuterJoin`, and `crossJoin`.
-
-

@@ -35,8 +35,8 @@ libraryDependencies ++= {
 Import the scoobie DSL. DSLs will exist under the `scoobie.snacks` package.
 
 ```tut:book
-import scoobie.snacks.mild.sql._
-import scoobie.doobie.doo.postgres._
+import scoobie.dsl.schemaless.ansi.sql._
+import scoobie.doobie.postgres._
 
 val q =
   select (
@@ -101,8 +101,8 @@ To see how this might interact with a real database, here are some examples copi
 First, lets set up a repl session with our imports, plus what we need to run doobie.
 
 ```tut:silent:reset
-import scoobie.doobie.doo.postgres._ // Use postgres with doobie support
-import scoobie.snacks.mild.sql._ // Import the Sql-like weakly (mildly) typed DSL.
+import scoobie.dsl.schemaless.ansi.sql._ // Import the Sql-like schemaless DSL.
+import scoobie.doobie.postgres._ // Use postgres with doobie support
 import doobie.imports._ // Import doobie transactors and meta instances
 import scalaz.concurrent.Task
 
