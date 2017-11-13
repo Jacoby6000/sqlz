@@ -1,11 +1,8 @@
-/**
-  * Large portions of this build are based on @tpolecat's (Rob Norris) build file for doobie. Any genius found here is courtesy of him.
-  */
-
 import UnidocKeys._
 import ReleaseTransformations._
 import ScoobieUtil._
 
+resolvers += "Sonatype Public" at "https://oss.sonatype.org/content/groups/public/"
 
 lazy val scoobie =
   project.in(file("./.root"))
@@ -15,22 +12,87 @@ lazy val scoobie =
     .settings(scoobieSettings ++ noPublishSettings)
     .settings(unidocSettings)
     .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(docs))
-    .dependsOn(ansiAst, doobieSupport, doobiePostgres, dslAnsiSqlSchemaless, ansiSql)
-    .aggregate(ansiAst, doobieSupport, doobiePostgres, dslAnsiSqlSchemaless, ansiSql)
+    .dependsOn(ansiAst, doobieSupport, doobiePostgres, dslAnsiSqlSchemaless, ansiSql, postgresConnection)
+    .aggregate(ansiAst, doobieSupport, doobiePostgres, dslAnsiSqlSchemaless, ansiSql, postgresConnection)
     .settings(
       publishAllSigned :=
         Def.sequential(
           (PgpKeys.publishSigned in ansiAst),
+          (PgpKeys.publishSigned in dslAnsiSqlSchemaless),
+          (PgpKeys.publishSigned in ansiSql),
+          (PgpKeys.publishSigned in postgresConnection)
           (PgpKeys.publishSigned in doobieSupport40),
           (PgpKeys.publishSigned in doobieSupport41),
           (PgpKeys.publishSigned in doobiePostgres40),
           (PgpKeys.publishSigned in doobiePostgres41),
           (PgpKeys.publishSigned in doobieMySql41),
           (PgpKeys.publishSigned in doobieMySql40),
-          (PgpKeys.publishSigned in dslAnsiSqlSchemaless),
-          (PgpKeys.publishSigned in ansiSql)
         ).value
     )
+
+lazy val dslAnsiSqlSchemaless =
+  project.in(file("dsl/schemaless/ansi/sql"))
+    .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
+    .settings(scoobieSettings ++ publishSettings("scoobie.dsl.schemaless.ansi.sql"))
+    .settings(name := "scoobie-dsl-schemaless-ansi-sql")
+    .settings(description := "Introduces a schemaless SQL DSL to scoobie.")
+    .settings(libraryDependencies += specsNoIt)
+    .dependsOn(ansiAst)
+
+lazy val ansiSql =
+  project.in(file("interpreters/ansi"))
+    .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
+    .settings(publishSettings("scoobie.doobie.ansi"))
+    .settings(name := "scoobie-interpreters-ansi")
+    .settings(description := "Provides an ANSI-SQL interpreter for use with the Scoobie AST.")
+    .settings(libraryDependencies ++= Seq(scalaz, specsNoIt))
+    .settings(scoobieSettings)
+    .dependsOn(ansiAst, dslAnsiSqlSchemaless % "test")
+
+lazy val postgresConnection =
+  project.in(file("connection/postgres"))
+    .enablePlugins(SbtOsgi)
+    .configs(IntegrationTest)
+    .settings(Defaults.itSettings)
+    .settings(publishSettings("doobie.connection.postgres"))
+    .settings(name := "scoobie-connection-postgres")
+    .settings(description := "Provides database connection interface for postgres")
+    .settings(libraryDependencies ++= Seq(scodecCore, scalazCore, scodecScalaz, specs))
+    .settings(scoobieSettings)
+
+lazy val docs =
+  project.in(file("doc"))
+    .enablePlugins(TutPlugin, MicrositesPlugin)
+    .settings(scoobieSettings ++ noPublishSettings)
+    .dependsOn(doobiePostgres41, dslAnsiSqlSchemaless, doobieSupport41 % "tut->it;compile->compile;")
+    .settings(
+      scalacOptions := (scalacOptions in ThisBuild).value.filterNot(_.startsWith("-Ywarn-unused")),
+      micrositeName := "Scoobie",
+      micrositeDescription := "A set of DSLs for querying with Doobie.",
+      micrositeAuthor := "Jacob Barber",
+      micrositeHomepage := "scoobie.jacoby6000.com",
+      micrositeOrganizationHomepage := "jacoby6000.com",
+      micrositeBaseUrl := "/scoobie",
+      micrositeGithubOwner := "jacoby6000",
+      micrositeGithubRepo := "scoobie",
+      micrositePushSiteWith := GitHub4s,
+      micrositeGithubToken := Some(sys.env("GITHUB_MICROSITES_TOKEN")),
+      micrositeHighlightTheme := "atom-one-light",
+      micrositePalette := Map(
+        "brand-primary"     -> "#E05236",
+        "brand-secondary"   -> "#3F3242",
+        "brand-tertiary"    -> "#2D232F",
+        "gray-dark"         -> "#453E46",
+        "gray"              -> "#837F84",
+        "gray-light"        -> "#E3E2E3",
+        "gray-lighter"      -> "#F4F3F4",
+        "white-color"       -> "#FFFFFF"
+      )
+    )
+
+/*
+ * Doobie stuff below
+ */
 
 lazy val scoobieDoobie40 =
   project.in(file("./.dummy/scoobieDoobie40"))
@@ -160,52 +222,3 @@ lazy val doobieMySql40 =
     .settings(publishSettings("scoobie.doobie.mysql"))
     .settings(doobieMySqlSettings.tail.tail.head)
     .dependsOn(doobieSupport40 % "compile->compile;it->it;", ansiSql, dslAnsiSqlSchemaless % "it")
-
-lazy val dslAnsiSqlSchemaless =
-  project.in(file("dsl/schemaless/ansi/sql"))
-    .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
-    .settings(scoobieSettings ++ publishSettings("scoobie.dsl.schemaless.ansi.sql"))
-    .settings(name := "scoobie-dsl-schemaless-ansi-sql")
-    .settings(description := "Introduces a schemaless SQL DSL to scoobie.")
-    .settings(libraryDependencies += specsNoIt)
-    .dependsOn(ansiAst)
-
-lazy val ansiSql =
-  project.in(file("interpreters/ansi"))
-    .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
-    .settings(publishSettings("scoobie.doobie.ansi"))
-    .settings(name := "scoobie-interpreters-ansi")
-    .settings(description := "Provides an ANSI-SQL interpreter for use with the Scoobie AST.")
-    .settings(libraryDependencies ++= Seq(scalaz, specsNoIt))
-    .settings(scoobieSettings)
-    .dependsOn(ansiAst, dslAnsiSqlSchemaless % "test")
-
-lazy val docs =
-  project.in(file("doc"))
-    .enablePlugins(TutPlugin, MicrositesPlugin)
-    .settings(scoobieSettings ++ noPublishSettings)
-    .dependsOn(doobiePostgres41, dslAnsiSqlSchemaless, doobieSupport41 % "tut->it;compile->compile;")
-    .settings(
-      scalacOptions := (scalacOptions in ThisBuild).value.filterNot(_.startsWith("-Ywarn-unused")),
-      micrositeName := "Scoobie",
-      micrositeDescription := "A set of DSLs for querying with Doobie.",
-      micrositeAuthor := "Jacob Barber",
-      micrositeHomepage := "scoobie.jacoby6000.com",
-      micrositeOrganizationHomepage := "jacoby6000.com",
-      micrositeBaseUrl := "/scoobie",
-      micrositeGithubOwner := "jacoby6000",
-      micrositeGithubRepo := "scoobie",
-      micrositePushSiteWith := GitHub4s,
-      micrositeGithubToken := Some(sys.env("GITHUB_MICROSITES_TOKEN")),
-      micrositeHighlightTheme := "atom-one-light",
-      micrositePalette := Map(
-        "brand-primary"     -> "#E05236",
-        "brand-secondary"   -> "#3F3242",
-        "brand-tertiary"    -> "#2D232F",
-        "gray-dark"         -> "#453E46",
-        "gray"              -> "#837F84",
-        "gray-light"        -> "#E3E2E3",
-        "gray-lighter"      -> "#F4F3F4",
-        "white-color"       -> "#FFFFFF"
-      )
-    )

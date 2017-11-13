@@ -20,7 +20,12 @@ object ScoobieUtil {
   lazy val specs = "org.specs2" %% "specs2-core" % "3.8.8" % "test,it"
   lazy val specsNoIt = "org.specs2" %% "specs2-core" % "3.8.8" % "test"
   lazy val doobieSpecs = "org.tpolecat" %% "doobie-specs2"
+  lazy val scodecCore = "org.scodec" %% "scodec-core" % "1.10.3"
+  lazy val scodecScalaz = "org.scodec" %% "scodec-scalaz" % "1.4.1a"
+  lazy val scalazCore = "org.scalaz" %% "scalaz-core" % "7.2.16"
+
   lazy val publishAllSigned = taskKey[Unit]("Publish all (run with +publishAll for crossbuilds)")
+
 
   lazy val noPublishSettings = Seq(
     publish := (),
