@@ -20,13 +20,13 @@ lazy val scoobie =
           (PgpKeys.publishSigned in ansiAst),
           (PgpKeys.publishSigned in dslAnsiSqlSchemaless),
           (PgpKeys.publishSigned in ansiSql),
-          (PgpKeys.publishSigned in postgresConnection)
+          (PgpKeys.publishSigned in postgresConnection),
           (PgpKeys.publishSigned in doobieSupport40),
           (PgpKeys.publishSigned in doobieSupport41),
           (PgpKeys.publishSigned in doobiePostgres40),
           (PgpKeys.publishSigned in doobiePostgres41),
           (PgpKeys.publishSigned in doobieMySql41),
-          (PgpKeys.publishSigned in doobieMySql40),
+          (PgpKeys.publishSigned in doobieMySql40)
         ).value
     )
 

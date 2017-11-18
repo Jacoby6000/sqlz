@@ -5,6 +5,18 @@ package scoobie.ast
  */
 object ansi {
 
+  case class Fix[F[_]](unfix: F[Fix[F]])
+  def partialFoldLeft[A, B](list: List[A], z: B)(f: (A, B) => B): (B, Fix[Lambda[a => Option[B => (B, a)]]]) = {
+    list match {
+      case h :: t =>
+        val b = f(h, z)
+        (b, Fix[Lambda[a => Option[B => (B, a)]]](Some { acc: B => partialFoldLeft(t, acc)(f) }))
+      case Nil    =>
+        (z, Fix[Lambda[a => Option[B => (B, a)]]](None))
+    }
+  }
+
+
   trait RawExpressionHandler[A] {
     def interpret(a: A): String
   }
@@ -63,6 +75,16 @@ object ansi {
   case class QueryLit[F[_]](value: QueryValue[F]) extends QueryComparison[F]
   case class QueryNot[F[_]](value: QueryComparison[F]) extends QueryComparison[F]
 
+  case class Fix[F[_]](unfix: F[Fix[F]])
+  def partialFoldLeft[A, B](list: List[A], z: B)(f: (A, B) => B): (B, Fix[Lambda[a => Option[B => (B, a)]]]) = {
+    list match {
+      case h :: t =>
+        val b = f(h, z)
+        (b, Fix[Lambda[a => Option[B => (B, a)]]](Some { acc: B => partialFoldLeft(t, acc)(f) }))
+      case Nil    =>
+        (z, Fix[Lambda[a => Option[B => (B, a)]]](None))
+    }
+  }
   sealed trait QueryPath[F[_]] extends QueryValue[F]
   case class QueryPathEnd[F[_]](path: String) extends QueryPath[F] with QueryValue[F]
   case class QueryPathCons[F[_]](path: String, queryPath: QueryPath[F]) extends QueryPath[F] with QueryValue[F]
