@@ -21,11 +21,19 @@ lazy val sqlz =
         ).value
     )
 
+lazy val sql =
+  project.in(file("sqlz-sql"))
+    .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
+    .settings(name := "sqlz-sql")
+    .settings(description := "Primitives for producing sql queries.")
+    .settings(sqlzSettings ++ publishSettings("sqlz"))
+    .settings(libraryDependencies ++= Seq(specsNoIt))
+
 lazy val ansiTagless =
   project.in(file("sqlz-tagless/ansi"))
     .enablePlugins(SbtOsgi/*, BuildInfoPlugin*/)
     .settings(name := "sqlz-tagless-ansi")
-    .settings(description := "Tagless interpreters for making convenient SQL DSLs in Scala.")
+    .settings(description := "Tagless traits for ANSI sql queries.")
     .settings(sqlzSettings ++ publishSettings("sqlz"))
     .settings(libraryDependencies ++= Seq(specsNoIt))
 
