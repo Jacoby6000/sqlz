@@ -2,7 +2,6 @@
   * Large portions of this build are based on @tpolecat's (Rob Norris) build file for doobie. Any genius found here is courtesy of him.
   */
 
-import UnidocKeys._
 import ReleaseTransformations._
 import SqlzUtil._
 
@@ -13,8 +12,6 @@ lazy val sqlz =
     .settings(Defaults.itSettings)
     .settings(name := "sqlz")
     .settings(sqlzSettings ++ noPublishSettings)
-    .settings(unidocSettings)
-    .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject)
     .dependsOn(ansiTagless)
     .aggregate(ansiTagless)
     .settings(

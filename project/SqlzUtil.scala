@@ -1,5 +1,4 @@
 import sbt._
-import sbt.impl._
 import Keys._
 import com.typesafe.sbt.osgi.SbtOsgi.autoImport._
 import com.typesafe.sbt.osgi.SbtOsgi.autoImport.OsgiKeys._
@@ -10,6 +9,7 @@ import com.typesafe.sbt.SbtPgp.autoImport._
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
 
 object SqlzUtil {
+  lazy val unit: Unit = ()
 
   lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.10"
   lazy val specsBase = "org.specs2" %% "specs2-core" % "3.8.8"
@@ -18,13 +18,13 @@ object SqlzUtil {
   lazy val publishAllSigned = taskKey[Unit]("Publish all (run with +publishAll for crossbuilds)")
 
   lazy val noPublishSettings = Seq(
-    publish := (),
-    publishLocal := (),
+    publish := unit,
+    publishLocal := unit,
     publishArtifact := false
   )
 
   lazy val buildSettings = Seq(
-    scalaVersion := "2.12.2",
+    scalaVersion := "2.12.4",
     organization := "com.github.jacoby6000",
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     crossScalaVersions := Seq("2.11.11", scalaVersion.value),
@@ -149,14 +149,14 @@ object SqlzUtil {
       checkSnapshotDependencies,
       inquireVersions,
       runClean,
-      ReleaseStep(action = Command.process("package", _)),
+      //ReleaseStep(action = Command("package", _)),
       setReleaseVersion,
       commitReleaseVersion,
       tagRelease,
-      ReleaseStep(action = Command.process("publishSigned", _)),
+      //ReleaseStep(action = Command.process("publishSigned", _)),
       setNextVersion,
       commitNextVersion,
-      ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+      //ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
       pushChanges
     )
   )
