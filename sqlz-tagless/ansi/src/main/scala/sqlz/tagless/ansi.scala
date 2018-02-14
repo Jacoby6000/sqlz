@@ -3,8 +3,8 @@ package sqlz.tagless
 object ansi {
   case class Path(path: String) extends AnyVal
 
-  trait QueryValue[U, A] {
-    def param(u: U): A
+  trait QueryValue[F[_], A] {
+    def param[U: F](u: U): A
     def function(path: Path, args: List[A]): A
     def nul: A
   }
@@ -14,11 +14,12 @@ object ansi {
     def equal(l: U, r: U): A
     def greaterThan(l: U, r: U): A
     def greaterThanOrEqual(l: U, r: U): A
+    def lessThan(l: U, r: U): A
     def lessThanOrEqual(l: U, r: U): A
     def in(value: U, compareTo: List[U]): A
     def lit(u: U): A
 
-    // compositions with other comparisons
+    // Compositions with other comparisons
     def not(a: A): A
     def and(l: A, r: A): A
     def or(l: A, r: A): A
@@ -26,7 +27,7 @@ object ansi {
 
   trait QueryProjection[U, A] {
     def all: A
-    def one(selection: U, alias: Option[String]): A
+    def one(selection: U, alias: Option[Path]): A
   }
 
   trait QueryJoin[T, U, A] {
