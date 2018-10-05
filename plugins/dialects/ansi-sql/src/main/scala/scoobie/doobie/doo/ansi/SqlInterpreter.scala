@@ -83,8 +83,6 @@ case class SqlInterpreter[T: Semigroup](pathWrapper: String, litSqlInterpreter: 
 
 
         def apply[I](ast: Query[T, (AST :*: Const)#l, I]): Const[I] = {
-          implicit def `y u no typecheck?`[X](ast: Query[T, (AST :*: Const)#l, I]): Query[T, (AST :*: Const)#l, X] =
-            ast.asInstanceOf[Query[T, (AST :*: Const)#l, X]]
 
           import ValueOperators._
           import ComparisonValueOperators._
