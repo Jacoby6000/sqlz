@@ -2,7 +2,6 @@
   * Large portions of this build are based on @tpolecat's (Rob Norris) build file for doobie. Any genius found here is courtesy of him.
   */
 
-import UnidocKeys._
 import ReleaseTransformations._
 import ScoobieUtil._
 
@@ -12,7 +11,7 @@ lazy val scoobie =
     .settings(Defaults.itSettings)
     .settings(name := "scoobie")
     .settings(scoobieSettings ++ noPublishSettings)
-    .settings(unidocSettings)
+    /*.settings(unidocSettings)*/
     .settings(unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(docs))
     .dependsOn(core, doobieSupport, doobiePostgres, weakSqlDsl, ansiSql)
     .aggregate(core, doobieSupport, doobiePostgres, weakSqlDsl, ansiSql)

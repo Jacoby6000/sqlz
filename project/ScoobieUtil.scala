@@ -1,13 +1,13 @@
-import sbt._
-import sbt.impl._
-import Keys._
-import com.typesafe.sbt.osgi.SbtOsgi.autoImport._
-import com.typesafe.sbt.osgi.SbtOsgi.autoImport.OsgiKeys._
-import sbtrelease.ReleasePlugin.autoImport._
-import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
-import tut.TutPlugin.autoImport._
 import com.typesafe.sbt.SbtPgp.autoImport._
+import com.typesafe.sbt.osgi.SbtOsgi.autoImport.OsgiKeys._
+import com.typesafe.sbt.osgi.SbtOsgi.autoImport._
+import sbt.Keys._
+import sbt._
+import sbt.librarymanagement.DependencyBuilders._
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
+import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
+import sbtrelease.ReleasePlugin.autoImport._
+import tut.TutPlugin.autoImport._
 
 object ScoobieUtil {
 
@@ -167,7 +167,7 @@ object ScoobieUtil {
   case class DoobiePlugin(dir: File, settings: List[Seq[Setting[_]]])
 
   def doobiePlugin(
-    doobieArtifact: Option[GroupArtifactID],
+    doobieArtifact: Option[OrganizationArtifactName],
     doobiePluginName: String,
     projectDescription: String,
     repeat: Boolean = true,
